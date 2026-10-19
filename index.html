@@ -7,19 +7,13 @@
   <meta name="description" content="掌中榫局：以指为钥，探寻千年榫卯之美。用自然手势探索传统鲁班锁。">
   <title>掌中榫局｜手势交互解密</title>
   <link rel="stylesheet" href="assets/landing/scene-v3.css">
-  <link rel="stylesheet" href="assets/landing/layered.css?v=3">
+  <link rel="stylesheet" href="assets/landing/refined-v4.css">
   <script src="assets/landing/particles.js?v=3" defer></script>
 </head>
 <body>
 <svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
   <defs>
-    <linearGradient id="wood" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#9b5b29"/><stop offset=".45" stop-color="#452815"/><stop offset="1" stop-color="#20170f"/></linearGradient>
-    <radialGradient id="table"><stop stop-color="#c0873a"/><stop offset=".55" stop-color="#6b4220"/><stop offset="1" stop-color="#2e2115"/></radialGradient>
     <linearGradient id="paper" x1="0" y1="0" x2=".2" y2="1"><stop stop-color="#fff7d4"/><stop offset=".48" stop-color="#f9e6ad"/><stop offset="1" stop-color="#e4bb72"/></linearGradient>
-    <symbol id="cloud" viewBox="0 0 420 100">
-      <path fill="currentColor" d="M7 69C-8 45 21 27 44 35c-3-23 33-34 48-15 18-28 65-20 71 9 30-5 42 10 41 23 25-15 57-13 72-4 30-14 75-5 80 12 34-9 63 3 59 20-67 20-135 12-188 10-84 2-175 15-210-5-10-6-12-11-10-16Z"/>
-      <path d="M20 69c-7-19 17-29 29-18 11 10-3 24-12 13M65 42c0-20 31-28 47-11 20 21-8 47-27 30-10-9-1-25 10-20M144 33c17 3 25 21 13 34-17 18-40 1-30-13M191 70c47-17 69 16 116-1 28-11 50 8 86 6M39 83c50 14 103-5 144 0" fill="none" stroke="#719c72" stroke-opacity=".5" stroke-width="3" stroke-linecap="round"/>
-    </symbol>
     <symbol id="emblem" viewBox="0 0 60 68">
       <path d="M30 3 56 18v32L30 65 4 50V18Z M30 10 49 21v25L30 57 11 46V21Z" fill="none" stroke="currentColor" stroke-width="2.2"/>
       <path d="m30 16 15 9-15 9-15-9 15-9Zm-15 9v19l15 9V34m15-9v19l-15 9m-7-24v11l7 4 7-4V29m-7 5v10" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
@@ -32,40 +26,29 @@
   <div class="stage">
     <section class="intro" aria-labelledby="hero-title">
       <div class="title-wrap">
-        <svg class="cloud cloud-left" aria-hidden="true"><use href="#cloud"/></svg>
-        <svg class="cloud cloud-right" aria-hidden="true"><use href="#cloud"/></svg>
-        <h1 id="hero-title">掌中榫局</h1>
+        <img class="cloud cloud-left" src="assets/landing/cloud-v4.svg" alt="" width="1200" height="300">
+        <img class="cloud cloud-right" src="assets/landing/cloud-v4.svg" alt="" width="1200" height="300">
+        <h1 id="hero-title"><span class="sr-only">掌中榫局</span><img class="title-art" src="assets/landing/title-v4.svg" alt="" width="1600" height="500" fetchpriority="high"></h1>
       </div>
       <h2 class="subtitle"><span class="rule" aria-hidden="true"></span>手势交互解密<span class="rule" aria-hidden="true"></span></h2>
       <p class="tagline">以指为钥，探寻千年榫卯之美</p>
       <a class="start" href="tutorial.html">
         <svg class="button-art" viewBox="0 0 420 96" preserveAspectRatio="none" aria-hidden="true">
-          <path d="M47 4H373Q398 4 404 24L417 48 404 72Q398 92 373 92H47Q22 92 16 72L3 48 16 24Q22 4 47 4Z" fill="#6c411e" stroke="#f8d891" stroke-width="2"/>
-          <path d="M48 9H372Q392 9 398 28L408 48 398 68Q392 87 372 87H48Q28 87 22 68L12 48 22 28Q28 9 48 9Z" fill="url(#paper)" stroke="#b87e37" stroke-width="2"/>
+          <path d="M61 4H359Q386 4 395 24Q410 28 417 48Q410 68 395 72Q386 92 359 92H61Q34 92 25 72Q10 68 3 48Q10 28 25 24Q34 4 61 4Z" fill="#6c411e" stroke="#f8d891" stroke-width="2"/>
+          <path d="M61 10H359Q381 10 389 29Q405 33 409 48Q405 63 389 67Q381 86 359 86H61Q39 86 31 67Q15 63 11 48Q15 33 31 29Q39 10 61 10Z" fill="url(#paper)" stroke="#b87e37" stroke-width="2"/>
           <path d="M52 15H368Q387 15 391 30M52 81H368Q387 81 391 66M29 31Q33 15 52 15M29 65Q33 81 52 81" fill="none" stroke="#c6934e" stroke-width="1.4"/>
           <g fill="none" stroke="#966025" stroke-width="1.7"><path d="m18 48 12-12 12 12-12 12-12-12m6 0 6-6 6 6-6 6-6-6m354 0 12-12 12 12-12 12-12-12m6 0 6-6 6 6-6 6-6-6"/></g>
         </svg>
         <span>开始体验</span><span class="arrow" aria-hidden="true">→</span>
-        <svg class="cloud button-cloud" aria-hidden="true"><use href="#cloud"/></svg>
+        <img class="cloud button-cloud" src="assets/landing/cloud-v4.svg" alt="" width="1200" height="300">
       </a>
     </section>
     <div class="exhibit" role="img" aria-label="暖金光环环绕的悬浮木质鲁班锁">
       <div class="floor-glow" aria-hidden="true"></div>
-      <div class="orbit" aria-hidden="true"></div>
+      <svg class="energy energy-back" viewBox="0 0 800 800" aria-hidden="true"><path d="M500 135C760 20 915 160 632 274"/><path class="energy-soft" d="M176 300C-48 399 19 498 250 439"/></svg>
       <img class="puzzle" src="assets/landing/lock-v3.svg" alt="" width="1024" height="1024" fetchpriority="high">
-      <div class="orbit orbit-front" aria-hidden="true"></div>
-      <svg class="pedestal" viewBox="0 0 900 280" aria-hidden="true">
-        <defs><pattern id="carving" width="90" height="90" patternUnits="userSpaceOnUse"><path d="M5 5h70v65H25V25h30v25H40M5 85h80V5M15 75V15h50v45H35V35h10" fill="none" stroke="#bd823c" stroke-opacity=".46" stroke-width="5"/></pattern></defs>
-        <path d="M48 90H852V211Q450 322 48 211Z" fill="url(#wood)" stroke="#a0672c" stroke-width="2"/>
-        <path d="M64 120Q450 235 836 120V203Q450 302 64 203Z" fill="url(#carving)"/>
-        <ellipse cx="450" cy="108" rx="403" ry="91" fill="#261a10" stroke="#8f612f" stroke-width="8"/>
-        <ellipse cx="450" cy="93" rx="406" ry="86" fill="url(#table)" stroke="#d29842" stroke-width="4"/>
-        <g fill="none" stroke="#ffd37c"><ellipse cx="450" cy="88" rx="376" ry="69" stroke-width="2"/><ellipse cx="450" cy="88" rx="345" ry="57" stroke-width="1"/><ellipse cx="450" cy="88" rx="296" ry="47" stroke-width="2"/><ellipse cx="450" cy="88" rx="220" ry="34" stroke-width="1"/><ellipse cx="450" cy="88" rx="113" ry="17" stroke-width="1.5"/></g>
-        <g fill="none" stroke="#fac467" stroke-width="2" opacity=".65"><path d="M100 88h123m455 0h123M450 24v22m0 84v22M186 48l94 20m340 41 94 21M186 129l94-20m340-41 94-20"/><path d="m412 77 38-6 38 6v20l-38 6-38-6Z"/></g>
-        <ellipse cx="450" cy="89" rx="400" ry="78" fill="none" stroke="#ffd891" stroke-width="2" opacity=".7"/>
-        <path d="M385 191q65-35 130 0v65q-65 30-130 0Z" fill="#392113" stroke="#a46c30" stroke-width="3"/>
-        <g transform="translate(424 201) scale(.85)" style="color:#d6a35c"><use href="#emblem" width="60" height="68"/></g>
-      </svg>
+      <svg class="energy energy-front" viewBox="0 0 800 800" aria-hidden="true"><path d="M176 397C-70 606 178 642 524 465S846 283 723 307"/><g class="sparks" fill="#ffe3a3" stroke="#e69b37"><path d="m729 512 14-8-9 16-12 3Z"/><path d="m654 87 12-6-4 11-11 3Z"/><path d="m119 475 8-14 5 6-9 12Z"/></g></svg>
+      <img class="pedestal pedestal-photo" src="assets/landing/pedestal-v4.svg" alt="" width="1600" height="600" loading="eager">
     </div>
   </div>
   <canvas class="ambient" aria-hidden="true"></canvas>
