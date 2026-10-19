@@ -1,0 +1,19 @@
+/* Cover adjustments: title scale, inward platform perspective and interactive model. */
+@media (min-width:601px){
+  .intro{transform:translateY(25px)}
+  .title-wrap{width:118%;margin-left:-9%}
+  .pedestal-photo{transform-origin:55% 35%;transform:perspective(1500px) rotateY(-9deg) rotateZ(-2deg);left:-33%}
+}
+.puzzle-view{position:absolute;left:9%;top:0;width:82%;height:84%;z-index:2;isolation:isolate;cursor:grab;touch-action:pan-y;outline:none;user-select:none;-webkit-user-select:none}
+.puzzle-view:focus-visible{outline:1px solid #f0cf8880;outline-offset:6px;border-radius:12px}
+.puzzle-view.is-dragging{cursor:grabbing;touch-action:none}
+.puzzle-fallback,.puzzle-view canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.puzzle-fallback{filter:drop-shadow(0 0 12px #ffd08032) drop-shadow(0 25px 22px #0005);animation:float 7s ease-in-out infinite;transition:opacity .35s}
+.puzzle-view canvas{opacity:0;transition:opacity .35s;filter:drop-shadow(0 10px 13px #25110030)}
+.puzzle-view.model-ready canvas{opacity:1}.puzzle-view.model-ready .puzzle-fallback{opacity:0}
+.rotate-hint{position:absolute;left:50%;bottom:1%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;white-space:nowrap;font-family:KaiTi,STKaiti,serif;font-size:14px;letter-spacing:.12em;color:#ffe4ab9c;opacity:.8;transition:opacity .2s;text-shadow:0 2px 6px #000;pointer-events:none}
+.rotate-hint span{font-family:system-ui,sans-serif;font-size:20px}.puzzle-view:hover .rotate-hint,.puzzle-view:focus-visible .rotate-hint{opacity:1;color:#fff0c5}.puzzle-view.is-dragging .rotate-hint{opacity:0}
+@media(max-width:900px) and (min-width:601px){.intro{transform:translateY(16px)}.title-wrap{width:115%;margin-left:-7.5%}}
+@media(max-width:600px){.intro{transform:translateY(10px)}.title-wrap{width:116%;margin-left:-8%}.puzzle-view{left:8%;top:-4%;width:84%;height:86%}.pedestal-photo{transform:perspective(1000px) rotateY(-5deg) rotateZ(-1deg);transform-origin:50% 35%}.rotate-hint{font-size:12px;bottom:0}}
+@media(prefers-reduced-motion:reduce){.puzzle-fallback{animation:none}.puzzle-view canvas,.puzzle-fallback,.rotate-hint{transition:none}}
+
