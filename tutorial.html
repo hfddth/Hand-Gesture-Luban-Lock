@@ -629,7 +629,7 @@
 
     const grabLessons = [
       ["壹 · 初识构件", "伸出食指，指向榫木", "将食指移动到发光的木构件上。识别成功后，构件边缘会变成金色。"],
-      ["贰 · 凌空取物", "靠近拇指与食指即可抓取", "两指靠近或闭合即可锁定抓取。起手时停留 0.2 秒抵消抖动，随后移动手掌移位、转动手腕转向。"],
+      ["贰 · 凌空取物", "靠近拇指与食指即可抓取", "两指靠近或闭合即可锁定抓取。抓取时会沿用动作前最近指向的构件，避免闭合抖动误选；抓住后移动手掌移位、转动手腕转向。"],
       ["叁 · 移木就位", "移动手掌，靠近安装区", "抓取会持续保持。移动手掌调整位置，转动手腕调整构件朝向，再靠近中央虚线轮廓。"],
       ["肆 · 落榫成锁", "张开手掌，完成放置", "构件进入绿色容错范围后张开手掌即可释放，系统会自动对齐，不需要与虚线完全重合。"]
     ];
@@ -652,13 +652,12 @@
     const PINCH_GRAB_RATIO = .72;
     const PINCH_INTENT_RATIO = .94;
     const PALM_RELEASE_RATIO = 1.02;
-    const GRAB_INTENT_HOLD_MS = 200;
+    const SELECTION_LOOKBACK_MS = 200;
+    const hoverHistory = [];
+    let intentCandidate = null;
     let grabIntentActive = false;
-    let grabPauseUntil = 0;
-    let grabPausePending = false;
     let cursorTargetX = null;
     let cursorTargetY = null;
-    const pausedCursor = new THREE.Vector2();
     let previousPalmPoint = null;
     let viewRotationAmount = 0;
     let rotationCompleted = false;
@@ -903,8 +902,8 @@
       cursorTargetX = null;
       cursorTargetY = null;
       grabIntentActive = false;
-      grabPauseUntil = 0;
-      grabPausePending = false;
+      intentCandidate = null;
+      hoverHistory.length = 0;
       previousPalmPoint = null;
       viewRotationAmount = 0;
       rotationCompleted = false;
@@ -941,8 +940,10 @@
       if (!tutorialStarted || currentPart !== 1 || grabbed) return;
       const hit = raycaster.intersectObject(movable, true).length > 0;
       hovered = hit;
-      // 正常指向更新选择；进入 0.2 秒停留期间不再改选。
       grabCandidate = hit ? movable : null;
+      const now = performance.now();
+      if (hit) hoverHistory.push({ object: movable, at: now });
+      pruneHoverHistory(now);
       edges.material.opacity = THREE.MathUtils.lerp(edges.material.opacity, hit ? .95 : 0, .24);
       movable.material.emissive.setHex(hit ? 0x3b2b0c : 0x000000);
       if (hit && currentStep === 0) {
@@ -951,8 +952,17 @@
       }
     }
 
-    function beginGrab() {
-      const hasCandidate = grabCandidate === movable;
+    function pruneHoverHistory(now = performance.now()) {
+      while (hoverHistory.length && now - hoverHistory[0].at > SELECTION_LOOKBACK_MS) hoverHistory.shift();
+    }
+
+    function recentHoverTarget(now = performance.now()) {
+      pruneHoverHistory(now);
+      return hoverHistory.length ? hoverHistory[hoverHistory.length - 1].object : null;
+    }
+
+    function beginGrab(candidate = grabCandidate) {
+      const hasCandidate = candidate === movable;
       if (!hasCandidate || grabbed || !tutorialStarted || currentPart !== 1) return false;
       grabbed = true;
       gripPoseReady = false;
@@ -989,7 +999,7 @@
 
     function updateSmoothCursor(dt) {
       if (!handVisible || cursorTargetX === null) return;
-      if (smoothedCursorX === null || performance.now() < grabPauseUntil) {
+      if (smoothedCursorX === null) {
         smoothedCursorX = cursorTargetX;
         smoothedCursorY = cursorTargetY;
       } else {
@@ -1002,7 +1012,7 @@
     }
 
     function updateSmoothDrag(dt) {
-      if (!grabbed || performance.now() < grabPauseUntil) return;
+      if (!grabbed) return;
       // 轨迹只有一次平滑，无死区、速度上限或每帧位移限制。
       const alpha = 1 - Math.exp(-dt / .035);
       movable.position.lerp(dragTarget, alpha);
@@ -1073,6 +1083,8 @@
       grabNeedsReanchor = false;
       hovered = false;
       grabCandidate = null;
+      intentCandidate = null;
+      hoverHistory.length = 0;
       movable.scale.setScalar(1);
       const distance = movable.position.distanceTo(target.position);
       if (distance < POSITION_TOLERANCE) {
@@ -1200,6 +1212,11 @@
       handVisible = Boolean(marks);
       cursorEl.classList.toggle("visible", handVisible);
       if (!marks) {
+        if (!grabbed) {
+          hoverHistory.length = 0;
+          intentCandidate = null;
+          grabIntentActive = false;
+        }
         // 遮挡时没有新位置，停在当前位置，重新识别后接续。
         previousPalmPoint = null;
         if (grabbed) {
@@ -1229,26 +1246,16 @@
       const indexY = marks[8].y * innerHeight;
       if (!grabbed && !pinchIntent) {
         grabIntentActive = false;
-        grabPausePending = false;
-        grabPauseUntil = 0;
+        intentCandidate = null;
       }
       if (!grabbed && pinchIntent && !grabIntentActive) {
-        // 意图出现的瞬间保留上一帧的选物结果与位置，统一停留 0.2 秒。
+        // 先回看抓取动作前最近指向的物体；不冻结光标，也不等待计时器。
         grabIntentActive = true;
-        grabPausePending = true;
-        grabPauseUntil = now + GRAB_INTENT_HOLD_MS;
-        pausedCursor.set(smoothedCursorX ?? cursorTargetX ?? indexX, smoothedCursorY ?? cursorTargetY ?? indexY);
-        if (!grabCandidate) {
-          setPointerFromScreen(pausedCursor.x, pausedCursor.y);
-          updateHover();
-        }
+        intentCandidate = recentHoverTarget(now);
       }
-
-      const pausing = now < grabPauseUntil;
-      if (grabbed && (grabNeedsReanchor || (grabPausePending && !pausing))) {
-        // 停留结束后从当前手掌建立相对基准，不补算闭合期间的抖动。
-        const anchorX = grabPausePending ? pausedCursor.x : (smoothedCursorX ?? indexX);
-        const anchorY = grabPausePending ? pausedCursor.y : (smoothedCursorY ?? indexY);
+      if (grabbed && grabNeedsReanchor) {
+        const anchorX = smoothedCursorX ?? indexX;
+        const anchorY = smoothedCursorY ?? indexY;
         grabPointerOffset.set(anchorX - palm.x, anchorY - palm.y);
         setPointerFromScreen(anchorX, anchorY);
         if (raycaster.ray.intersectPlane(dragPlane, planeHit)) {
@@ -1258,24 +1265,27 @@
         dragTarget.copy(movable.position);
         anchorGripOrientation(pose);
         grabNeedsReanchor = false;
-        if (!pausing) grabPausePending = false;
       }
-      cursorTargetX = pausing ? pausedCursor.x : (grabbed ? palm.x + grabPointerOffset.x : indexX);
-      cursorTargetY = pausing ? pausedCursor.y : (grabbed ? palm.y + grabPointerOffset.y : indexY);
+      cursorTargetX = grabbed ? palm.x + grabPointerOffset.x : indexX;
+      cursorTargetY = grabbed ? palm.y + grabPointerOffset.y : indexY;
       setPointerFromScreen(cursorTargetX, cursorTargetY);
       if (!grabbed && !pinchIntent) updateHover();
-      if (!grabbed && pinchingNow && beginGrab()) {
+      if (!grabbed && pinchIntent && !intentCandidate) {
+        // 没有历史目标时，仍可直接对准物体抓取，空处不会自动吸附。
+        updateHover();
+        intentCandidate = recentHoverTarget(now);
+      }
+      if (!grabbed && pinchingNow && beginGrab(intentCandidate)) {
         grabPointerOffset.set(cursorTargetX - palm.x, cursorTargetY - palm.y);
         anchorGripOrientation(pose);
-        grabPausePending = pausing;
       } else if (grabbed && openPalmNow) {
         finishGrab();
         grabIntentActive = false;
-        grabPauseUntil = 0;
-        grabPausePending = false;
+        intentCandidate = null;
+        hoverHistory.length = 0;
       }
       setCursorPose(grabbed ? (openPalmNow ? "release" : "grab") : "select");
-      if (grabbed && !openPalmNow && !pausing) {
+      if (grabbed && !openPalmNow) {
         updateGrabPosition();
         if (updateGripOrientation(pose)) setCursorPose("rotate");
       }
@@ -1400,7 +1410,7 @@
       puzzleGroup.rotation.y = THREE.MathUtils.lerp(puzzleGroup.rotation.y, targetPuzzleRotationY, 1 - Math.exp(-dt / .055));
       updateSmoothCursor(dt);
       updateSmoothDrag(dt);
-      if (!grabbed && tutorialStarted && performance.now() >= grabPauseUntil && movable.position.distanceTo(target.position) > .01) {
+      if (!grabbed && tutorialStarted && movable.position.distanceTo(target.position) > .01) {
         movable.position.y += Math.sin(t * 1.8) * .0007;
       }
       if (grabbed) {
