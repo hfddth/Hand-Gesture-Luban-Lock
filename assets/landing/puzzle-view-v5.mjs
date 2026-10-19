@@ -101,7 +101,7 @@ async function init() {
     const { width, height } = host.getBoundingClientRect();
     if (!width || !height) return;
     const aspect = width / height;
-    const half = 3.6;
+    const half = 3.35;
     camera.left = -half * Math.max(1, aspect);
     camera.right = half * Math.max(1, aspect);
     camera.top = half * Math.max(1, 1 / aspect);
@@ -118,7 +118,18 @@ async function init() {
 }
 
 async function loadWood(T) {
-  const texture = await new T.TextureLoader().loadAsync(new URL('./wood-albedo-v5.svg', import.meta.url).href);
+  const source = await new T.TextureLoader().loadAsync(new URL('./wood-albedo-v5.svg', import.meta.url).href);
+  // 以均匀暖木色为底，只保留细微纹理，表现细磨后的光滑木面。
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024; canvas.height = 384;
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#bb834b';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.globalAlpha = .22;
+  context.filter = 'blur(0.65px) saturate(0.7)';
+  context.drawImage(source.image, 0, 0, canvas.width, canvas.height);
+  source.dispose();
+  const texture = new T.CanvasTexture(canvas);
   texture.colorSpace = T.SRGBColorSpace;
   texture.wrapS = texture.wrapT = T.RepeatWrapping;
   texture.anisotropy = 4;
@@ -134,8 +145,8 @@ function makeWood(T) {
   const noise = () => { seed = (Math.imul(seed, 1664525) + 1013904223) | 0; return (seed >>> 0) / 4294967296; };
   for (let y = 0; y < 256; y++) for (let x = 0; x < 1024; x++) {
     const wave = y + Math.sin(x * .006 + y * .03) * 8 + Math.sin(x * .019) * 1.5;
-    const grain = Math.sin(wave * .6) * 10 + Math.sin(wave * 2.8) * 4;
-    const pore = noise() > .996 ? -46 : (noise() - .5) * 9;
+    const grain = Math.sin(wave * .6) * 2.4 + Math.sin(wave * 2.8) * .8;
+    const pore = (noise() - .5) * 2;
     const i = (y * 1024 + x) * 4;
     data.data[i] = 182 + grain + pore;
     data.data[i + 1] = 101 + grain * .72 + pore;
@@ -211,7 +222,7 @@ function buildLock(T, root, texture) {
     geometry.setAttribute('normal',new T.Float32BufferAttribute(normals,3));
     geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
     geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));
-    const material=new T.MeshStandardMaterial({map:texture,bumpMap:texture,bumpScale:.035,color:0xffffff,vertexColors:true,roughness:.48,metalness:.01});
+    const material=new T.MeshStandardMaterial({map:texture,bumpMap:texture,bumpScale:.0015,color:0xffffff,vertexColors:true,roughness:.82,metalness:0});
     const mesh=new T.Mesh(geometry,material);mesh.castShadow=true;mesh.receiveShadow=true;root.add(mesh);
   });
 }
