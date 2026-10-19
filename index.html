@@ -1,81 +1,238 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>榫卯迷局｜鲁班锁解密</title><link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%23151510'/%3E%3Ctext x='12' y='48' font-size='44' fill='%23d7a94b'%3E锁%3C/text%3E%3C/svg%3E">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0d0c">
+  <meta name="description" content="掌中榫局——用自然手势探索传统榫卯结构的三维互动体验。">
+  <title>掌中榫局｜手势交互解密</title>
+  <link rel="stylesheet" href="assets/landing/hero-image.css?v=1">
   <style>
-    :root{--ink:#eee7d6;--muted:#aaa38f;--gold:#d7a94b;--jade:#62b49a;--panel:rgba(18,18,14,.82)}
-    *{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:#0d0d0a;color:var(--ink);font-family:"Microsoft YaHei",sans-serif}
-    #scene{position:fixed;inset:0}canvas{display:block}.brand{position:fixed;left:28px;top:24px;z-index:5;letter-spacing:.2em}.brand b{font:600 23px Georgia,serif}.brand small{display:block;margin-top:6px;color:var(--muted);font-size:11px;letter-spacing:.3em}
-    .panel{position:fixed;z-index:5;background:var(--panel);border:1px solid rgba(215,169,75,.28);backdrop-filter:blur(14px);box-shadow:0 18px 55px #0008}
-    #mission{left:28px;bottom:28px;width:min(350px,calc(100vw - 56px));padding:22px 23px;border-radius:4px}.eyebrow{color:var(--gold);font-size:11px;letter-spacing:.28em}.panel h2{margin:10px 0 8px;font:500 25px Georgia,"STSong",serif}.panel p{margin:0;color:var(--muted);font-size:13px;line-height:1.7}.progress{height:3px;background:#ffffff16;margin:18px 0 12px}.progress i{display:block;width:0;height:100%;background:linear-gradient(90deg,var(--gold),var(--jade));transition:.5s}.row{display:flex;justify-content:space-between;color:#cbc3ad;font-size:12px}.hint{margin-top:15px;padding-top:14px;border-top:1px solid #ffffff12;color:#d9c79b;font-size:13px;line-height:1.6}
-    #cameraBox{right:26px;top:24px;width:220px;height:160px;border-radius:4px;overflow:hidden}video,#hand{position:absolute;width:100%;height:100%;object-fit:cover;transform:scaleX(-1)}body.no-mirror video,body.no-mirror #hand{transform:none}#hand{z-index:2}.camShade{position:absolute;inset:0;z-index:3;display:grid;place-items:center;background:#111d;color:var(--muted);font-size:12px;text-align:center}.camStatus{position:absolute;z-index:4;left:10px;top:9px;padding:5px 8px;background:#0009;color:#ddd;font-size:10px;letter-spacing:.12em}.camStatus.live{color:#8ee0c8}.controls{position:fixed;right:26px;top:196px;z-index:5;display:grid;gap:8px;width:220px}.controls button{height:40px;border:1px solid #d7a94b55;background:#171711df;color:#e8ddc3;cursor:pointer;letter-spacing:.12em}.controls button:hover{border-color:var(--gold);background:#242017}
-    #gestureState{position:fixed;left:50%;top:28px;transform:translateX(-50%);z-index:6;padding:9px 16px;border:1px solid #ffffff18;background:#111b;color:#c9c1ae;font-size:12px;letter-spacing:.08em;border-radius:20px;transition:.2s}#gestureState.active{border-color:var(--jade);color:#9ce7d1}
-    #cursor{--flip:1;position:fixed;z-index:10;width:76px;height:102px;pointer-events:none;transform:translate(-50%,-48%);opacity:0;transition:opacity .15s}#cursor.visible{opacity:1}#cursor.right{--flip:-1}#cursor .glove-icon{width:76px;height:101px;background-image:url("assets/gesture-gloves/cartoon-glove-gestures.png?v=2");background-repeat:no-repeat;background-size:400% 100%;background-position-y:center;transform:scaleX(var(--flip));transform-origin:center;filter:drop-shadow(0 4px 5px #000b) drop-shadow(0 0 2px #fff7);transition:filter .16s,transform .16s}#cursor.pose-select .glove-icon{background-position-x:0;animation:gloveFloat 1.2s ease-in-out infinite}#cursor.pose-grab .glove-icon{background-position-x:33.333%;transform:scaleX(var(--flip)) scale(.88);filter:drop-shadow(0 0 8px #d7a94bcc) drop-shadow(0 4px 5px #000b)}#cursor.pose-release .glove-icon{background-position-x:66.667%;animation:gloveRelease .38s ease-out infinite alternate}#cursor.pose-rotate .glove-icon{background-position-x:100%;animation:gloveRotate 1s ease-in-out infinite}#cursor .hand-label{position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);white-space:nowrap;padding:3px 8px;border-radius:10px;background:#10110eee;border:1px solid #ffffff42;color:#fff;font-size:10px;font-weight:600;letter-spacing:.08em;box-shadow:0 3px 9px #0008}#cursor.pose-grab .hand-label,#cursor.pose-release .hand-label{color:#f5d98d;border-color:#d7a94b99}#cursor.pose-rotate .hand-label{color:#9ce7d1;border-color:#62b49a99}@keyframes gloveFloat{50%{transform:scaleX(var(--flip)) translateY(-3px)}}@keyframes gloveRelease{to{transform:scaleX(var(--flip)) scale(1.08);filter:drop-shadow(0 0 9px #d7a94bcc) drop-shadow(0 4px 5px #000b)}}@keyframes gloveRotate{25%{transform:scaleX(var(--flip)) rotate(-5deg)}75%{transform:scaleX(var(--flip)) rotate(5deg)}}.toast{position:fixed;z-index:12;left:50%;bottom:42px;transform:translate(-50%,20px);padding:11px 18px;background:#12120fee;border:1px solid #d7a94b66;opacity:0;transition:.25s;pointer-events:none;font-size:13px}.toast.show{opacity:1;transform:translate(-50%,0)}
-    .overlay{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:radial-gradient(circle at 50% 42%,#292317ee,#090908fa)}.overlay.hidden{display:none}.card{width:min(570px,calc(100vw - 40px));padding:44px;text-align:center;border:1px solid #d7a94b55;background:#151510e8}.seal{width:58px;height:58px;margin:auto;border:1px solid var(--gold);display:grid;place-items:center;color:var(--gold);font:28px Georgia}.card h1{font:500 38px Georgia,"STSong",serif;letter-spacing:.12em;margin:18px 0 10px}.card p{color:var(--muted);line-height:1.8;font-size:14px}.card button{margin-top:22px;padding:13px 32px;background:var(--gold);border:0;color:#18140c;font-weight:700;cursor:pointer;letter-spacing:.15em}
-    @media(max-width:720px){.brand{left:18px;top:16px}#cameraBox{width:150px;height:110px;right:14px;top:14px}.controls{right:14px;top:132px;width:150px}.controls button{font-size:11px}#mission{left:14px;bottom:14px;width:calc(100vw - 28px);padding:16px}.panel h2{font-size:20px}#gestureState{top:170px}}
+    :root {
+      --paper: #f4ead0;
+      --gold: #e2b95f;
+      --gold-soft: #ffe4a2;
+      --ink: #090b0a;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: var(--ink);
+      color: var(--paper);
+      font-family: "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+    }
+
+    .hero {
+      position: relative;
+      min-height: 100%;
+      isolation: isolate;
+      background:
+        linear-gradient(90deg, rgba(5, 8, 7, .98) 0%, rgba(5, 8, 7, .94) 28%, rgba(5, 8, 7, .76) 43%, rgba(5, 8, 7, .12) 68%, rgba(5, 8, 7, .08) 100%),
+        var(--hero-image) center / cover no-repeat;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      background:
+        radial-gradient(circle at 69% 67%, rgba(236, 164, 61, .2), transparent 26%),
+        linear-gradient(180deg, rgba(0, 0, 0, .14), transparent 45%, rgba(0, 0, 0, .34));
+      pointer-events: none;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 4;
+      opacity: .08;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.78' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.35'/%3E%3C/svg%3E");
+      mix-blend-mode: soft-light;
+    }
+
+    .masthead {
+      position: absolute;
+      top: clamp(24px, 4.5vh, 58px);
+      left: clamp(24px, 5vw, 78px);
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .brand-mark {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--gold-soft);
+      color: var(--gold-soft);
+      font: 500 24px "STKaiti", "KaiTi", serif;
+      transform: rotate(30deg);
+      box-shadow: 0 0 20px rgba(226, 185, 95, .12);
+    }
+
+    .brand-mark span { transform: rotate(-30deg); }
+
+    .brand-name {
+      font-family: "STKaiti", "KaiTi", serif;
+      font-size: clamp(19px, 1.8vw, 29px);
+      letter-spacing: .16em;
+      text-shadow: 0 2px 14px rgba(0, 0, 0, .8);
+    }
+
+    .copy {
+      position: absolute;
+      left: clamp(28px, 8.7vw, 146px);
+      top: 50%;
+      z-index: 5;
+      width: min(630px, 44vw);
+      transform: translateY(-45%);
+    }
+
+    .title-wrap { position: relative; display: inline-block; }
+
+    h1 {
+      margin: 0;
+      color: #fff3d4;
+      font: 600 clamp(62px, 8vw, 132px) "STKaiti", "KaiTi", "FangSong", serif;
+      line-height: .98;
+      letter-spacing: .04em;
+      text-shadow: 0 5px 0 rgba(125, 75, 25, .65), 0 15px 38px rgba(0, 0, 0, .75);
+    }
+
+    .cloud {
+      position: absolute;
+      right: -76px;
+      bottom: -18px;
+      width: 148px;
+      height: 35px;
+      border-radius: 60% 40% 55% 45%;
+      background: linear-gradient(90deg, transparent, rgba(30, 116, 102, .82));
+      filter: drop-shadow(0 4px 7px rgba(0, 0, 0, .7));
+      transform: skewX(-18deg);
+    }
+
+    .mode {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin: 34px 0 18px;
+      color: #f0dfae;
+      font-family: "STSong", "SimSun", serif;
+      font-size: clamp(18px, 2vw, 30px);
+      letter-spacing: .25em;
+    }
+
+    .mode::before, .mode::after {
+      content: "";
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold));
+      opacity: .8;
+    }
+
+    .mode::before { width: 95px; }
+    .mode::after { width: 58px; background: linear-gradient(90deg, var(--gold), transparent); }
+
+    .tagline {
+      margin: 0 0 40px 112px;
+      color: rgba(244, 234, 208, .82);
+      font-family: "STSong", "SimSun", serif;
+      font-size: clamp(15px, 1.4vw, 22px);
+      letter-spacing: .12em;
+    }
+
+    .start-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      min-width: 300px;
+      margin-left: 112px;
+      padding: 17px 34px;
+      border: 1px solid rgba(101, 61, 17, .5);
+      border-radius: 999px;
+      color: #261b0c;
+      background: linear-gradient(180deg, #fff8e4, #efd9a4);
+      box-shadow: 0 0 0 3px rgba(255, 234, 184, .35), 0 14px 42px rgba(0, 0, 0, .42);
+      font-family: "STSong", "SimSun", serif;
+      font-size: 24px;
+      letter-spacing: .08em;
+      text-decoration: none;
+      transition: transform .22s ease, box-shadow .22s ease, filter .22s ease;
+    }
+
+    .start-button:hover {
+      transform: translateY(-3px);
+      filter: brightness(1.04);
+      box-shadow: 0 0 0 3px rgba(255, 234, 184, .52), 0 18px 50px rgba(0, 0, 0, .5);
+    }
+
+    .start-button:active { transform: translateY(0); }
+    .start-button .arrow { font-family: system-ui, sans-serif; font-size: 30px; line-height: 1; }
+
+    .footer-note {
+      position: absolute;
+      left: clamp(24px, 5vw, 78px);
+      bottom: 26px;
+      z-index: 5;
+      color: rgba(244, 234, 208, .44);
+      font-size: 10px;
+      letter-spacing: .24em;
+    }
+
+    @media (max-width: 820px) {
+      .hero {
+        background:
+          linear-gradient(180deg, rgba(5, 8, 7, .18), rgba(5, 8, 7, .45) 44%, rgba(5, 8, 7, .98) 73%),
+          var(--hero-image) 65% center / cover no-repeat;
+      }
+
+      .masthead { top: 20px; left: 20px; }
+      .brand-mark { width: 40px; height: 40px; font-size: 19px; }
+      .copy { left: 24px; right: 24px; top: auto; bottom: 64px; width: auto; transform: none; }
+      h1 { font-size: clamp(54px, 17vw, 82px); }
+      .cloud { right: -18px; width: 100px; }
+      .mode { margin: 20px 0 13px; font-size: 17px; gap: 10px; }
+      .mode::before { width: 42px; }
+      .mode::after { width: 30px; }
+      .tagline { margin: 0 0 24px; font-size: 14px; }
+      .start-button { min-width: 230px; margin-left: 0; padding: 14px 28px; font-size: 20px; }
+      .footer-note { display: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .start-button { transition: none; }
+    }
   </style>
 </head>
 <body>
-  <div id="scene"></div><div class="brand"><b>榫卯迷局</b><small>鲁班锁解密实验</small></div>
-  <div id="gestureState">等待手势 · 鼠标亦可操作</div><div id="cursor" class="right pose-select"><div class="glove-icon" aria-hidden="true"></div><span class="hand-label">右手 · 选择</span></div>
-  <section id="cameraBox" class="panel"><video id="video" playsinline></video><canvas id="hand"></canvas><div class="camStatus" id="camStatus">摄像头关闭</div><div class="camShade" id="camShade">开启摄像头<br>体验隔空解密</div></section>
-  <div class="controls"><button id="cameraBtn">开启手势识别</button><button id="mirrorBtn">镜像交互：开</button><button id="hintBtn">查看线索</button><button id="resetBtn">重新布锁</button></div>
-  <section id="mission" class="panel"><div class="eyebrow">解密任务</div><h2 id="stageTitle">找出第一根活榫</h2><p>按正确顺序抽出六根榫木。被锁住的构件只能轻微移动，活榫可以沿自身方向抽离。</p><div class="progress"><i id="bar"></i></div><div class="row"><span id="count">已解开 0 / 6</span><span id="attempts">试探 0 次</span></div><div class="hint" id="hint">观察顶部：第一根活榫带有最亮的端纹。</div></section>
-  <div class="toast" id="toast"></div>
-  <div class="overlay" id="intro"><div class="card"><div class="seal">锁</div><h1>六木相制</h1><p>从基础抓取与放置开始，再学习用张开的手掌托住并旋转整个鲁班锁。</p><button id="startBtn">进入手势教程</button></div></div>
-  <div class="overlay hidden" id="success"><div class="card"><div class="seal">解</div><h1>榫卯尽开</h1><p>六根构件依序分离，鲁班锁已破解。</p><button id="againBtn">再次解密</button></div></div>
-  <script src="https://unpkg.com/@mediapipe/hands/hands.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js'"></script><script src="https://unpkg.com/@mediapipe/camera_utils/camera_utils.js" onerror="this.onerror=null;this.src='https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js'"></script>
-  <script type="module">
-    let THREE;
-    try{THREE=await import("https://unpkg.com/three@0.160.0/build/three.module.js")}catch(primaryError){try{THREE=await import("https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js")}catch(fallbackError){document.getElementById("gestureState").textContent="3D资源加载失败 · 请使用系统浏览器打开";document.getElementById("gestureState").classList.add("active");throw fallbackError}}
-    const $=id=>document.getElementById(id), sceneEl=$("scene"),video=$("video"),handCanvas=$("hand"),ctx=handCanvas.getContext("2d"),cursor=$("cursor"),toastEl=$("toast"),gestureState=$("gestureState");
-    const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x0d0d0a,.038);const camera=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,.1,100);camera.position.set(0,2.2,13);camera.lookAt(0,0,0);
-    const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.shadowMap.enabled=true;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.12;sceneEl.appendChild(renderer.domElement);
-    scene.add(new THREE.HemisphereLight(0xe5d8b8,0x17130d,1.6));const key=new THREE.SpotLight(0xffd892,75,32,Math.PI/5,.5,1.3);key.position.set(-5,9,7);key.castShadow=true;scene.add(key);const rim=new THREE.PointLight(0x62b49a,18,20);rim.position.set(7,2,-4);scene.add(rim);
-    const floor=new THREE.Mesh(new THREE.PlaneGeometry(35,35),new THREE.MeshStandardMaterial({color:0x12120e,roughness:.95}));floor.rotation.x=-Math.PI/2;floor.position.y=-3.2;floor.receiveShadow=true;scene.add(floor);const grid=new THREE.GridHelper(30,30,0x5b5035,0x24231c);grid.position.y=-3.18;grid.material.opacity=.24;grid.material.transparent=true;scene.add(grid);
-    const world=new THREE.Group();scene.add(world);let targetWorldRotX=.16,targetWorldRotY=-.35;world.rotation.set(targetWorldRotX,targetWorldRotY,0);
-    function wood(c){return new THREE.MeshStandardMaterial({color:c,roughness:.58,metalness:.03,emissive:0x000000})}
-    function pieceMesh(mat){const g=new THREE.Group(),parts=[[-1.9,1.8],[0,1.15],[1.9,1.8]];for(const [x,w] of parts){const m=new THREE.Mesh(new THREE.BoxGeometry(w,.72,.72,2,1,1),mat);m.position.x=x;m.castShadow=true;m.receiveShadow=true;g.add(m)}const tooth=new THREE.Mesh(new THREE.BoxGeometry(.62,1.02,.72),mat);tooth.position.y=.15;tooth.castShadow=true;g.add(tooth);return g}
-    const defs=[
-      {name:"天衡",axis:[1,0,0],pos:[0,.55,0],rot:[0,0,0],c:0xbd7840},
-      {name:"地衡",axis:[-1,0,0],pos:[0,-.55,0],rot:[0,0,0],c:0x9c5b31},
-      {name:"左柱",axis:[0,1,0],pos:[-.55,0,.42],rot:[0,0,Math.PI/2],c:0xaa6636},
-      {name:"右柱",axis:[0,-1,0],pos:[.55,0,-.42],rot:[0,0,Math.PI/2],c:0xc27a43},
-      {name:"前穿",axis:[0,0,1],pos:[.1,.12,.58],rot:[0,Math.PI/2,0],c:0x8f4e29},
-      {name:"后穿",axis:[0,0,-1],pos:[-.1,-.12,-.58],rot:[0,Math.PI/2,0],c:0xb56c38}
-    ];
-    const order=[0,4,3,1,5,2],clues=["观察顶部：第一根活榫带有最亮的端纹。","转动视角，抽出朝向你的前穿木。","右侧立柱已经松动，应向下退出。","底部横木失去约束，可以向左抽出。","背面的穿木现在可以向后脱离。","最后取出左柱，完成解锁。"];
-    const pieces=defs.map((d,i)=>{const group=pieceMesh(wood(d.c));group.position.fromArray(d.pos);group.rotation.set(...d.rot);world.add(group);const p={...d,i,group,home:group.position.clone(),axis:new THREE.Vector3(...d.axis),removed:false};group.traverse(o=>o.userData.piece=p);return p});
-    const ray=new THREE.Raycaster(),pointer=new THREE.Vector2(-9,-9),dragPlane=new THREE.Plane(),hitPoint=new THREE.Vector3(),tmp=new THREE.Vector3(),dragStart=new THREE.Vector3(),dragAnchor=new THREE.Vector3();let selected=null,candidate=null,candidateAt=0,hovered=null,dragTarget=new THREE.Vector3(),solved=0,tries=0,started=false,mouseDown=false,orbiting=false,lastMouse=new THREE.Vector2(),toastTimer;
-    function setPointer(x,y){pointer.set(x/innerWidth*2-1,-(y/innerHeight)*2+1);ray.setFromCamera(pointer,camera)}
-    function resolvePiece(o){while(o&&!o.userData.piece)o=o.parent;return o?.userData.piece||null}
-    function updateHover(){if(selected)return;const roots=pieces.filter(p=>!p.removed).map(p=>p.group),h=ray.intersectObjects(roots,true)[0];const p=h?resolvePiece(h.object):null;if(hovered!==p){if(hovered)hovered.group.traverse(o=>o.material?.emissive?.setHex(0));hovered=p;if(p)p.group.traverse(o=>o.material?.emissive?.setHex(0x332309))}if(p){candidate=p;candidateAt=performance.now()}}
-    function beginGrab(){if(!candidate||candidate.removed||performance.now()-candidateAt>1200)return false;selected=candidate;dragStart.copy(selected.group.position);dragTarget.copy(dragStart);frozenControlX=cursorX;frozenControlY=cursorY;palmOffsetX=0;palmOffsetY=0;grabFreezeUntil=performance.now()+300;camera.getWorldDirection(tmp);dragPlane.setFromNormalAndCoplanarPoint(tmp,selected.group.getWorldPosition(new THREE.Vector3()));if(ray.ray.intersectPlane(dragPlane,hitPoint))dragAnchor.copy(world.worldToLocal(hitPoint.clone()));else dragAnchor.copy(dragStart);gestureState.textContent=`已夹取「${selected.name}」· 两指张开释放`;gestureState.classList.add("active");showToast(`夹取已锁定「${selected.name}」`);return true}
-    function updateDrag(){if(!selected||!ray.ray.intersectPlane(dragPlane,hitPoint))return;const local=world.worldToLocal(hitPoint.clone()),delta=local.sub(dragAnchor),amount=THREE.MathUtils.clamp(delta.dot(selected.axis),0,3.5);const expected=order[solved]===selected.i,max=expected?3.5:.28;dragTarget.copy(dragStart).addScaledVector(selected.axis,Math.min(amount,max));if(!expected&&amount>.35)showToast("这根榫木仍被咬合，先找活榫")}
-    function release(){if(!selected)return;const p=selected,travel=p.group.position.clone().sub(p.home).dot(p.axis),correct=order[solved]===p.i;if(correct&&travel>1.25){p.removed=true;solved++;p.group.visible=false;showToast(`「${p.name}」已脱离`);updateUI();if(solved===6)setTimeout(()=>$("success").classList.remove("hidden"),550)}else{tries++;dragTarget.copy(p.home);p.group.position.copy(p.home);showToast(correct?"沿榫木方向再抽远一些":"顺序不对，这根木还被锁住");updateUI()}selected=null;candidate=null;hovered=null;gestureState.textContent="张掌转腕 · 旋转观察";gestureState.classList.remove("active")}
-    function updateUI(){$("count").textContent=`已解开 ${solved} / 6`;$('attempts').textContent=`试探 ${tries} 次`;$('bar').style.width=`${solved/6*100}%`;$('stageTitle').textContent=solved<6?`第 ${solved+1} 道榫：寻找活榫`:"鲁班锁已破解";$('hint').textContent=clues[Math.min(solved,5)]}
-    function reset(){solved=tries=0;selected=candidate=hovered=null;pieces.forEach(p=>{p.removed=false;p.group.visible=true;p.group.position.copy(p.home);p.group.scale.setScalar(1);p.group.traverse(o=>o.material?.emissive?.setHex(0))});targetWorldRotX=.16;targetWorldRotY=-.35;updateUI();$("success").classList.add("hidden");showToast("鲁班锁已复原")}
-    function showToast(t){toastEl.textContent=t;toastEl.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>toastEl.classList.remove("show"),1300)}
-    renderer.domElement.addEventListener("pointerdown",e=>{if(handVisible||!started)return;mouseDown=true;lastMouse.set(e.clientX,e.clientY);setPointer(e.clientX,e.clientY);updateHover();if(!beginGrab())orbiting=true});
-    renderer.domElement.addEventListener("pointermove",e=>{if(handVisible||!started)return;setPointer(e.clientX,e.clientY);if(!mouseDown)updateHover();else if(selected)updateDrag();else if(orbiting){targetWorldRotY+=(e.clientX-lastMouse.x)*.008;targetWorldRotX=THREE.MathUtils.clamp(targetWorldRotX+(e.clientY-lastMouse.y)*.006,-.9,.9);lastMouse.set(e.clientX,e.clientY)}});
-    window.addEventListener("pointerup",()=>{if(handVisible)return;if(selected)release();mouseDown=orbiting=false});renderer.domElement.addEventListener("wheel",e=>{camera.position.z=THREE.MathUtils.clamp(camera.position.z+Math.sign(e.deltaY)*.7,8.5,17)},{passive:true});
-    let handVisible=false,mirrorMode=true,marksSmooth=null,cursorX=null,cursorY=null,palmCursorX=null,palmCursorY=null,palmOffsetX=0,palmOffsetY=0,frozenControlX=0,frozenControlY=0,grabFreezeUntil=0,pinchSmooth=null,pinchFrames=0,openFrames=0,grabLatched=false,viewFrames=0,prevPalmYaw=null,prevPalmRoll=null,prevPalmX=null,prevPalmY=null;
-    function smooth(raw){if(!marksSmooth){marksSmooth=raw.map(p=>({...p}));return marksSmooth}raw.forEach((p,i)=>{const q=marksSmooth[i],speed=Math.hypot(p.x-q.x,p.y-q.y);const a=THREE.MathUtils.clamp(.27+speed*10,.27,.72);q.x+=(p.x-q.x)*a;q.y+=(p.y-q.y)*a;q.z+=(p.z-q.z)*a});return marksSmooth}
-    function openPalm(m){const w=m[0];let extended=0;for(const[t,j]of[[8,6],[12,10],[16,14],[20,18]])if(Math.hypot(m[t].x-w.x,m[t].y-w.y)>Math.hypot(m[j].x-w.x,m[j].y-w.y)*1.08)extended++;return extended>=3}
-    function cGrabPose(m,ratio){const w=m[0],indexOpen=Math.hypot(m[8].x-w.x,m[8].y-w.y)>Math.hypot(m[6].x-w.x,m[6].y-w.y)*1.08;let curled=0;for(const[t,j]of[[12,10],[16,14],[20,18]])if(Math.hypot(m[t].x-w.x,m[t].y-w.y)<Math.hypot(m[j].x-w.x,m[j].y-w.y)*1.1)curled++;return ratio>.52&&ratio<1.9&&indexOpen&&curled>=2}
-    function mirrorX(x){return mirrorMode?1-x:x}
-    function setCursorPose(pose,isLeft){cursor.classList.remove("pose-select","pose-grab","pose-release","pose-rotate");cursor.classList.add(`pose-${pose}`);const action={select:"选择",grab:"夹取",release:"释放",rotate:"旋转"}[pose];cursor.querySelector(".hand-label").textContent=`${isLeft?"左手":"右手"} · ${action}`}
-    function smoothCursor(x,y,tx,ty,min=.36){if(x===null)return[tx,ty];const d=Math.hypot(tx-x,ty-y),a=d>1.2?THREE.MathUtils.clamp(min+d/650,min,.72):0;return[x+(tx-x)*a,y+(ty-y)*a]}
-    function drawHand(m,w,h){ctx.clearRect(0,0,w,h);ctx.save();ctx.strokeStyle="#d7a94bdd";ctx.lineWidth=3;for(const[a,b]of[[0,5],[5,9],[9,13],[13,17],[0,17],[5,6],[6,7],[7,8],[9,10],[10,11],[11,12],[13,14],[14,15],[15,16],[17,18],[18,19],[19,20],[0,1],[1,2],[2,3],[3,4]]){ctx.beginPath();ctx.moveTo(m[a].x*w,m[a].y*h);ctx.lineTo(m[b].x*w,m[b].y*h);ctx.stroke()}ctx.restore()}
-    function handResults(r){const w=handCanvas.width=video.videoWidth||640,h=handCanvas.height=video.videoHeight||480,raw=r.multiHandLandmarks?.[0];handVisible=!!raw;cursor.classList.toggle("visible",handVisible);if(!raw){ctx.clearRect(0,0,w,h);openFrames=viewFrames=0;return}const modelHand=r.multiHandedness?.[0]?.label||"Left",physicalHand=modelHand==="Left"?"Right":"Left",isLeft=physicalHand==="Left";cursor.classList.toggle("left",isLeft);cursor.classList.toggle("right",!isLeft);const m=smooth(raw);drawHand(m,w,h);const idx=m[8],th=m[4],gripX=(idx.x+th.x)/2,gripY=(idx.y+th.y)/2,palmCenterX=(m[0].x+m[5].x+m[9].x+m[13].x+m[17].x)/5,palmCenterY=(m[0].y+m[5].y+m[9].y+m[13].y+m[17].y)/5;[cursorX,cursorY]=smoothCursor(cursorX,cursorY,mirrorX(gripX)*innerWidth,gripY*innerHeight,.4);[palmCursorX,palmCursorY]=smoothCursor(palmCursorX,palmCursorY,mirrorX(palmCenterX)*innerWidth,palmCenterY*innerHeight,.34);const palm=Math.max(.04,Math.hypot(m[5].x-m[17].x,m[5].y-m[17].y)),ratio=Math.hypot(idx.x-th.x,idx.y-th.y)/palm;pinchSmooth=pinchSmooth===null?ratio:THREE.MathUtils.lerp(pinchSmooth,ratio,.38);const pinch=pinchSmooth<.34,holding=pinchSmooth<.46,cPose=cGrabPose(m,pinchSmooth),isOpen=pinchSmooth>.57&&openPalm(m),wasSelected=!!selected,now=performance.now(),freezing=wasSelected&&now<grabFreezeUntil;if(freezing){palmOffsetX=frozenControlX-cursorX;palmOffsetY=frozenControlY-cursorY}const controlX=wasSelected?(freezing?frozenControlX:cursorX+palmOffsetX):isOpen?palmCursorX:cursorX,controlY=wasSelected?(freezing?frozenControlY:cursorY+palmOffsetY):isOpen?palmCursorY:cursorY,pose=wasSelected?(cPose?"release":"grab"):isOpen?"rotate":pinch?"grab":"select";cursor.style.left=controlX+'px';cursor.style.top=controlY+'px';setPointer(controlX,controlY);setCursorPose(pose,isLeft);
-      if(!selected){if(isOpen){if(hovered)hovered.group.traverse(o=>o.material?.emissive?.setHex(0));hovered=candidate=null}else if(cPose)updateHover();if(pinch){if(++pinchFrames>=2&&!grabLatched)grabLatched=beginGrab()}else{pinchFrames=0;grabLatched=false}}else{if(cPose){if(++openFrames>=3)release()}else openFrames=0;if(selected&&holding&&performance.now()>=grabFreezeUntil)updateDrag()}
-      if(!wasSelected&&isOpen){viewFrames++;const palmX=mirrorX((m[0].x+m[5].x+m[9].x+m[13].x+m[17].x)/5),palmY=(m[0].y+m[5].y+m[9].y+m[13].y+m[17].y)/5,yaw=Math.atan2(m[5].z-m[17].z,Math.abs(m[5].x-m[17].x)+.02),roll=Math.atan2(m[17].y-m[5].y,m[17].x-m[5].x);if(viewFrames>2&&prevPalmX!==null){let dx=THREE.MathUtils.clamp(palmX-prevPalmX,-.035,.035),dy=THREE.MathUtils.clamp(palmY-prevPalmY,-.035,.035),dYaw=THREE.MathUtils.clamp(yaw-prevPalmYaw,-.1,.1),dRoll=THREE.MathUtils.clamp(roll-prevPalmRoll,-.08,.08);if(Math.abs(dx)<.0015)dx=0;if(Math.abs(dy)<.0015)dy=0;targetWorldRotY+=dx*4.5+dYaw*(mirrorMode?-.9:.9);targetWorldRotX=THREE.MathUtils.clamp(targetWorldRotX+dy*3.3+dRoll*.25,-.9,.9);gestureState.textContent="观察模式 · 托住并移动手掌旋转";gestureState.classList.add("active")}prevPalmX=palmX;prevPalmY=palmY;prevPalmYaw=yaw;prevPalmRoll=roll}else{viewFrames=0;prevPalmX=prevPalmY=prevPalmYaw=prevPalmRoll=null;if(!selected){gestureState.textContent=cPose?"C 形手势 · 对准构件":"张掌托住 · 移动手掌旋转";gestureState.classList.toggle("active",cPose)}}
-    }
-    async function startCamera(){const b=$("cameraBtn");b.disabled=true;try{if(typeof Hands==="undefined"||typeof Camera==="undefined")throw new Error("手势资源未加载");const hands=new Hands({locateFile:f=>`https://unpkg.com/@mediapipe/hands/${f}`});hands.setOptions({maxNumHands:1,modelComplexity:1,minDetectionConfidence:.62,minTrackingConfidence:.68});hands.onResults(handResults);const cam=new Camera(video,{onFrame:async()=>hands.send({image:video}),width:640,height:480});await cam.start();$("camShade").style.display="none";$("camStatus").textContent="识别中";$("camStatus").classList.add("live");b.textContent="手势识别已开启"}catch(e){b.disabled=false;$("camStatus").textContent="开启失败";showToast("资源或摄像头不可用，请在系统浏览器中打开并允许权限");console.error(e)}}
-    $("startBtn").onclick=()=>{window.location.href="tutorial.html"};$("cameraBtn").onclick=startCamera;$("mirrorBtn").onclick=()=>{mirrorMode=!mirrorMode;document.body.classList.toggle("no-mirror",!mirrorMode);$("mirrorBtn").textContent=`镜像交互：${mirrorMode?"开":"关"}`;cursorX=cursorY=prevPalmX=prevPalmY=null;showToast(mirrorMode?"镜像交互已开启":"镜像交互已关闭")};$("hintBtn").onclick=()=>showToast(clues[Math.min(solved,5)]);$("resetBtn").onclick=reset;$("againBtn").onclick=()=>{reset();$("success").classList.add("hidden")};
-    const clock=new THREE.Clock();function animate(){requestAnimationFrame(animate);const t=clock.getElapsedTime();world.rotation.x=THREE.MathUtils.lerp(world.rotation.x,targetWorldRotX,.12);world.rotation.y=THREE.MathUtils.lerp(world.rotation.y,targetWorldRotY,.12);if(selected)selected.group.position.lerp(dragTarget,.38);pieces.forEach((p,i)=>{if(!p.removed&&!selected&&i===order[solved])p.group.scale.setScalar(1+Math.sin(t*2.5)*.006)});renderer.render(scene,camera)}animate();
-    addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});updateUI();
-  </script>
-</body></html>
+  <main class="hero">
+    <header class="masthead" aria-label="掌中榫局">
+      <div class="brand-mark" aria-hidden="true"><span>榫</span></div>
+      <div class="brand-name">掌中榫局</div>
+    </header>
+
+    <section class="copy" aria-labelledby="heroTitle">
+      <div class="title-wrap">
+        <h1 id="heroTitle">掌中榫局</h1>
+        <span class="cloud" aria-hidden="true"></span>
+      </div>
+      <div class="mode">手势交互解密</div>
+      <p class="tagline">以指为钥，探寻千年榫卯之美</p>
+      <a class="start-button" href="tutorial.html">开始体验 <span class="arrow" aria-hidden="true">→</span></a>
+    </section>
+
+    <div class="footer-note">HAND GESTURE · MORTISE AND TENON</div>
+  </main>
+</body>
+</html>
 
