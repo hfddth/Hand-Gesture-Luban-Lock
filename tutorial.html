@@ -560,7 +560,7 @@
     <div class="intro-card">
       <div class="intro-mark"><span>锁</span></div>
       <h1>鲁班锁 · 入门</h1>
-      <p>教程分为两部分：先学习指向、捏合、移动与放置，再用张开的手掌托住并旋转整个鲁班锁。</p>
+      <p>教程分为两部分：先学习指向、两指靠近抓取、移位、手腕转向与放置，再用张开的手掌托住并旋转整个鲁班锁。</p>
       <button type="button" id="startButton">开始教学</button>
       <span class="intro-note">推荐使用桌面版 Chrome 或 Edge，并允许摄像头权限</span>
     </div>
@@ -629,8 +629,8 @@
 
     const grabLessons = [
       ["壹 · 初识构件", "伸出食指，指向榫木", "将食指移动到发光的木构件上。识别成功后，构件边缘会变成金色。"],
-      ["贰 · 凌空取物", "捏合拇指与食指", "在指向构件时轻轻捏合一次即可锁定抓取，手指回弹也不会让构件脱落。"],
-      ["叁 · 移木就位", "移动手掌，靠近安装区", "抓取会持续保持。移动手掌，将木构件平稳带到中央虚线轮廓附近。"],
+      ["贰 · 凌空取物", "靠近拇指与食指即可抓取", "两指靠近或闭合即可锁定抓取。起手时停留 0.2 秒抵消抖动，随后移动手掌移位、转动手腕转向。"],
+      ["叁 · 移木就位", "移动手掌，靠近安装区", "抓取会持续保持。移动手掌调整位置，转动手腕调整构件朝向，再靠近中央虚线轮廓。"],
       ["肆 · 落榫成锁", "张开手掌，完成放置", "构件进入绿色容错范围后张开手掌即可释放，系统会自动对齐，不需要与虚线完全重合。"]
     ];
 
@@ -645,16 +645,20 @@
     let grabbed = false;
     let hovered = false;
     let grabCandidate = null;
-    let grabCandidateAt = 0;
-    let pinchStable = false;
-    let pinchFrames = 0;
-    let openPalmFrames = 0;
     let handVisible = false;
-    let missingHandFrames = 0;
-    let smoothedLandmarks = null;
     let smoothedCursorX = null;
     let smoothedCursorY = null;
-    let smoothedPinchRatio = null;
+    let grabNeedsReanchor = false;
+    const PINCH_GRAB_RATIO = .72;
+    const PINCH_INTENT_RATIO = .94;
+    const PALM_RELEASE_RATIO = 1.02;
+    const GRAB_INTENT_HOLD_MS = 200;
+    let grabIntentActive = false;
+    let grabPauseUntil = 0;
+    let grabPausePending = false;
+    let cursorTargetX = null;
+    let cursorTargetY = null;
+    const pausedCursor = new THREE.Vector2();
     let previousPalmPoint = null;
     let viewRotationAmount = 0;
     let rotationCompleted = false;
@@ -782,10 +786,13 @@
     const dragPlane = new THREE.Plane(new THREE.Vector3(0, 0, 1), -.35);
     const planeHit = new THREE.Vector3();
     const dragTarget = new THREE.Vector3();
-    const dragVelocity = new THREE.Vector3();
-    const dragDelta = new THREE.Vector3();
-    const DRAG_INPUT_DEADZONE = .035;
-    const DRAG_SETTLE_DISTANCE = .012;
+    const dragOffset = new THREE.Vector3();
+    const grabPointerOffset = new THREE.Vector2();
+    const gripStartHand = new THREE.Quaternion();
+    const gripStartObject = new THREE.Quaternion();
+    const gripFilteredHand = new THREE.Quaternion();
+    const targetGripQuaternion = new THREE.Quaternion();
+    let gripPoseReady = false;
     const initialPosition = movable.position.clone();
     const initialRotation = movable.rotation.clone();
 
@@ -857,7 +864,7 @@
         : "鼠标：按住拖动 · 旋转视角";
       if (cameraRunning) {
         actionHint.textContent = currentPart === 1
-          ? "摄像头模式：捏合锁定抓取 · 张开手掌释放"
+          ? "摄像头模式：两指靠近抓取 · 转腕调整朝向 · 张掌释放"
           : "摄像头模式：保持张掌 · 移动手掌旋转";
       }
     }
@@ -887,17 +894,17 @@
       tutorialStarted = true;
       currentPart = 1;
       grabbed = false;
+      gripPoseReady = false;
+      grabNeedsReanchor = false;
       hovered = false;
       grabCandidate = null;
-      grabCandidateAt = 0;
-      pinchStable = false;
-      pinchFrames = 0;
-      openPalmFrames = 0;
-      missingHandFrames = 0;
-      smoothedLandmarks = null;
       smoothedCursorX = null;
       smoothedCursorY = null;
-      smoothedPinchRatio = null;
+      cursorTargetX = null;
+      cursorTargetY = null;
+      grabIntentActive = false;
+      grabPauseUntil = 0;
+      grabPausePending = false;
       previousPalmPoint = null;
       viewRotationAmount = 0;
       rotationCompleted = false;
@@ -908,8 +915,10 @@
       mouseDown = false;
       movable.position.copy(initialPosition);
       dragTarget.copy(initialPosition);
-      dragVelocity.set(0, 0, 0);
       movable.rotation.copy(initialRotation);
+      targetGripQuaternion.copy(movable.quaternion);
+      dragOffset.set(0, 0, 0);
+      grabPointerOffset.set(0, 0);
       movable.scale.setScalar(1);
       movable.material.emissive.setHex(0x000000);
       target.material.opacity = .25;
@@ -932,11 +941,8 @@
       if (!tutorialStarted || currentPart !== 1 || grabbed) return;
       const hit = raycaster.intersectObject(movable, true).length > 0;
       hovered = hit;
-      if (hit) {
-        // 记录捏合前最后一次稳定指向，随后捏合造成的手指抖动不会改变选择。
-        grabCandidate = movable;
-        grabCandidateAt = performance.now();
-      }
+      // 正常指向更新选择；进入 0.2 秒停留期间不再改选。
+      grabCandidate = hit ? movable : null;
       edges.material.opacity = THREE.MathUtils.lerp(edges.material.opacity, hit ? .95 : 0, .24);
       movable.material.emissive.setHex(hit ? 0x3b2b0c : 0x000000);
       if (hit && currentStep === 0) {
@@ -946,17 +952,21 @@
     }
 
     function beginGrab() {
-      const candidateIsFresh = grabCandidate === movable && performance.now() - grabCandidateAt < 700;
-      if (!candidateIsFresh || grabbed || !tutorialStarted || currentPart !== 1) return false;
+      const hasCandidate = grabCandidate === movable;
+      if (!hasCandidate || grabbed || !tutorialStarted || currentPart !== 1) return false;
       grabbed = true;
-      pinchStable = true;
-      openPalmFrames = 0;
+      gripPoseReady = false;
+      targetGripQuaternion.copy(movable.quaternion);
+      dragOffset.set(0, 0, 0);
+      if (raycaster.ray.intersectPlane(dragPlane, planeHit)) {
+        puzzleGroup.worldToLocal(planeHit);
+        dragOffset.copy(movable.position).sub(planeHit);
+      }
       dragTarget.copy(movable.position);
-      dragVelocity.set(0, 0, 0);
       movable.scale.setScalar(1.035);
       edges.material.opacity = 1;
       nextStep(1);
-      showToast("抓取已锁定，张开手掌才会释放");
+      showToast("已抓住：移动手掌移位，转动手腕转向，张掌释放");
       return true;
     }
 
@@ -964,12 +974,9 @@
       if (!grabbed) return;
       if (!raycaster.ray.intersectPlane(dragPlane, planeHit)) return;
       puzzleGroup.worldToLocal(planeHit);
-      planeHit.x = THREE.MathUtils.clamp(planeHit.x, -5.2, 5.2);
-      planeHit.y = THREE.MathUtils.clamp(planeHit.y, -2.4, 3.6);
-      // 输入端设置死区：手指的微小抖动不会持续改写目标位置。
-      if (dragTarget.distanceTo(planeHit) > DRAG_INPUT_DEADZONE) {
-        dragTarget.copy(planeHit);
-      }
+      planeHit.add(dragOffset);
+      // 保留手掌的大致位置，仅在渲染端做一次平滑。
+      dragTarget.copy(planeHit);
       const targetDistance = dragTarget.distanceTo(target.position);
       inSnapRange = targetDistance < POSITION_TOLERANCE;
       target.material.color.setHex(inSnapRange ? 0x62b49a : 0xd7a94b);
@@ -980,36 +987,92 @@
       }
     }
 
-    function updateSmoothDrag() {
-      if (!grabbed) return;
-      dragDelta.copy(dragTarget).sub(movable.position);
-      const distance = dragDelta.length();
-      if (distance > DRAG_SETTLE_DISTANCE) {
-        // 弹性速度追踪让摄像头的低帧率坐标在渲染帧之间形成连续路线。
-        const response = THREE.MathUtils.clamp(.18 + distance * .035, .18, .42);
-        dragDelta.multiplyScalar(response);
-        dragVelocity.lerp(dragDelta, .5);
+    function updateSmoothCursor(dt) {
+      if (!handVisible || cursorTargetX === null) return;
+      if (smoothedCursorX === null || performance.now() < grabPauseUntil) {
+        smoothedCursorX = cursorTargetX;
+        smoothedCursorY = cursorTargetY;
       } else {
-        dragVelocity.multiplyScalar(.58);
+        const alpha = 1 - Math.exp(-dt / .04);
+        smoothedCursorX += (cursorTargetX - smoothedCursorX) * alpha;
+        smoothedCursorY += (cursorTargetY - smoothedCursorY) * alpha;
       }
-      if (dragVelocity.length() > .34) dragVelocity.setLength(.34);
-      if (distance < DRAG_SETTLE_DISTANCE && dragVelocity.length() < .0015) {
-        dragVelocity.set(0, 0, 0);
-        return;
-      }
-      movable.position.add(dragVelocity);
+      cursorEl.style.left = `${smoothedCursorX}px`;
+      cursorEl.style.top = `${smoothedCursorY}px`;
+    }
+
+    function updateSmoothDrag(dt) {
+      if (!grabbed || performance.now() < grabPauseUntil) return;
+      // 轨迹只有一次平滑，无死区、速度上限或每帧位移限制。
+      const alpha = 1 - Math.exp(-dt / .035);
+      movable.position.lerp(dragTarget, alpha);
+      movable.quaternion.slerp(targetGripQuaternion, alpha);
+    }
+
+    function getPalmCenter(marks) {
+      const ids = [0, 5, 9, 13, 17];
+      const center = ids.reduce((p, id) => ({ x: p.x + marks[id].x, y: p.y + marks[id].y }), { x: 0, y: 0 });
+      return { x: (1 - center.x / ids.length) * innerWidth, y: center.y / ids.length * innerHeight };
+    }
+
+    function measurePinch(marks, worldMarks = null) {
+      const points = worldMarks || marks;
+      const aspect = worldMarks ? 1 : (video.videoWidth || 640) / (video.videoHeight || 480);
+      const distance = (a, b) => Math.hypot(
+        (points[a].x - points[b].x) * aspect,
+        points[a].y - points[b].y,
+        worldMarks ? (points[a].z || 0) - (points[b].z || 0) : 0
+      );
+      const palmSize = Math.max(worldMarks ? .015 : .04, distance(5, 17), distance(0, 9) * .8);
+      return distance(4, 8) / palmSize;
+    }
+
+    function getPalmOrientation(marks, worldMarks = null) {
+      const points = worldMarks || marks;
+      const aspect = worldMarks ? 1 : (video.videoWidth || 640) / (video.videoHeight || 480);
+      const point = i => new THREE.Vector3(-points[i].x * aspect, -points[i].y, -(points[i].z || 0) * aspect);
+      // 用掌骨构造姿态，不让捏合时指尖的变化控制旋转。
+      const across = point(5).sub(point(17));
+      const forward = point(9).sub(point(0));
+      if (across.lengthSq() < .000001 || forward.lengthSq() < .000001) return null;
+      across.normalize();
+      forward.addScaledVector(across, -forward.dot(across));
+      if (forward.lengthSq() < .000001) return null;
+      forward.normalize();
+      const normal = new THREE.Vector3().crossVectors(across, forward).normalize();
+      return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(across, forward, normal));
+    }
+
+    function anchorGripOrientation(pose) {
+      gripPoseReady = Boolean(pose);
+      if (!pose) return;
+      gripStartHand.copy(pose);
+      gripFilteredHand.copy(pose);
+      gripStartObject.copy(movable.quaternion);
+      targetGripQuaternion.copy(movable.quaternion);
+    }
+
+    function updateGripOrientation(pose) {
+      if (!pose) return false;
+      if (!gripPoseReady) { anchorGripOrientation(pose); return false; }
+      const before = gripFilteredHand.clone();
+      gripFilteredHand.copy(pose);
+      const delta = gripFilteredHand.clone().multiply(gripStartHand.clone().invert());
+      const parentWorld = puzzleGroup.getWorldQuaternion(new THREE.Quaternion());
+      const cameraToParent = parentWorld.invert().multiply(camera3d.quaternion);
+      const localDelta = cameraToParent.clone().multiply(delta).multiply(cameraToParent.clone().invert());
+      const next = localDelta.multiply(gripStartObject).normalize();
+      targetGripQuaternion.copy(next);
+      return before.angleTo(gripFilteredHand) > .012; // 仅用于显示“旋转”手套，不限制物体转动。
     }
 
     function finishGrab() {
       if (!grabbed || currentPart !== 1) return;
       grabbed = false;
+      gripPoseReady = false;
+      grabNeedsReanchor = false;
       hovered = false;
       grabCandidate = null;
-      grabCandidateAt = 0;
-      pinchStable = false;
-      pinchFrames = 0;
-      openPalmFrames = 0;
-      dragVelocity.set(0, 0, 0);
       movable.scale.setScalar(1);
       const distance = movable.position.distanceTo(target.position);
       if (distance < POSITION_TOLERANCE) {
@@ -1035,7 +1098,6 @@
       floorRing.material.opacity = 0;
       movable.material.emissive.setHex(0x000000);
       previousPalmPoint = null;
-      openPalmFrames = 0;
       viewRotationAmount = 0;
       rotationCompleted = false;
       targetPuzzleRotationX = .08;
@@ -1061,30 +1123,20 @@
       }, { x: 0, y: 0 });
       palm.x /= ids.length;
       palm.y /= ids.length;
-      cursorEl.style.left = `${palm.x * innerWidth}px`;
-      cursorEl.style.top = `${palm.y * innerHeight}px`;
+      cursorTargetX = palm.x * innerWidth;
+      cursorTargetY = palm.y * innerHeight;
       if (!openPalmNow) {
-        openPalmFrames = 0;
         previousPalmPoint = null;
         return;
       }
 
-      openPalmFrames++;
-      if (openPalmFrames >= 3 && currentStep === 0) {
+      if (currentStep === 0) {
         setStep(1);
         showToast("已托住，移动手掌旋转鲁班锁");
-      }
-      if (openPalmFrames < 3) {
-        previousPalmPoint = palm;
-        return;
       }
       if (previousPalmPoint) {
         let dx = palm.x - previousPalmPoint.x;
         let dy = palm.y - previousPalmPoint.y;
-        if (Math.abs(dx) < .002) dx = 0;
-        if (Math.abs(dy) < .002) dy = 0;
-        dx = THREE.MathUtils.clamp(dx, -.035, .035);
-        dy = THREE.MathUtils.clamp(dy, -.035, .035);
         targetPuzzleRotationY += dx * 4.8;
         targetPuzzleRotationX = THREE.MathUtils.clamp(targetPuzzleRotationX + dy * 3.8, -.85, .85);
         viewRotationAmount += Math.abs(dx) + Math.abs(dy);
@@ -1106,12 +1158,13 @@
         });
         hands.setOptions({
           maxNumHands: 1,
-          modelComplexity: 1,
+          modelComplexity: 0,
           minDetectionConfidence: .62,
           minTrackingConfidence: .68
         });
         hands.onResults(onHandResults);
         const inputCamera = new Camera(video, {
+          // Camera 等待本次识别结束再发送下一帧，避免积累过时帧。
           onFrame: async () => hands.send({ image: video }),
           width: 640,
           height: 480
@@ -1123,7 +1176,7 @@
         cameraStatus.classList.add("live");
         cameraButton.textContent = "摄像头已开启";
         actionHint.textContent = currentPart === 1
-          ? "摄像头模式：捏合锁定抓取 · 张开手掌释放"
+          ? "摄像头模式：两指靠近抓取 · 转腕调整朝向 · 张掌释放"
           : "摄像头模式：保持张掌 · 移动手掌旋转";
         showToast("摄像头已开启，请将手放入画面");
       } catch (error) {
@@ -1138,93 +1191,94 @@
     }
 
     function onHandResults(results) {
-      const width = handCanvas.width = video.videoWidth || 640;
-      const height = handCanvas.height = video.videoHeight || 480;
+      const width = video.videoWidth || 640;
+      const height = video.videoHeight || 480;
+      if (handCanvas.width !== width) handCanvas.width = width;
+      if (handCanvas.height !== height) handCanvas.height = height;
       handCtx.clearRect(0, 0, width, height);
-      const rawMarks = results.multiHandLandmarks?.[0];
-      handVisible = Boolean(rawMarks);
+      const marks = results.multiHandLandmarks?.[0];
+      handVisible = Boolean(marks);
       cursorEl.classList.toggle("visible", handVisible);
-      if (!rawMarks) {
-        missingHandFrames++;
-        pinchFrames = 0;
-        openPalmFrames = 0;
-        // 短暂丢失手部追踪时仍保持抓取，只让物体停在最后的稳定位置。
-        if (grabbed) dragVelocity.multiplyScalar(.55);
-        if (missingHandFrames > 12) resetTrackingFilters(grabbed);
+      if (!marks) {
+        // 遮挡时没有新位置，停在当前位置，重新识别后接续。
+        previousPalmPoint = null;
+        if (grabbed) {
+          grabNeedsReanchor = true;
+          dragTarget.copy(movable.position);
+          targetGripQuaternion.copy(movable.quaternion);
+        }
         return;
       }
-
-      missingHandFrames = 0;
-      const modelHand = results.multiHandedness?.[0]?.label || "Left";
-      detectedHandIsLeft = modelHand !== "Left";
-      const marks = smoothHandLandmarks(rawMarks);
+      const now = performance.now();
+      detectedHandIsLeft = (results.multiHandedness?.[0]?.label || "Left") !== "Left";
       drawSkeleton(marks, width, height);
-      const index = marks[8];
-      const thumb = marks[4];
-      const targetX = (1 - index.x) * innerWidth;
-      const targetY = index.y * innerHeight;
-      if (smoothedCursorX === null) {
-        smoothedCursorX = targetX;
-        smoothedCursorY = targetY;
-      } else {
-        const cursorDistance = Math.hypot(targetX - smoothedCursorX, targetY - smoothedCursorY);
-        if (cursorDistance > 1.2) {
-          const cursorAlpha = THREE.MathUtils.clamp(.42 + cursorDistance / 650, .42, .7);
-          smoothedCursorX += (targetX - smoothedCursorX) * cursorAlpha;
-          smoothedCursorY += (targetY - smoothedCursorY) * cursorAlpha;
-        }
-      }
-      const screenX = smoothedCursorX;
-      const screenY = smoothedCursorY;
-      cursorEl.style.left = `${screenX}px`;
-      cursorEl.style.top = `${screenY}px`;
-      setPointerFromScreen(screenX, screenY);
-
-      const pinchDistance = Math.hypot(index.x - thumb.x, index.y - thumb.y);
-      const palmSize = Math.max(.04, Math.hypot(marks[5].x - marks[17].x, marks[5].y - marks[17].y));
-      const pinchRatio = pinchDistance / palmSize;
-      smoothedPinchRatio = smoothedPinchRatio === null
-        ? pinchRatio
-        : THREE.MathUtils.lerp(smoothedPinchRatio, pinchRatio, .28);
-      const pinchingNow = smoothedPinchRatio < .34;
-      const pinchIntent = pinchRatio < .48 || pinchingNow;
-      const openPalmNow = smoothedPinchRatio > .58 && isOpenPalm(marks);
+      const palm = getPalmCenter(marks);
+      const worldMarks = results.multiHandWorldLandmarks?.[0];
+      const pose = getPalmOrientation(marks, worldMarks);
+      const pinchRatio = measurePinch(marks, worldMarks);
+      const pinchingNow = pinchRatio <= PINCH_GRAB_RATIO;
+      const pinchIntent = pinchRatio < PINCH_INTENT_RATIO;
+      const openPalmNow = pinchRatio > PALM_RELEASE_RATIO && isOpenPalm(marks);
       if (currentPart === 2) {
         setCursorPose(openPalmNow ? "rotate" : "select");
         updateViewRotationFromPalm(marks, openPalmNow);
         return;
       }
-      setCursorPose(grabbed ? (openPalmNow ? "release" : "grab") : (pinchingNow ? "grab" : "select"));
-      // 捏合开始后不再重新射线选物，沿用动作开始前锁定的候选构件。
-      if (!grabbed && !pinchIntent) updateHover();
 
-      if (!grabbed) {
-        openPalmFrames = 0;
-        if (pinchingNow) {
-          pinchFrames++;
-          if (!pinchStable && pinchFrames >= 2) {
-            if (!beginGrab()) pinchFrames = 0;
-          }
-        } else {
-          pinchFrames = 0;
-          pinchStable = false;
-        }
-      } else {
-        // 抓取是锁存状态：捏合松动、手指短暂遮挡都不会触发释放。
-        pinchStable = true;
-        pinchFrames = 0;
-        if (openPalmNow) {
-          openPalmFrames++;
-        } else {
-          openPalmFrames = 0;
-        }
-        if (openPalmFrames >= 4) {
-          finishGrab();
+      const indexX = (1 - marks[8].x) * innerWidth;
+      const indexY = marks[8].y * innerHeight;
+      if (!grabbed && !pinchIntent) {
+        grabIntentActive = false;
+        grabPausePending = false;
+        grabPauseUntil = 0;
+      }
+      if (!grabbed && pinchIntent && !grabIntentActive) {
+        // 意图出现的瞬间保留上一帧的选物结果与位置，统一停留 0.2 秒。
+        grabIntentActive = true;
+        grabPausePending = true;
+        grabPauseUntil = now + GRAB_INTENT_HOLD_MS;
+        pausedCursor.set(smoothedCursorX ?? cursorTargetX ?? indexX, smoothedCursorY ?? cursorTargetY ?? indexY);
+        if (!grabCandidate) {
+          setPointerFromScreen(pausedCursor.x, pausedCursor.y);
+          updateHover();
         }
       }
 
-      // 进入张掌释放姿势后冻结目标点，避免手指伸展把构件带离安装位置。
-      if (grabbed && !openPalmNow) updateGrabPosition();
+      const pausing = now < grabPauseUntil;
+      if (grabbed && (grabNeedsReanchor || (grabPausePending && !pausing))) {
+        // 停留结束后从当前手掌建立相对基准，不补算闭合期间的抖动。
+        const anchorX = grabPausePending ? pausedCursor.x : (smoothedCursorX ?? indexX);
+        const anchorY = grabPausePending ? pausedCursor.y : (smoothedCursorY ?? indexY);
+        grabPointerOffset.set(anchorX - palm.x, anchorY - palm.y);
+        setPointerFromScreen(anchorX, anchorY);
+        if (raycaster.ray.intersectPlane(dragPlane, planeHit)) {
+          puzzleGroup.worldToLocal(planeHit);
+          dragOffset.copy(movable.position).sub(planeHit);
+        }
+        dragTarget.copy(movable.position);
+        anchorGripOrientation(pose);
+        grabNeedsReanchor = false;
+        if (!pausing) grabPausePending = false;
+      }
+      cursorTargetX = pausing ? pausedCursor.x : (grabbed ? palm.x + grabPointerOffset.x : indexX);
+      cursorTargetY = pausing ? pausedCursor.y : (grabbed ? palm.y + grabPointerOffset.y : indexY);
+      setPointerFromScreen(cursorTargetX, cursorTargetY);
+      if (!grabbed && !pinchIntent) updateHover();
+      if (!grabbed && pinchingNow && beginGrab()) {
+        grabPointerOffset.set(cursorTargetX - palm.x, cursorTargetY - palm.y);
+        anchorGripOrientation(pose);
+        grabPausePending = pausing;
+      } else if (grabbed && openPalmNow) {
+        finishGrab();
+        grabIntentActive = false;
+        grabPauseUntil = 0;
+        grabPausePending = false;
+      }
+      setCursorPose(grabbed ? (openPalmNow ? "release" : "grab") : "select");
+      if (grabbed && !openPalmNow && !pausing) {
+        updateGrabPosition();
+        if (updateGripOrientation(pose)) setCursorPose("rotate");
+      }
     }
 
     function isOpenPalm(marks) {
@@ -1239,39 +1293,6 @@
         if (tipDistance > jointDistance * 1.1) extendedFingers++;
       }
       return extendedFingers >= 3;
-    }
-
-    function smoothHandLandmarks(rawMarks) {
-      if (!smoothedLandmarks || smoothedLandmarks.length !== rawMarks.length) {
-        smoothedLandmarks = rawMarks.map(point => ({ x: point.x, y: point.y, z: point.z || 0 }));
-        return smoothedLandmarks;
-      }
-
-      for (let i = 0; i < rawMarks.length; i++) {
-        const raw = rawMarks[i];
-        const smooth = smoothedLandmarks[i];
-        const dx = raw.x - smooth.x;
-        const dy = raw.y - smooth.y;
-        const dz = (raw.z || 0) - smooth.z;
-        const speed = Math.hypot(dx, dy, dz * .35);
-        // 静止时强平滑，快速移动时提高响应速度。
-        const alpha = THREE.MathUtils.clamp(.25 + speed * 10.5, .25, .72);
-        smooth.x += dx * alpha;
-        smooth.y += dy * alpha;
-        smooth.z += dz * alpha;
-      }
-      return smoothedLandmarks;
-    }
-
-    function resetTrackingFilters(keepGrab = false) {
-      smoothedLandmarks = null;
-      smoothedCursorX = null;
-      smoothedCursorY = null;
-      smoothedPinchRatio = null;
-      previousPalmPoint = null;
-      pinchStable = keepGrab;
-      pinchFrames = 0;
-      openPalmFrames = 0;
     }
 
     function drawSkeleton(marks, width, height) {
@@ -1365,7 +1386,8 @@
     const clock = new THREE.Clock();
     function animate() {
       requestAnimationFrame(animate);
-      const t = clock.getElapsedTime();
+      const dt = Math.min(clock.getDelta(), .05);
+      const t = clock.elapsedTime;
       motes.rotation.y = t * .015;
       if (currentPart === 1) {
         floorRing.material.opacity = .17 + Math.sin(t * 2) * .07;
@@ -1374,10 +1396,11 @@
         floorRing.material.opacity = 0;
         target.material.opacity = 0;
       }
-      puzzleGroup.rotation.x = THREE.MathUtils.lerp(puzzleGroup.rotation.x, targetPuzzleRotationX, .12);
-      puzzleGroup.rotation.y = THREE.MathUtils.lerp(puzzleGroup.rotation.y, targetPuzzleRotationY, .12);
-      updateSmoothDrag();
-      if (!grabbed && tutorialStarted && movable.position.distanceTo(target.position) > .01) {
+      puzzleGroup.rotation.x = THREE.MathUtils.lerp(puzzleGroup.rotation.x, targetPuzzleRotationX, 1 - Math.exp(-dt / .055));
+      puzzleGroup.rotation.y = THREE.MathUtils.lerp(puzzleGroup.rotation.y, targetPuzzleRotationY, 1 - Math.exp(-dt / .055));
+      updateSmoothCursor(dt);
+      updateSmoothDrag(dt);
+      if (!grabbed && tutorialStarted && performance.now() >= grabPauseUntil && movable.position.distanceTo(target.position) > .01) {
         movable.position.y += Math.sin(t * 1.8) * .0007;
       }
       if (grabbed) {
