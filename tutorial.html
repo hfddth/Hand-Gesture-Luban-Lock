@@ -1277,8 +1277,8 @@
     function drawSkeleton(marks, width, height) {
       const pairs = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
       handCtx.save();
-      handCtx.translate(width, 0);
-      handCtx.scale(-1, 1);
+      // handCanvas 已通过 CSS 与视频一起镜像，这里直接按模型坐标绘制，
+      // 避免二次翻转导致骨骼、手套光标与实际手势方向相反。
       handCtx.strokeStyle = "rgba(215,169,75,.86)";
       handCtx.lineWidth = 3;
       handCtx.lineCap = "round";
