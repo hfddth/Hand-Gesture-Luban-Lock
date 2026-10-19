@@ -92,7 +92,7 @@
 
     .steps {
       position: fixed;
-      top: 30px;
+      top: 61px;
       left: 50%;
       z-index: 10;
       display: flex;
@@ -111,6 +111,38 @@
 
     .step-dot.done { background: rgba(98, 180, 154, .5); }
     .step-dot.active { width: 58px; background: var(--gold); }
+
+    .chapter-bar {
+      position: fixed;
+      top: 19px;
+      left: 50%;
+      z-index: 11;
+      display: flex;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid rgba(238, 230, 210, .12);
+      border-radius: 999px;
+      background: rgba(20, 20, 17, .72);
+      backdrop-filter: blur(12px);
+      transform: translateX(-50%);
+    }
+
+    .chapter-pill {
+      padding: 7px 13px;
+      border-radius: 999px;
+      color: #777060;
+      font-size: 10px;
+      letter-spacing: .09em;
+      white-space: nowrap;
+      transition: color .3s, background .3s;
+    }
+
+    .chapter-pill.active {
+      color: #f0e4c5;
+      background: rgba(215, 169, 75, .16);
+    }
+
+    .chapter-pill.done { color: var(--jade); }
 
     .lesson {
       position: fixed;
@@ -256,7 +288,7 @@
       padding: 9px;
     }
 
-    .camera-actions button, .intro button, .success-card button {
+    .camera-actions button, .intro button, .success-card button, .chapter-card button {
       cursor: pointer;
       border: 1px solid rgba(215, 169, 75, .45);
       color: var(--paper);
@@ -298,6 +330,7 @@
 
     .cursor.visible { opacity: 1; }
     .cursor.pinching { width: 19px; height: 19px; color: var(--gold); border-color: var(--gold); }
+    .cursor.rotating { width: 44px; height: 44px; color: var(--jade); border-color: var(--jade); }
 
     .toast {
       position: fixed;
@@ -317,7 +350,7 @@
 
     .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
-    .intro, .success {
+    .intro, .success, .chapter-transition {
       position: fixed;
       inset: 0;
       z-index: 50;
@@ -329,9 +362,9 @@
       transition: opacity .45s ease, visibility .45s ease;
     }
 
-    .intro.hidden, .success.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .intro.hidden, .success.hidden, .chapter-transition.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 
-    .intro-card, .success-card {
+    .intro-card, .success-card, .chapter-card {
       width: min(560px, 100%);
       padding: 42px;
       border: 1px solid rgba(238, 230, 210, .17);
@@ -355,7 +388,7 @@
 
     .intro-mark span { transform: rotate(-45deg); }
 
-    .intro h1, .success-card h2 {
+    .intro h1, .success-card h2, .chapter-card h2 {
       margin: 0;
       font-family: "STKaiti", "KaiTi", serif;
       font-size: clamp(34px, 6vw, 54px);
@@ -363,7 +396,7 @@
       letter-spacing: .12em;
     }
 
-    .intro p, .success-card p {
+    .intro p, .success-card p, .chapter-card p {
       max-width: 420px;
       margin: 16px auto 26px;
       color: #aaa28f;
@@ -371,7 +404,7 @@
       line-height: 1.9;
     }
 
-    .intro button, .success-card button {
+    .intro button, .success-card button, .chapter-card button {
       min-width: 176px;
       padding: 12px 24px;
       letter-spacing: .14em;
@@ -413,7 +446,8 @@
       .brand { left: 16px; top: 15px; }
       .seal { width: 36px; height: 36px; }
       .brand strong { font-size: 18px; }
-      .steps { top: 70px; }
+      .chapter-bar { top: 62px; }
+      .steps { top: 108px; }
       .camera-card { top: 94px; right: 12px; width: 150px; }
       .camera-view { height: 105px; }
       .camera-head { height: 30px; }
@@ -421,7 +455,7 @@
       .lesson { left: 12px; bottom: 12px; width: calc(100vw - 24px); padding: 18px 18px 15px; }
       .lesson-foot { display: none; }
       .mode-pill { display: none; }
-      .intro-card, .success-card { padding: 32px 22px; }
+      .intro-card, .success-card, .chapter-card { padding: 32px 22px; }
     }
   </style>
 </head>
@@ -434,12 +468,16 @@
     <div><strong>榫卯之间</strong><span>SPATIAL HANDCRAFT</span></div>
   </header>
 
+  <div class="chapter-bar" aria-label="教学章节">
+    <span class="chapter-pill active" id="chapterOne">第一部分 · 抓取放置</span>
+    <span class="chapter-pill" id="chapterTwo">第二部分 · 托物旋转</span>
+  </div>
+
   <nav class="steps" aria-label="教学进度">
     <button class="step-dot active" aria-label="步骤一"></button>
     <button class="step-dot" aria-label="步骤二"></button>
     <button class="step-dot" aria-label="步骤三"></button>
     <button class="step-dot" aria-label="步骤四"></button>
-    <button class="step-dot" aria-label="步骤五"></button>
   </nav>
 
   <section class="lesson" aria-live="polite">
@@ -470,15 +508,25 @@
 
   <div class="cursor" id="gestureCursor"></div>
   <div class="toast" id="toast"></div>
-  <div class="mode-pill" id="modePill">鼠标：拖拽移动 · 滚轮旋转 · 松开安装</div>
+  <div class="mode-pill" id="modePill">鼠标：拖拽移动 · 松开安装</div>
 
   <section class="intro" id="intro">
     <div class="intro-card">
       <div class="intro-mark"><span>锁</span></div>
       <h1>鲁班锁 · 入门</h1>
-      <p>用一只手完成指向、捏合、移动、转腕与放置，认识无钉木构的基本连接方式。</p>
+      <p>教程分为两部分：先学习指向、捏合、移动与放置，再用张开的手掌托住并旋转整个鲁班锁。</p>
       <button type="button" id="startButton">开始教学</button>
       <span class="intro-note">推荐使用桌面版 Chrome 或 Edge，并允许摄像头权限</span>
+    </div>
+  </section>
+
+  <section class="chapter-transition hidden" id="chapterTransition">
+    <div class="chapter-card">
+      <div class="success-ring">壹</div>
+      <div class="eyebrow">第一部分完成</div>
+      <h2>木已入榫</h2>
+      <p>你已经完成抓取与放置。接下来张开手掌，像托住实物一样移动手掌，观察鲁班锁的各个方向。</p>
+      <button type="button" id="rotationStartButton">进入旋转教学</button>
     </div>
   </section>
 
@@ -487,7 +535,7 @@
       <div class="success-ring">✓</div>
       <div class="eyebrow">教学完成</div>
       <h2>合木成锁</h2>
-      <p>你已经掌握基础空间手势。真正的鲁班锁通过构件之间的咬合保持稳定，不依赖钉子或胶水。</p>
+      <p>你已经完成抓取放置与托物旋转两部分教学，可以进入正式解锁挑战。</p>
       <button type="button" id="againButton">再试一次</button>
     </div>
   </section>
@@ -515,28 +563,38 @@
     const cameraButton = document.getElementById("cameraButton");
     const resetButton = document.getElementById("resetButton");
     const startButton = document.getElementById("startButton");
+    const rotationStartButton = document.getElementById("rotationStartButton");
     const againButton = document.getElementById("againButton");
     const cameraStatus = document.getElementById("cameraStatus");
     const cameraPlaceholder = document.getElementById("cameraPlaceholder");
     const cursorEl = document.getElementById("gestureCursor");
     const toastEl = document.getElementById("toast");
     const introEl = document.getElementById("intro");
+    const chapterTransitionEl = document.getElementById("chapterTransition");
     const successEl = document.getElementById("success");
+    const chapterOneEl = document.getElementById("chapterOne");
+    const chapterTwoEl = document.getElementById("chapterTwo");
+    const modePill = document.getElementById("modePill");
     const stepNumber = document.getElementById("stepNumber");
     const lessonTitle = document.getElementById("lessonTitle");
     const lessonText = document.getElementById("lessonText");
     const actionHint = document.getElementById("actionHint");
     const dots = [...document.querySelectorAll(".step-dot")];
 
-    const lessons = [
+    const grabLessons = [
       ["壹 · 初识构件", "伸出食指，指向榫木", "将食指移动到发光的木构件上。识别成功后，构件边缘会变成金色。"],
       ["贰 · 凌空取物", "捏合拇指与食指", "在指向构件时轻轻捏合一次即可锁定抓取，手指回弹也不会让构件脱落。"],
       ["叁 · 移木就位", "移动手掌，靠近安装区", "抓取会持续保持。移动手掌，将木构件平稳带到中央虚线轮廓附近。"],
-      ["肆 · 转腕正形", "转动手腕，调整方向", "保持抓取并转动手腕，让榫木与虚线轮廓的方向接近。鼠标模式可使用滚轮。"],
-      ["伍 · 落榫成锁", "张开手掌，完成放置", "构件进入绿色容错范围并调整方向后，持续张开手掌即可释放，不需要与虚线完全重合。"]
+      ["肆 · 落榫成锁", "张开手掌，完成放置", "构件进入绿色容错范围后张开手掌即可释放，系统会自动对齐，不需要与虚线完全重合。"]
+    ];
+
+    const rotationLessons = [
+      ["壹 · 托住木锁", "张开手掌，进入旋转", "让手掌正对镜头并自然张开。系统识别稳定后，会把整个鲁班锁交到你的掌心。"],
+      ["贰 · 掌随物转", "移动手掌，观察结构", "保持张掌，向左右或上下平稳移动，整个鲁班锁会像被托住一样跟随旋转。"]
     ];
 
     let tutorialStarted = false;
+    let currentPart = 1;
     let currentStep = 0;
     let grabbed = false;
     let hovered = false;
@@ -551,8 +609,11 @@
     let smoothedCursorX = null;
     let smoothedCursorY = null;
     let smoothedPinchRatio = null;
-    let previousWristAngle = null;
-    let accumulatedRotation = 0;
+    let previousPalmPoint = null;
+    let viewRotationAmount = 0;
+    let rotationCompleted = false;
+    let targetPuzzleRotationX = 0;
+    let targetPuzzleRotationY = 0;
     let inSnapRange = false;
     let cameraRunning = false;
     let toastTimer = 0;
@@ -612,9 +673,12 @@
     const darkWoodMaterial = woodMaterial.clone();
     darkWoodMaterial.color.set(0x7b4c27);
 
+    const puzzleGroup = new THREE.Group();
+    puzzleGroup.position.set(1.35, .05, 0);
+    scene.add(puzzleGroup);
+
     const lockGroup = new THREE.Group();
-    lockGroup.position.set(1.35, .05, 0);
-    scene.add(lockGroup);
+    puzzleGroup.add(lockGroup);
 
     const fixedA = makeBeam(darkWoodMaterial, 5.4, .82, .82);
     fixedA.rotation.z = Math.PI / 2;
@@ -636,15 +700,15 @@
       depthWrite: false
     });
     const target = new THREE.Mesh(new THREE.BoxGeometry(5.1, .78, .78), targetMaterial);
-    target.position.set(1.35, .13, .03);
+    target.position.set(0, .08, .03);
     target.rotation.z = .62;
-    scene.add(target);
+    puzzleGroup.add(target);
 
     const movable = makeBeam(woodMaterial.clone(), 5.1, .78, .78);
-    movable.position.set(-3.4, .1, .35);
+    movable.position.set(-4.75, .05, .35);
     movable.rotation.z = -.55;
     movable.userData.baseY = movable.position.y;
-    scene.add(movable);
+    puzzleGroup.add(movable);
 
     const edges = new THREE.LineSegments(
       new THREE.EdgesGeometry(movable.geometry),
@@ -657,14 +721,12 @@
       new THREE.MeshBasicMaterial({ color: 0xd7a94b, transparent: true, opacity: .22, side: THREE.DoubleSide })
     );
     floorRing.rotation.x = -Math.PI / 2;
-    floorRing.position.set(target.position.x, -2.1, .1);
+    floorRing.position.set(puzzleGroup.position.x, -2.1, .1);
     scene.add(floorRing);
 
     // 教学关采用宽松判定：构件与虚线区域明显重叠且方向大致一致即可吸附成功。
     const POSITION_TOLERANCE = 3.6;
     const NEAR_TARGET_DISTANCE = 4.35;
-    const ROTATION_TOLERANCE = 1.05;
-
     const motes = createMotes();
     scene.add(motes);
 
@@ -729,20 +791,33 @@
     }
 
     function setStep(index) {
-      currentStep = Math.max(0, Math.min(4, index));
+      const lessons = currentPart === 1 ? grabLessons : rotationLessons;
+      currentStep = Math.max(0, Math.min(lessons.length - 1, index));
       const data = lessons[currentStep];
       stepNumber.textContent = data[0];
       lessonTitle.textContent = data[1];
       lessonText.textContent = data[2];
       dots.forEach((dot, i) => {
+        dot.style.display = i < lessons.length ? "block" : "none";
         dot.classList.toggle("active", i === currentStep);
         dot.classList.toggle("done", i < currentStep);
       });
+      chapterOneEl.classList.toggle("active", currentPart === 1);
+      chapterOneEl.classList.toggle("done", currentPart === 2);
+      chapterTwoEl.classList.toggle("active", currentPart === 2);
+      modePill.textContent = currentPart === 1
+        ? "鼠标：拖拽移动 · 松开安装"
+        : "鼠标：按住拖动 · 旋转视角";
+      if (cameraRunning) {
+        actionHint.textContent = currentPart === 1
+          ? "摄像头模式：捏合锁定抓取 · 张开手掌释放"
+          : "摄像头模式：保持张掌 · 移动手掌旋转";
+      }
     }
 
     function nextStep(expected) {
       if (currentStep !== expected || !tutorialStarted) return;
-      setStep(Math.min(4, currentStep + 1));
+      setStep(currentStep + 1);
     }
 
     function showToast(message) {
@@ -752,8 +827,9 @@
       toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1700);
     }
 
-    function resetTutorial() {
+    function resetTutorial(announce = true) {
       tutorialStarted = true;
+      currentPart = 1;
       grabbed = false;
       hovered = false;
       grabCandidate = null;
@@ -766,9 +842,13 @@
       smoothedCursorX = null;
       smoothedCursorY = null;
       smoothedPinchRatio = null;
-      accumulatedRotation = 0;
+      previousPalmPoint = null;
+      viewRotationAmount = 0;
+      rotationCompleted = false;
+      targetPuzzleRotationX = 0;
+      targetPuzzleRotationY = 0;
+      puzzleGroup.rotation.set(0, 0, 0);
       inSnapRange = false;
-      previousWristAngle = null;
       mouseDown = false;
       movable.position.copy(initialPosition);
       dragTarget.copy(initialPosition);
@@ -780,9 +860,10 @@
       target.material.color.setHex(0xd7a94b);
       floorRing.material.color.setHex(0xd7a94b);
       edges.material.opacity = 0;
+      chapterTransitionEl.classList.add("hidden");
       successEl.classList.add("hidden");
       setStep(0);
-      showToast("教学已重置");
+      if (announce) showToast("教学已重置");
     }
 
     function setPointerFromScreen(x, y) {
@@ -792,7 +873,7 @@
     }
 
     function updateHover() {
-      if (!tutorialStarted || grabbed) return;
+      if (!tutorialStarted || currentPart !== 1 || grabbed) return;
       const hit = raycaster.intersectObject(movable, true).length > 0;
       hovered = hit;
       if (hit) {
@@ -810,7 +891,7 @@
 
     function beginGrab() {
       const candidateIsFresh = grabCandidate === movable && performance.now() - grabCandidateAt < 700;
-      if (!candidateIsFresh || grabbed || !tutorialStarted) return false;
+      if (!candidateIsFresh || grabbed || !tutorialStarted || currentPart !== 1) return false;
       grabbed = true;
       pinchStable = true;
       openPalmFrames = 0;
@@ -826,21 +907,20 @@
     function updateGrabPosition() {
       if (!grabbed) return;
       if (!raycaster.ray.intersectPlane(dragPlane, planeHit)) return;
+      puzzleGroup.worldToLocal(planeHit);
       planeHit.x = THREE.MathUtils.clamp(planeHit.x, -5.2, 5.2);
       planeHit.y = THREE.MathUtils.clamp(planeHit.y, -2.4, 3.6);
       // 输入端设置死区：手指的微小抖动不会持续改写目标位置。
       if (dragTarget.distanceTo(planeHit) > DRAG_INPUT_DEADZONE) {
         dragTarget.copy(planeHit);
       }
-      const moved = dragTarget.distanceTo(initialPosition);
-      if (currentStep === 2 && moved > 1.1) nextStep(2);
       const targetDistance = dragTarget.distanceTo(target.position);
       inSnapRange = targetDistance < POSITION_TOLERANCE;
       target.material.color.setHex(inSnapRange ? 0x62b49a : 0xd7a94b);
       floorRing.material.color.setHex(inSnapRange ? 0x62b49a : 0xd7a94b);
       if (targetDistance < NEAR_TARGET_DISTANCE && currentStep < 3) {
         setStep(3);
-        showToast("已接近安装区，请调整方向");
+        showToast("已进入安装范围，请张开手掌放置");
       }
     }
 
@@ -864,29 +944,8 @@
       movable.position.add(dragVelocity);
     }
 
-    function applyWristRotation(angle) {
-      if (!grabbed) return;
-      if (previousWristAngle === null) {
-        previousWristAngle = angle;
-        return;
-      }
-      let delta = angle - previousWristAngle;
-      if (delta > Math.PI) delta -= Math.PI * 2;
-      if (delta < -Math.PI) delta += Math.PI * 2;
-      // 转腕设置死区并限制单帧变化，避免静止时来回颤动。
-      if (Math.abs(delta) < .018) return;
-      delta = THREE.MathUtils.clamp(delta, -.065, .065);
-      movable.rotation.z += delta * .62;
-      accumulatedRotation += Math.abs(delta);
-      previousWristAngle = angle;
-      if (currentStep === 3 && accumulatedRotation > .28) {
-        nextStep(3);
-        showToast("方向已调整，请张开手掌放置");
-      }
-    }
-
     function finishGrab() {
-      if (!grabbed) return;
+      if (!grabbed || currentPart !== 1) return;
       grabbed = false;
       hovered = false;
       grabCandidate = null;
@@ -894,27 +953,90 @@
       pinchStable = false;
       pinchFrames = 0;
       openPalmFrames = 0;
-      previousWristAngle = null;
       dragVelocity.set(0, 0, 0);
       movable.scale.setScalar(1);
       const distance = movable.position.distanceTo(target.position);
-      const angleError = Math.abs(normalizeAngle(movable.rotation.z - target.rotation.z));
-      if (distance < POSITION_TOLERANCE && angleError < ROTATION_TOLERANCE) {
+      if (distance < POSITION_TOLERANCE) {
         movable.position.copy(target.position);
         movable.rotation.copy(target.rotation);
         target.material.opacity = 0;
         edges.material.opacity = 0;
         movable.material.emissive.setHex(0x14372c);
-        setTimeout(() => successEl.classList.remove("hidden"), 700);
-        showToast("严丝合缝，安装完成");
+        tutorialStarted = false;
+        setTimeout(() => chapterTransitionEl.classList.remove("hidden"), 650);
+        showToast("第一部分完成：木已入榫");
       } else {
-        setStep(Math.max(2, currentStep - 1));
-        showToast(distance >= POSITION_TOLERANCE ? "再靠近绿色安装范围" : "方向还差一点，请继续旋转");
+        setStep(2);
+        showToast("再靠近绿色安装范围");
       }
     }
 
-    function normalizeAngle(value) {
-      return Math.atan2(Math.sin(value), Math.cos(value));
+    function startRotationChapter() {
+      currentPart = 2;
+      tutorialStarted = true;
+      chapterTransitionEl.classList.add("hidden");
+      target.material.opacity = 0;
+      floorRing.material.opacity = 0;
+      movable.material.emissive.setHex(0x000000);
+      previousPalmPoint = null;
+      openPalmFrames = 0;
+      viewRotationAmount = 0;
+      rotationCompleted = false;
+      targetPuzzleRotationX = .08;
+      targetPuzzleRotationY = -.18;
+      setStep(0);
+      showToast("第二部分：张开手掌托住鲁班锁");
+    }
+
+    function completeRotationTutorial() {
+      if (rotationCompleted) return;
+      rotationCompleted = true;
+      tutorialStarted = false;
+      showToast("旋转教学完成");
+      setTimeout(() => successEl.classList.remove("hidden"), 500);
+    }
+
+    function updateViewRotationFromPalm(marks, openPalmNow) {
+      const ids = [0, 5, 9, 13, 17];
+      const palm = ids.reduce((point, id) => {
+        point.x += 1 - marks[id].x;
+        point.y += marks[id].y;
+        return point;
+      }, { x: 0, y: 0 });
+      palm.x /= ids.length;
+      palm.y /= ids.length;
+      cursorEl.style.left = `${palm.x * innerWidth}px`;
+      cursorEl.style.top = `${palm.y * innerHeight}px`;
+      cursorEl.classList.toggle("rotating", openPalmNow);
+
+      if (!openPalmNow) {
+        openPalmFrames = 0;
+        previousPalmPoint = null;
+        return;
+      }
+
+      openPalmFrames++;
+      if (openPalmFrames >= 3 && currentStep === 0) {
+        setStep(1);
+        showToast("已托住，移动手掌旋转鲁班锁");
+      }
+      if (openPalmFrames < 3) {
+        previousPalmPoint = palm;
+        return;
+      }
+      if (previousPalmPoint) {
+        let dx = palm.x - previousPalmPoint.x;
+        let dy = palm.y - previousPalmPoint.y;
+        if (Math.abs(dx) < .002) dx = 0;
+        if (Math.abs(dy) < .002) dy = 0;
+        dx = THREE.MathUtils.clamp(dx, -.035, .035);
+        dy = THREE.MathUtils.clamp(dy, -.035, .035);
+        targetPuzzleRotationY += dx * 4.8;
+        targetPuzzleRotationX = THREE.MathUtils.clamp(targetPuzzleRotationX + dy * 3.8, -.85, .85);
+        viewRotationAmount += Math.abs(dx) + Math.abs(dy);
+        if (currentStep === 1 && viewRotationAmount > .22) completeRotationTutorial();
+      }
+      previousPalmPoint = palm;
     }
 
     async function startCamera() {
@@ -946,7 +1068,9 @@
         cameraStatus.textContent = "识别中";
         cameraStatus.classList.add("live");
         cameraButton.textContent = "摄像头已开启";
-        actionHint.textContent = "摄像头模式：捏合锁定抓取 · 张开手掌释放";
+        actionHint.textContent = currentPart === 1
+          ? "摄像头模式：捏合锁定抓取 · 张开手掌释放"
+          : "摄像头模式：保持张掌 · 移动手掌旋转";
         showToast("摄像头已开启，请将手放入画面");
       } catch (error) {
         cameraStatus.textContent = "开启失败";
@@ -981,8 +1105,6 @@
       drawSkeleton(marks, width, height);
       const index = marks[8];
       const thumb = marks[4];
-      const wrist = marks[0];
-      const middleBase = marks[9];
       const targetX = (1 - index.x) * innerWidth;
       const targetY = index.y * innerHeight;
       if (smoothedCursorX === null) {
@@ -1012,6 +1134,12 @@
       const pinchIntent = pinchRatio < .48 || pinchingNow;
       const openPalmNow = smoothedPinchRatio > .58 && isOpenPalm(marks);
       cursorEl.classList.toggle("pinching", grabbed || pinchingNow);
+      if (currentPart === 2) {
+        cursorEl.classList.remove("pinching");
+        updateViewRotationFromPalm(marks, openPalmNow);
+        return;
+      }
+      cursorEl.classList.remove("rotating");
       // 捏合开始后不再重新射线选物，沿用动作开始前锁定的候选构件。
       if (!grabbed && !pinchIntent) updateHover();
 
@@ -1042,8 +1170,6 @@
 
       // 进入张掌释放姿势后冻结目标点，避免手指伸展把构件带离安装位置。
       if (grabbed && !openPalmNow) updateGrabPosition();
-      const wristAngle = Math.atan2((1 - middleBase.x) - (1 - wrist.x), middleBase.y - wrist.y);
-      if (!openPalmNow) applyWristRotation(wristAngle);
     }
 
     function isOpenPalm(marks) {
@@ -1055,9 +1181,9 @@
         const joint = marks[jointIndex];
         const tipDistance = Math.hypot(tip.x - wrist.x, tip.y - wrist.y);
         const jointDistance = Math.hypot(joint.x - wrist.x, joint.y - wrist.y);
-        if (tipDistance > jointDistance * 1.16) extendedFingers++;
+        if (tipDistance > jointDistance * 1.1) extendedFingers++;
       }
-      return extendedFingers === 4;
+      return extendedFingers >= 3;
     }
 
     function smoothHandLandmarks(rawMarks) {
@@ -1087,7 +1213,7 @@
       smoothedCursorX = null;
       smoothedCursorY = null;
       smoothedPinchRatio = null;
-      previousWristAngle = null;
+      previousPalmPoint = null;
       pinchStable = keepGrab;
       pinchFrames = 0;
       openPalmFrames = 0;
@@ -1118,6 +1244,21 @@
 
     renderer.domElement.addEventListener("pointermove", event => {
       if (handVisible) return;
+      if (currentPart === 2) {
+        if (mouseDown && tutorialStarted) {
+          const dx = THREE.MathUtils.clamp(event.movementX / innerWidth, -.035, .035);
+          const dy = THREE.MathUtils.clamp(event.movementY / innerHeight, -.035, .035);
+          targetPuzzleRotationY += dx * 4.8;
+          targetPuzzleRotationX = THREE.MathUtils.clamp(targetPuzzleRotationX + dy * 3.8, -.85, .85);
+          mouseMovedDistance += Math.abs(event.movementX) + Math.abs(event.movementY);
+          if (currentStep === 0) {
+            setStep(1);
+            showToast("正在旋转整个鲁班锁");
+          }
+          if (mouseMovedDistance > 110) completeRotationTutorial();
+        }
+        return;
+      }
       setPointerFromScreen(event.clientX, event.clientY);
       updateHover();
       if (mouseDown && grabbed) {
@@ -1132,6 +1273,7 @@
       mouseDown = true;
       mouseStart.set(event.clientX, event.clientY);
       mouseMovedDistance = 0;
+      if (currentPart === 2) return;
       setPointerFromScreen(event.clientX, event.clientY);
       updateHover();
       if (hovered) {
@@ -1144,33 +1286,16 @@
     window.addEventListener("pointerup", () => {
       if (handVisible) return;
       mouseDown = false;
-      finishGrab();
-    });
-
-    renderer.domElement.addEventListener("wheel", event => {
-      if (!grabbed || handVisible) return;
-      event.preventDefault();
-      const delta = Math.sign(event.deltaY) * .13;
-      movable.rotation.z += delta;
-      accumulatedRotation += Math.abs(delta);
-      if (currentStep === 3 && accumulatedRotation > .26) nextStep(3);
-    }, { passive: false });
-
-    window.addEventListener("keydown", event => {
-      if (!grabbed || handVisible) return;
-      if (event.key.toLowerCase() === "q" || event.key.toLowerCase() === "e") {
-        const delta = event.key.toLowerCase() === "q" ? .13 : -.13;
-        movable.rotation.z += delta;
-        accumulatedRotation += Math.abs(delta);
-        if (currentStep === 3 && accumulatedRotation > .26) nextStep(3);
-      }
+      if (currentPart === 1) finishGrab();
     });
 
     startButton.addEventListener("click", () => {
       introEl.classList.add("hidden");
       tutorialStarted = true;
+      currentPart = 1;
       setStep(0);
     });
+    rotationStartButton.addEventListener("click", startRotationChapter);
     cameraButton.addEventListener("click", startCamera);
     resetButton.addEventListener("click", resetTutorial);
     againButton.addEventListener("click", resetTutorial);
@@ -1187,8 +1312,15 @@
       requestAnimationFrame(animate);
       const t = clock.getElapsedTime();
       motes.rotation.y = t * .015;
-      floorRing.material.opacity = .17 + Math.sin(t * 2) * .07;
-      target.material.opacity = target.material.opacity > 0 ? .18 + Math.sin(t * 2.4) * .08 : 0;
+      if (currentPart === 1) {
+        floorRing.material.opacity = .17 + Math.sin(t * 2) * .07;
+        target.material.opacity = target.material.opacity > 0 ? .18 + Math.sin(t * 2.4) * .08 : 0;
+      } else {
+        floorRing.material.opacity = 0;
+        target.material.opacity = 0;
+      }
+      puzzleGroup.rotation.x = THREE.MathUtils.lerp(puzzleGroup.rotation.x, targetPuzzleRotationX, .12);
+      puzzleGroup.rotation.y = THREE.MathUtils.lerp(puzzleGroup.rotation.y, targetPuzzleRotationY, .12);
       updateSmoothDrag();
       if (!grabbed && tutorialStarted && movable.position.distanceTo(target.position) > .01) {
         movable.position.y += Math.sin(t * 1.8) * .0007;
