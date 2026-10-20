@@ -533,6 +533,7 @@
     <div class="eyebrow" id="stepNumber">壹 · 初识构件</div>
     <h2 id="lessonTitle">伸出食指，指向榫木</h2>
     <p id="lessonText">将食指移动到发光的木构件上。识别成功后，构件边缘会变成金色。</p>
+    <p id="rotationProgress" hidden style="color:#f5d68e;font-size:16px;line-height:1.6;margin:10px 0 12px" aria-live="off">旋转进度：0° / 720° · 沿同一方向旋转两圈</p>
     <ol class="task-list" id="taskList"><li><b>1</b><span>选择构件</span></li><li><b>2</b><span>捏合抓取</span></li><li><b>3</b><span>移动放置</span></li></ol>
     <section class="gesture-guide" aria-label="操作示意"><h3>操作示意</h3><div class="gesture-row" id="gestureGuide"></div></section>
     <div class="lesson-foot">
@@ -675,6 +676,8 @@
     let cursorTargetY = null;
     let previousPalmPoint = null;
     let viewRotationAmount = 0;
+    const REQUIRED_ROTATION = Math.PI * 4;
+    let rotationStartYaw = 0;
     let rotationCompleted = false;
     let targetPuzzleRotationX = 0;
     let targetPuzzleRotationY = 0;
@@ -1182,6 +1185,7 @@
 
     function startRotationChapter() {
       currentPart = 2;
+      assembledGroup.scale.setScalar(.616);assembledGroup.position.y=-.4928;
       assembledGroup.visible=true;lockGroup.visible=false;movable.visible=false;target.visible=false;
       movable.position.copy(target.position);movable.rotation.copy(target.rotation);
       previousViewPose=null;
@@ -1195,6 +1199,10 @@
       rotationCompleted = false;
       targetPuzzleRotationX = .08;
       targetPuzzleRotationY = -.42;
+      targetPuzzleRotationZ = .10;
+      puzzleGroup.rotation.set(targetPuzzleRotationX,targetPuzzleRotationY,targetPuzzleRotationZ);
+      rotationStartYaw=targetPuzzleRotationY;
+      updateRotationProgress();
       setStep(0);
       showToast("第二部分：张开手掌托住鲁班锁");
     }
@@ -1203,6 +1211,7 @@
     function beginGraduation(preview=false){
       if(graduationMotion)return;
       tutorialStarted=false;grabbed=false;
+      assembledGroup.scale.setScalar(.77);assembledGroup.position.y=0;
       camera3d.position.set(0,2.5,12.5);camera3d.lookAt(0,.25,0);camera3d.clearViewOffset();camera3d.aspect=1672/941;camera3d.updateProjectionMatrix();renderer.setSize(1672,941);
       graduationMotion={start:performance.now(),baseZ:camera3d.position.z,baseX:puzzleGroup.position.x,baseY:puzzleGroup.position.y,modelScale:puzzleGroup.scale.x,tableScale:table.scale.x};
       document.body.classList.add("is-graduating");
@@ -1218,11 +1227,21 @@
 
     function completeRotationTutorial() {
       if (rotationCompleted) return;
+      if(viewRotationAmount < REQUIRED_ROTATION)return;
       rotationCompleted = true;
       tutorialStarted = false;
       showToast("旋转教学完成");
       syncInterface();
-      showToast("已掌握旋转，可以完成教程");
+      updateRotationProgress();
+      showToast("已完整旋转两圈，可以完成教程");
+    }
+
+    function updateRotationProgress(){
+      const el=document.getElementById('rotationProgress');
+      el.hidden=currentPart!==2;
+      const degrees=Math.min(720,viewRotationAmount*180/Math.PI);
+      el.textContent=`旋转进度：${Math.floor(degrees)}° / 720° · ${rotationCompleted?'已完成两圈':'沿同一方向旋转两圈'}`;
+      el.dataset.degrees=String(degrees);el.dataset.required='720';
     }
 
     let previousViewPose=null;
@@ -1251,7 +1270,6 @@
         const delta=pose.clone().multiply(previousViewPose.clone().invert());
         const e=new THREE.Euler().setFromQuaternion(delta,"YXZ");
         targetPuzzleRotationY+=e.y;targetPuzzleRotationZ+=e.z;targetPuzzleRotationX=THREE.MathUtils.clamp(targetPuzzleRotationX+e.x,-.85,.85);
-        viewRotationAmount+=(Math.abs(e.x)+Math.abs(e.y)+Math.abs(e.z))*.6;
       }
       previousViewPose=pose?.clone()||null;
       if (previousPalmPoint) {
@@ -1259,8 +1277,6 @@
         let dy = palm.y - previousPalmPoint.y;
         targetPuzzleRotationY += dx * 4.8;
         targetPuzzleRotationX = THREE.MathUtils.clamp(targetPuzzleRotationX + dy * 3.8, -.85, .85);
-        viewRotationAmount += Math.abs(dx) + Math.abs(dy);
-        if (currentStep === 1 && viewRotationAmount > .22) completeRotationTutorial();
       }
       previousPalmPoint = palm;
     }
@@ -1465,7 +1481,6 @@
             setStep(1);
             showToast("正在旋转整个鲁班锁");
           }
-          if (mouseMovedDistance > 110) completeRotationTutorial();
         }
         return;
       }
@@ -1534,6 +1549,11 @@
       puzzleGroup.rotation.x = THREE.MathUtils.lerp(puzzleGroup.rotation.x, targetPuzzleRotationX, 1 - Math.exp(-dt / .055));
       puzzleGroup.rotation.y = THREE.MathUtils.lerp(puzzleGroup.rotation.y, targetPuzzleRotationY, 1 - Math.exp(-dt / .055));
       puzzleGroup.rotation.z=THREE.MathUtils.lerp(puzzleGroup.rotation.z,targetPuzzleRotationZ,1-Math.exp(-dt/.055));
+      if(currentPart===2&&tutorialStarted&&currentStep>0&&!graduationMotion){
+        viewRotationAmount=Math.abs(puzzleGroup.rotation.y-rotationStartYaw);
+        updateRotationProgress();
+        if(viewRotationAmount>=REQUIRED_ROTATION)completeRotationTutorial();
+      }
       updateSmoothCursor(dt);
       updateSmoothDrag(dt);
       if (!grabbed && tutorialStarted && movable.position.distanceTo(target.position) > .01) {
@@ -1564,6 +1584,7 @@
     const helpDialog=document.getElementById("helpDialog"),settingsDialog=document.getElementById("settingsDialog");
     function syncInterface(){
       document.body.dataset.part=String(currentPart);
+      document.getElementById('rotationProgress').hidden=currentPart!==2;
       document.getElementById("lessonHeading").textContent=currentPart===1?"新手教程":"托物旋转";
       const labels=currentPart===1?["选择构件","捏合抓取","移动放置"]:["张开手掌","转动手腕","观察另一面"];
       const active=currentPart===1?Math.min(currentStep,2):rotationCompleted?3:currentStep;
