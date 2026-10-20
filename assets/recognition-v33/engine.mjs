@@ -50,13 +50,18 @@ export async function startRecognitionCamera(video,onResults){
   return {hands,camera,stop(){camera.stop?.();hands.close?.();video.srcObject?.getTracks().forEach(track=>track.stop());}};
 }
 
-// Match the archive's fixed 1.30x source-pixel preview and skeleton mapping.
+// Display adapter: fit the complete camera image into its frame without cropping.
+export function fitCameraPreview(sourceWidth,sourceHeight,width,height){
+  const scale=Math.min(width/sourceWidth,height/sourceHeight);
+  const drawWidth=sourceWidth*scale,drawHeight=sourceHeight*scale;
+  return {drawWidth,drawHeight,offsetX:(width-drawWidth)/2,offsetY:(height-drawHeight)/2};
+}
 export function drawCameraHand(video,canvas,marks){
   const width=canvas.clientWidth||300,height=canvas.clientHeight||135,dpr=Math.min(devicePixelRatio||1,2),ctx=canvas.getContext('2d');
   if(canvas.width!==Math.round(width*dpr)||canvas.height!==Math.round(height*dpr)){canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);}
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
-  const drawWidth=(video.videoWidth||640)*1.3,drawHeight=(video.videoHeight||480)*1.3,offsetX=(width-drawWidth)/2,offsetY=(height-drawHeight)/2;
-  Object.assign(video.style,{width:drawWidth+'px',height:drawHeight+'px',maxWidth:'none',maxHeight:'none',left:'50%',top:'50%',inset:'auto',transform:'translate(-50%,-50%) scaleX(-1)',objectFit:'fill'});video.style.left='50%';video.style.top='50%';
+  const {drawWidth,drawHeight,offsetX,offsetY}=fitCameraPreview(video.videoWidth||640,video.videoHeight||480,width,height);
+  Object.assign(video.style,{inset:'auto',width:drawWidth+'px',height:drawHeight+'px',maxWidth:'100%',maxHeight:'100%',left:offsetX+'px',top:offsetY+'px',transform:'scaleX(-1)',objectFit:'contain'});
   Object.assign(canvas.style,{inset:'0',width:'100%',height:'100%',transform:'none'});if(!marks)return;
   const points=marks.map(p=>({x:width-(offsetX+p.x*drawWidth),y:offsetY+p.y*drawHeight}));
   const pairs=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
