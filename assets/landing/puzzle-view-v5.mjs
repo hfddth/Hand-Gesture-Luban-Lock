@@ -43,7 +43,7 @@ async function init() {
   root.rotation.copy(initial);
   scene.add(root);
   const woodMaterials = buildLock(T, root, texture);
-  addHalo(T, scene, camera);
+  const updateHalo = addHalo(T, scene, camera);
   host.dataset.halo = 'gold';
   loadWood(T).then(referenceTexture => {
     woodMaterials.forEach(material => {
@@ -106,6 +106,7 @@ async function init() {
     last = time;
     root.quaternion.slerp(desired, reduce.matches ? 1 : 1 - Math.exp(-dt / .045));
     root.position.y = !moved && !reduce.matches ? Math.sin(time * .0008) * .07 : 0;
+    updateHalo(reduce.matches ? 0 : time);
     renderer.render(scene, camera);
     host.classList.add('model-ready');
     host.setAttribute('aria-busy', 'false');
@@ -282,23 +283,70 @@ function buildLock(T, root, texture) {
 }
 
 
+
 function addHalo(T, scene, camera) {
-  // A real spatial orbit: wood naturally hides its far side.
+  // Open, tapered light trails with depth occlusion, rather than a solid torus.
   const orbit = new T.Group();
   orbit.quaternion.copy(camera.quaternion);
-  orbit.rotateZ(.32);
-  const points = [];
-  for (let i = 0; i < 160; i++) {
-    const angle = i / 160 * Math.PI * 2;
-    points.push(new T.Vector3(3.75 * Math.cos(angle), 1.2 * Math.sin(angle), 2.9 * Math.sin(angle)));
+  orbit.rotateZ(.18);
+  const point = u => {
+    const a = -.65 * Math.PI + u * Math.PI * 3.35;
+    return new T.Vector3(3.55 * Math.cos(a), -1.7 + u * 3.45 + .48 * Math.sin(a), 2.9 * Math.sin(a));
+  };
+  const positions = [], uv = [], indices = [];
+  const count = 360;
+  for (let i = 0; i <= count; i++) {
+    const u = i / count, p = point(u);
+    const tangent = point(Math.min(1,u+.001)).sub(point(Math.max(0,u-.001)));
+    const normal = new T.Vector3(-tangent.y,tangent.x,0).normalize();
+    const width = .15 * (.62 + .38 * Math.sin(Math.PI*u));
+    for (const side of [-1,1]) {
+      positions.push(...p.clone().addScaledVector(normal,width*side).toArray());
+      uv.push(u,(side+1)/2);
+    }
+    if(i<count){const a=i*2;indices.push(a,a+1,a+2,a+1,a+3,a+2);}
   }
-  const curve = new T.CatmullRomCurve3(points, true);
-  for (const [radius, opacity, color] of [[.055,.035,0xffb84b],[.027,.12,0xffcd73],[.009,.92,0xffedba]]) {
-    const material = new T.MeshBasicMaterial({
-      color, transparent:true, opacity, blending:T.AdditiveBlending,
-      depthTest:true, depthWrite:false, toneMapped:false
-    });
-    orbit.add(new T.Mesh(new T.TubeGeometry(curve,192,radius,6,true),material));
+  const geometry = new T.BufferGeometry();
+  geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));
+  geometry.setAttribute('uv',new T.Float32BufferAttribute(uv,2));
+  geometry.setIndex(indices);
+  const material = new T.ShaderMaterial({
+    transparent:true,depthWrite:false,depthTest:true,side:T.DoubleSide,
+    blending:T.AdditiveBlending,toneMapped:false,
+    uniforms:{time:{value:0}},
+    vertexShader:`varying vec2 vUv; void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:`
+      varying vec2 vUv; uniform float time;
+      void main(){
+        float x=vUv.x, d=abs(vUv.y-.5)*2.;
+        float ends=smoothstep(0.,.085,x)*(1.-smoothstep(.90,1.,x));
+        float pulse=.58+.26*sin(x*31.+.7)+.16*sin(x*77.);
+        float flare=pow(max(0.,sin(x*24.-time*.35)),14.);
+        float core=exp(-d*d*650.)*(.50+pulse*.50);
+        float warm=exp(-d*d*75.)*(.30+flare*.48);
+        float haze=exp(-d*d*5.)*(.055+flare*.09);
+        vec3 color=vec3(1.,.48,.08)*(warm+haze)+vec3(1.,.86,.48)*core;
+        float strength=max(color.r,max(color.g,color.b));
+        gl_FragColor=vec4(color/max(strength,.0001),clamp(strength*ends,0.,1.));
+      }`
+  });
+  orbit.add(new T.Mesh(geometry,material));
+  const canvas=document.createElement('canvas');canvas.width=canvas.height=64;
+  const context=canvas.getContext('2d');
+  const glow=context.createRadialGradient(32,32,0,32,32,32);
+  glow.addColorStop(0,'rgba(255,245,194,1)');
+  glow.addColorStop(.09,'rgba(255,207,105,.95)');
+  glow.addColorStop(.25,'rgba(255,155,37,.35)');
+  glow.addColorStop(1,'rgba(255,122,0,0)');
+  context.fillStyle=glow;context.fillRect(0,0,64,64);
+  const map=new T.CanvasTexture(canvas);
+  for(let i=0;i<25;i++){
+    const u=(i+.33)/25,p=point(u);
+    p.x+=Math.sin(i*9.3)*.19;p.y+=Math.cos(i*5.7)*.18;
+    const sprite=new T.Sprite(new T.SpriteMaterial({map,color:0xffd48a,transparent:true,opacity:.35+(i%4)*.13,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false}));
+    sprite.position.copy(p);const size=i%7===0?.21:.055+(i%3)*.018;
+    sprite.scale.set(size,size,1);orbit.add(sprite);
   }
   scene.add(orbit);
+  return time => {material.uniforms.time.value=time*.001;};
 }
