@@ -716,7 +716,7 @@
       new THREE.MeshStandardMaterial({ color: 0x151510, roughness: .92, metalness: .02 })
     );
     floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -2.15;
+    floor.position.y = -3.10;
     floor.receiveShadow = true;
     floor.material = new THREE.ShadowMaterial({opacity:.18});
     scene.add(floor);
@@ -745,7 +745,7 @@
     darkWoodMaterial.color.set(0xc7a87c);
 
     const puzzleGroup = new THREE.Group();
-    puzzleGroup.position.set(1.35, .05, 0);
+    puzzleGroup.position.set(1.35, .32, 0);
     scene.add(puzzleGroup);
 
     const lockGroup = new THREE.Group();
@@ -803,19 +803,35 @@
     assembledGroup.scale.setScalar(.77);
     assembledGroup.visible=false;puzzleGroup.add(assembledGroup);
     const table = new THREE.Group();
-    table.position.set(1.35,-2.4,0);scene.add(table);
+    table.position.set(1.35,-2.13,0);scene.add(table);
     const tableWood=new THREE.MeshStandardMaterial({map:fineWood,color:0x4d321d,roughness:.72});
     const brass=new THREE.MeshStandardMaterial({color:0xc5a05c,roughness:.48,metalness:.65});
-    const tableBase=new THREE.Mesh(new THREE.CylinderGeometry(4.3,4.45,.30,96),[tableWood,tableWood,tableWood]);
+    const tableBase=new THREE.Mesh(new THREE.CylinderGeometry(4.27,4.34,.16,96),[tableWood,tableWood,tableWood]);
+    tableBase.position.y=.15;
+    // A carved drum, recessed waist and stepped foot give the stand real thickness.
+    const sideWood=tableWood.clone();sideWood.color.set(0x765231);sideWood.roughness=.58;
+    const profile=[[0,-.64],[4.12,-.64],[4.35,-.59],[4.42,-.51],[4.42,-.43],[4.32,-.36],[4.16,-.30],[4.16,-.10],[4.30,-.04],[4.34,.07],[0,.07]];
+    const drum=new THREE.Mesh(new THREE.LatheGeometry(profile.map(([r,y])=>new THREE.Vector2(r,y)),128),sideWood);
+    drum.castShadow=true;drum.receiveShadow=true;table.add(drum);
+    for(const [radius,height,width] of [[4.29,.14,.018],[4.19,-.10,.012],[4.37,-.43,.017],[4.21,-.60,.010]]){
+      const molding=new THREE.Mesh(new THREE.TorusGeometry(radius,width,8,128),brass);
+      molding.rotation.x=-Math.PI/2;molding.position.y=height;table.add(molding);
+    }
+    for(let i=0;i<24;i++){
+      const a=i*Math.PI/12;
+      const carving=new THREE.Mesh(new THREE.BoxGeometry(.05,.15,.018),sideWood);
+      carving.position.set(Math.cos(a)*4.17,-.205,Math.sin(a)*4.17);carving.rotation.y=-a+Math.PI/2;
+      table.add(carving);
+    }
     tableBase.receiveShadow=true;tableBase.castShadow=true;table.add(tableBase);
     for(const radius of [4.13,3.99,3.73,3.69,3.24]){
       const ring=new THREE.Mesh(new THREE.TorusGeometry(radius,.009,4,128),brass);
-      ring.rotation.x=-Math.PI/2;ring.position.y=.157;table.add(ring);
+      ring.rotation.x=-Math.PI/2;ring.position.y=.237;table.add(ring);
     }
     for(let i=0;i<48;i++){
       const a=i*Math.PI/24;
       const inlay=new THREE.Mesh(new THREE.BoxGeometry(.025,.006,i%4===0?.18:.07),brass);
-      inlay.position.set(Math.cos(a)*3.85,.16,Math.sin(a)*3.85);inlay.rotation.y=-a+Math.PI/2;table.add(inlay);
+      inlay.position.set(Math.cos(a)*3.85,.24,Math.sin(a)*3.85);inlay.rotation.y=-a+Math.PI/2;table.add(inlay);
     }
 
     // 教学关采用宽松判定：构件与虚线区域明显重叠且方向大致一致即可吸附成功。
