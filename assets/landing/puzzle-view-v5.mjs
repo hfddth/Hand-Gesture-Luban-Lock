@@ -43,6 +43,8 @@ async function init() {
   root.rotation.copy(initial);
   scene.add(root);
   const woodMaterials = buildLock(T, root, texture);
+  addHalo(T, scene, camera);
+  host.dataset.halo = 'gold';
   loadWood(T).then(referenceTexture => {
     woodMaterials.forEach(material => {
       material.map = referenceTexture;
@@ -279,3 +281,24 @@ function buildLock(T, root, texture) {
   return materials;
 }
 
+
+function addHalo(T, scene, camera) {
+  // A real spatial orbit: wood naturally hides its far side.
+  const orbit = new T.Group();
+  orbit.quaternion.copy(camera.quaternion);
+  orbit.rotateZ(.32);
+  const points = [];
+  for (let i = 0; i < 160; i++) {
+    const angle = i / 160 * Math.PI * 2;
+    points.push(new T.Vector3(3.75 * Math.cos(angle), 1.2 * Math.sin(angle), 2.9 * Math.sin(angle)));
+  }
+  const curve = new T.CatmullRomCurve3(points, true);
+  for (const [radius, opacity, color] of [[.055,.035,0xffb84b],[.027,.12,0xffcd73],[.009,.92,0xffedba]]) {
+    const material = new T.MeshBasicMaterial({
+      color, transparent:true, opacity, blending:T.AdditiveBlending,
+      depthTest:true, depthWrite:false, toneMapped:false
+    });
+    orbit.add(new T.Mesh(new T.TubeGeometry(curve,192,radius,6,true),material));
+  }
+  scene.add(orbit);
+}
