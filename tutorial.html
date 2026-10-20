@@ -614,7 +614,7 @@
       }
     }
 
-    const { buildLock } = await import("./assets/landing/tutorial-models-v16.mjs");
+    const { createCoverLock } = await import("./assets/landing/lock-structure-v27.mjs?v=27");
     const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
     const sceneRoot = document.getElementById("scene");
     const video = document.getElementById("video");
@@ -705,6 +705,7 @@
     sceneRoot.appendChild(renderer.domElement);
 
     scene.add(new THREE.HemisphereLight(0xd9ceb0, 0x171712, 1.5));
+    const graduationFill=new THREE.DirectionalLight(0xffe4b8,1.8);graduationFill.position.set(6,8,12);graduationFill.visible=false;scene.add(graduationFill);
     const keyLight = new THREE.SpotLight(0xffd98a, 70, 35, Math.PI / 5, .55, 1.2);
     keyLight.position.set(-5, 9, 7);
     keyLight.castShadow = true;
@@ -802,7 +803,8 @@
 
 
     const assembledGroup=new THREE.Group();
-    buildLock(THREE,assembledGroup,fineWood);
+    await createCoverLock(THREE,assembledGroup);
+    document.body.dataset.modelStructure=assembledGroup.userData.structure;
     assembledGroup.scale.setScalar(.77);
     assembledGroup.visible=false;puzzleGroup.add(assembledGroup);
     const table = new THREE.Group();
@@ -982,8 +984,8 @@
       previousPalmPoint = null;
       viewRotationAmount = 0;
       rotationCompleted = false;
-      targetPuzzleRotationX = .08;
-      targetPuzzleRotationY = -.42;
+      targetPuzzleRotationX = .20;
+      targetPuzzleRotationY = -.62;
       targetPuzzleRotationZ = .10;
       puzzleGroup.rotation.set(.08, -.42, .10);
       inSnapRange = false;
@@ -1204,6 +1206,7 @@
       camera3d.position.set(0,2.5,12.5);camera3d.lookAt(0,.25,0);camera3d.clearViewOffset();camera3d.aspect=1672/941;camera3d.updateProjectionMatrix();renderer.setSize(1672,941);
       graduationMotion={start:performance.now(),baseZ:camera3d.position.z,baseX:puzzleGroup.position.x,baseY:puzzleGroup.position.y,modelScale:puzzleGroup.scale.x,tableScale:table.scale.x};
       document.body.classList.add("is-graduating");
+      graduationFill.visible=true;targetPuzzleRotationX=.08;targetPuzzleRotationY=-1.0;targetPuzzleRotationZ=.06;
       fitGraduationStage();
       document.querySelectorAll(".lesson,.camera-card,.chapter-bar,.utility,.lesson-actions").forEach(e=>{e.inert=true;e.setAttribute("data-graduation-inert","");});
       successEl.classList.remove("hidden");
@@ -1544,12 +1547,13 @@
         const ease=.5-Math.cos(p*Math.PI)*.5;
         camera3d.position.z=graduationMotion.baseZ+ease*1.8;
         {
-          puzzleGroup.position.x=THREE.MathUtils.lerp(graduationMotion.baseX,5.7,ease);
-          puzzleGroup.position.y=THREE.MathUtils.lerp(graduationMotion.baseY,-1.75,ease);
-          puzzleGroup.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.modelScale,.52,ease));
+          puzzleGroup.position.x=THREE.MathUtils.lerp(graduationMotion.baseX,5.0,ease);
+          puzzleGroup.position.y=THREE.MathUtils.lerp(graduationMotion.baseY,-.55,ease);
+          puzzleGroup.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.modelScale,.98,ease));
           table.position.x=puzzleGroup.position.x;
-          table.position.y=THREE.MathUtils.lerp(-2.13,-3.45,ease);
-          table.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.tableScale,.52,ease));
+          table.position.y=THREE.MathUtils.lerp(-2.13,-3.25,ease);
+          table.rotation.x=-.18*ease;
+          table.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.tableScale,.82,ease));
         }
         brass.emissive.setHex(0xb57c24);brass.emissiveIntensity=ease*.28;
       }
@@ -1579,7 +1583,8 @@
     }
     function fitGraduationStage(){document.body.style.setProperty('--graduation-scale',Math.min(innerWidth/1672,innerHeight/941));}
     function fitWorkshop(){
-      table.position.y=-2.13;renderer.setSize(innerWidth,innerHeight);camera3d.aspect=innerWidth/innerHeight;
+      graduationFill.visible=false;
+      table.position.y=-2.13;table.rotation.x=0;renderer.setSize(innerWidth,innerHeight);camera3d.aspect=innerWidth/innerHeight;
       const mobile=innerWidth<701;
       camera3d.position.set(0,mobile?3.8:2.5,mobile?16:innerWidth/innerHeight<1.45?15.4:12.5);
       camera3d.lookAt(0,mobile?.6:.25,0);
