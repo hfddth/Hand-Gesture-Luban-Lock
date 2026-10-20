@@ -533,7 +533,7 @@
     <div class="eyebrow" id="stepNumber">壹 · 初识构件</div>
     <h2 id="lessonTitle">伸出食指，指向榫木</h2>
     <p id="lessonText">将食指移动到发光的木构件上。识别成功后，构件边缘会变成金色。</p>
-    <p id="rotationProgress" hidden style="color:#f5d68e;font-size:16px;line-height:1.6;margin:10px 0 12px" aria-live="off">旋转进度：0° / 360° · 沿同一方向旋转一圈</p>
+    <p id="rotationProgress" hidden style="color:#f5d68e;font-size:16px;line-height:1.6;margin:10px 0 12px" aria-live="off">累计旋转：0° / 360°</p>
     <ol class="task-list" id="taskList"><li><b>1</b><span>选择构件</span></li><li><b>2</b><span>捏合抓取</span></li><li><b>3</b><span>移动放置</span></li></ol>
     <section class="gesture-guide" aria-label="操作示意"><h3>操作示意</h3><div class="gesture-row" id="gestureGuide"></div></section>
     <div class="lesson-foot">
@@ -677,7 +677,7 @@
     let previousPalmPoint = null;
     let viewRotationAmount = 0;
     const REQUIRED_ROTATION = Math.PI * 2;
-    let rotationStartYaw = 0;
+    let previousRotationProgressPose = null;
     let rotationCompleted = false;
     let targetPuzzleRotationX = 0;
     let targetPuzzleRotationY = 0;
@@ -1201,7 +1201,7 @@
       targetPuzzleRotationY = -.42;
       targetPuzzleRotationZ = .10;
       puzzleGroup.rotation.set(targetPuzzleRotationX,targetPuzzleRotationY,targetPuzzleRotationZ);
-      rotationStartYaw=targetPuzzleRotationY;
+      previousRotationProgressPose=puzzleGroup.quaternion.clone();
       updateRotationProgress();
       setStep(0);
       showToast("第二部分：张开手掌托住鲁班锁");
@@ -1233,14 +1233,14 @@
       showToast("旋转教学完成");
       syncInterface();
       updateRotationProgress();
-      showToast("已完整旋转一圈，可以完成教程");
+      showToast("累计旋转已达360°，可以完成教程");
     }
 
     function updateRotationProgress(){
       const el=document.getElementById('rotationProgress');
       el.hidden=currentPart!==2;
       const degrees=Math.min(360,viewRotationAmount*180/Math.PI);
-      el.textContent=`旋转进度：${Math.floor(degrees)}° / 360° · ${rotationCompleted?'已完成一圈':'沿同一方向旋转一圈'}`;
+      el.textContent=`累计旋转：${Math.floor(degrees)}° / 360°${rotationCompleted?' · 已完成':''}`;
       el.dataset.degrees=String(degrees);el.dataset.required='360';
     }
 
@@ -1550,7 +1550,8 @@
       puzzleGroup.rotation.y = THREE.MathUtils.lerp(puzzleGroup.rotation.y, targetPuzzleRotationY, 1 - Math.exp(-dt / .055));
       puzzleGroup.rotation.z=THREE.MathUtils.lerp(puzzleGroup.rotation.z,targetPuzzleRotationZ,1-Math.exp(-dt/.055));
       if(currentPart===2&&tutorialStarted&&currentStep>0&&!graduationMotion){
-        viewRotationAmount=Math.abs(puzzleGroup.rotation.y-rotationStartYaw);
+        if(previousRotationProgressPose)viewRotationAmount+=previousRotationProgressPose.angleTo(puzzleGroup.quaternion);
+        previousRotationProgressPose=puzzleGroup.quaternion.clone();
         updateRotationProgress();
         if(viewRotationAmount>=REQUIRED_ROTATION)completeRotationTutorial();
       }
