@@ -507,7 +507,7 @@
     }
   </style>
   <link rel="stylesheet" href="assets/landing/tutorial-v16.css?v=17">
-  <link rel="stylesheet" href="assets/landing/graduation-v19.css?v=19">
+  <link rel="stylesheet" href="assets/landing/graduation-v19.css?v=20">
 </head>
 <body>
   <main id="scene" aria-label="鲁班锁三维教学场景"></main>
@@ -1201,7 +1201,7 @@
     function beginGraduation(preview=false){
       if(graduationMotion)return;
       tutorialStarted=false;grabbed=false;
-      graduationMotion={start:performance.now(),baseZ:camera3d.position.z};
+      graduationMotion={start:performance.now(),baseZ:camera3d.position.z,baseX:puzzleGroup.position.x,baseY:puzzleGroup.position.y,modelScale:puzzleGroup.scale.x,tableScale:table.scale.x};
       document.body.classList.add("is-graduating");
       document.querySelectorAll(".lesson,.camera-card,.chapter-bar,.utility,.lesson-actions").forEach(e=>{e.inert=true;e.setAttribute("data-graduation-inert","");});
       successEl.classList.remove("hidden");
@@ -1539,7 +1539,14 @@
       if(graduationMotion){
         const p=reduceMotion.matches?1:THREE.MathUtils.clamp((performance.now()-graduationMotion.start)/1100,0,1);
         const ease=.5-Math.cos(p*Math.PI)*.5;
-        camera3d.position.z=graduationMotion.baseZ+ease*1.2;
+        camera3d.position.z=graduationMotion.baseZ+ease*1.8;
+        if(innerWidth>=701){
+          puzzleGroup.position.x=THREE.MathUtils.lerp(graduationMotion.baseX,4.8,ease);
+          puzzleGroup.position.y=THREE.MathUtils.lerp(graduationMotion.baseY,-.03,ease);
+          puzzleGroup.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.modelScale,.78,ease));
+          table.position.x=puzzleGroup.position.x;
+          table.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.tableScale,.67,ease));
+        }
         brass.emissive.setHex(0xb57c24);brass.emissiveIntensity=ease*.28;
       }
       renderer.render(scene, camera3d);
@@ -1571,8 +1578,8 @@
       camera3d.position.set(0,mobile?3.8:2.5,mobile?16:innerWidth/innerHeight<1.45?15.4:12.5);
       camera3d.lookAt(0,mobile?.6:.25,0);
       camera3d.setViewOffset(innerWidth,innerHeight,mobile?innerWidth*.10:0,mobile?innerHeight*.19:0,innerWidth,innerHeight);
-      puzzleGroup.position.x=mobile?0:1.35;puzzleGroup.scale.setScalar(mobile?.56:1);table.scale.setScalar(mobile?.50:.86);table.position.x=puzzleGroup.position.x;floorRing.position.x=puzzleGroup.position.x;
-      if(graduationMotion)graduationMotion.baseZ=camera3d.position.z;
+      puzzleGroup.position.x=mobile?0:1.35;puzzleGroup.position.y=.32;puzzleGroup.scale.setScalar(mobile?.56:1);table.scale.setScalar(mobile?.50:.86);table.position.x=puzzleGroup.position.x;floorRing.position.x=puzzleGroup.position.x;
+      if(graduationMotion)Object.assign(graduationMotion,{baseZ:camera3d.position.z,baseX:puzzleGroup.position.x,baseY:puzzleGroup.position.y,modelScale:puzzleGroup.scale.x,tableScale:table.scale.x});
       camera3d.updateProjectionMatrix();
     }
     nextButton.addEventListener("click",()=>{if(currentPart===1)startRotationChapter();else beginGraduation();});
