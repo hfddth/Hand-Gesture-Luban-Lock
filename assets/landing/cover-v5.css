@@ -17,3 +17,5 @@
 @media(max-width:600px){.intro{transform:translateY(10px)}.title-wrap{width:116%;margin-left:-8%}.puzzle-view{left:5%;top:-7%;width:90%;height:92%}.pedestal-photo{transform:perspective(1000px) rotateY(-5deg) rotateZ(-1deg);transform-origin:50% 35%}.rotate-hint{font-size:12px;bottom:0}}
 @media(prefers-reduced-motion:reduce){.puzzle-view canvas,.rotate-hint{transition:none}}
 
+/* Clear, slightly larger cover interaction hint. */
+.rotate-hint{font-size:17px;color:#ffe9bd;opacity:.95}.rotate-hint span{font-size:23px}
