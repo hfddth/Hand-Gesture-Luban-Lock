@@ -285,21 +285,22 @@ function buildLock(T, root, texture) {
 
 
 function addHalo(T, scene, camera) {
-  // Open, tapered light trails with depth occlusion, rather than a solid torus.
+  // One closed spatial circle; a broad luminous crest tapers into a fine gold thread.
   const orbit = new T.Group();
   orbit.quaternion.copy(camera.quaternion);
-  orbit.rotateZ(.18);
+  orbit.rotateZ(.30);
   const point = u => {
-    const a = -.65 * Math.PI + u * Math.PI * 3.35;
-    return new T.Vector3(3.55 * Math.cos(a), -1.7 + u * 3.45 + .48 * Math.sin(a), 2.9 * Math.sin(a));
+    const a = u * Math.PI * 2;
+    return new T.Vector3(3.65 * Math.cos(a), .95 * Math.sin(a), -3.524 * Math.sin(a));
   };
   const positions = [], uv = [], indices = [];
   const count = 360;
   for (let i = 0; i <= count; i++) {
     const u = i / count, p = point(u);
-    const tangent = point(Math.min(1,u+.001)).sub(point(Math.max(0,u-.001)));
+    const tangent = point(u+.001).sub(point(u-.001));
     const normal = new T.Vector3(-tangent.y,tangent.x,0).normalize();
-    const width = .15 * (.62 + .38 * Math.sin(Math.PI*u));
+    const crest = Math.pow(.5 + .5 * Math.cos(u * Math.PI * 2 - 3.85), 5);
+    const width = .045 + .43 * crest;
     for (const side of [-1,1]) {
       positions.push(...p.clone().addScaledVector(normal,width*side).toArray());
       uv.push(u,(side+1)/2);
@@ -319,15 +320,15 @@ function addHalo(T, scene, camera) {
       varying vec2 vUv; uniform float time;
       void main(){
         float x=vUv.x, d=abs(vUv.y-.5)*2.;
-        float ends=smoothstep(0.,.085,x)*(1.-smoothstep(.90,1.,x));
-        float pulse=.58+.26*sin(x*31.+.7)+.16*sin(x*77.);
-        float flare=pow(max(0.,sin(x*24.-time*.35)),14.);
-        float core=exp(-d*d*650.)*(.50+pulse*.50);
+        float crest=pow(.5+.5*cos(x*6.2831853-3.85),5.);
+        float pulse=.48+.52*crest;
+        float flare=crest*(.90+.10*sin(time*.5));
+        float core=exp(-d*d*280.)*(.50+pulse*.50);
         float warm=exp(-d*d*75.)*(.30+flare*.48);
         float haze=exp(-d*d*5.)*(.055+flare*.09);
-        vec3 color=vec3(1.,.48,.08)*(warm+haze)+vec3(1.,.86,.48)*core;
+        vec3 color=vec3(1.,.64,.10)*(warm+haze)*1.18+vec3(1.,.92,.58)*core*1.2;
         float strength=max(color.r,max(color.g,color.b));
-        gl_FragColor=vec4(color/max(strength,.0001),clamp(strength*ends,0.,1.));
+        gl_FragColor=vec4(color/max(strength,.0001),clamp(strength*(.72+.28*crest),0.,1.));
       }`
   });
   orbit.add(new T.Mesh(geometry,material));
@@ -340,10 +341,10 @@ function addHalo(T, scene, camera) {
   glow.addColorStop(1,'rgba(255,122,0,0)');
   context.fillStyle=glow;context.fillRect(0,0,64,64);
   const map=new T.CanvasTexture(canvas);
-  for(let i=0;i<25;i++){
-    const u=(i+.33)/25,p=point(u);
+  for(let i=0;i<12;i++){
+    const u=(i+.33)/12,p=point(u);
     p.x+=Math.sin(i*9.3)*.19;p.y+=Math.cos(i*5.7)*.18;
-    const sprite=new T.Sprite(new T.SpriteMaterial({map,color:0xffd48a,transparent:true,opacity:.35+(i%4)*.13,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false}));
+    const sprite=new T.Sprite(new T.SpriteMaterial({map,color:0xffd34d,transparent:true,opacity:.35+(i%4)*.13,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false}));
     sprite.position.copy(p);const size=i%7===0?.21:.055+(i%3)*.018;
     sprite.scale.set(size,size,1);orbit.add(sprite);
   }
