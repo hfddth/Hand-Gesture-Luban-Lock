@@ -84,4 +84,34 @@ body.is-compact .lesson{padding:20px;min-height:520px}
 @media(max-width:1100px){.brand strong{font-size:24px}.brand span{font-size:9px}.seal{width:43px;height:51px}.utility{gap:14px;font-size:12px}.lesson{width:28%;padding:21px;left:18px;top:112px;min-height:0}.camera-card{right:18px;width:19%;top:112px}.camera-view{height:100px}.camera-placeholder{font-size:14px}.camera-actions button{font-size:15px}.gesture-item strong{font-size:12px}.gesture-item small{font-size:10px}.guide-glove{width:51px;height:72px}.lesson-heading{font-size:27px!important}#lessonText{font-size:14px}#lessonTitle{font-size:24px}.task-list li{font-size:17px;padding:7px}.mode-pill{font-size:13px;bottom:100px;left:59%}.ui-button{font-size:18px;min-width:115px}.utility button:first-child{display:none}}
 @media(max-width:700px){body{overflow-y:auto;min-height:100dvh}.brand{left:16px;top:14px}.brand strong{font-size:23px}.seal{width:38px;height:44px}.brand span{font-size:8px}.utility{top:21px;right:16px}.utility button{display:none}.utility #settingsButton{display:block;font-size:12px}.utility{gap:12px}.utility a{font-size:12px}.chapter-bar{top:78px;width:calc(100% - 32px);max-width:none}.chapter-pill{font-size:14px;padding:12px 7px}.lesson{top:auto;bottom:88px;left:16px;width:calc(100% - 32px);max-width:none;padding:18px;min-height:0}.lesson .lesson-heading{display:none}#stepNumber{font-size:10px}#lessonTitle{font-size:24px;margin:7px 0}#lessonText{font-size:14px;min-height:0;line-height:1.6}.task-list{display:flex;padding:9px 0 0;margin:8px 0 0;border:0;gap:0}.task-list li{flex:1;font-size:12px;padding:6px 3px;gap:5px}.task-list b{width:22px;height:22px;font-size:11px}.gesture-guide,.lesson-foot{display:none}.camera-card{top:139px;right:16px;width:129px;padding:6px}.camera-head{padding:3px;font-size:9px}.camera-head>span:first-child{display:none}.camera-view{height:63px}.camera-placeholder{font-size:11px;padding:0;gap:0}.camera-placeholder svg{height:28px}.camera-actions{padding:6px 2px 0}.camera-actions button{padding:6px 1px;font-size:12px}.camera-caption{display:none}.lesson-actions{left:16px;right:16px;bottom:20px;justify-content:space-between;gap:8px}.ui-button{min-width:100px;font-size:16px;padding:12px 20px}.mode-pill{display:block;left:44%;bottom:calc(88px + 230px);font-size:11px;padding:6px 12px;max-width:85%;white-space:normal;text-align:center}.rotation-cue{left:9%;width:76%;top:39%;height:60px}.panel::before,.panel::after{width:12px;height:12px}.toast{max-width:86%;font-size:13px}.cursor{scale:.8}.lesson-actions #previousButton{display:none}.lesson-actions #skipButton{background:#182019}.camera-card.camera-live .camera-view{height:90px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
-
+/* Sculpted bronze frames and satin ivory gloves. */
+.panel{border-color:#a88749;background:linear-gradient(110deg,#fff5c90a,transparent 35%),radial-gradient(ellipse at 0 0,#7d613130,transparent 60%),linear-gradient(125deg,#292b25f5,#151c17f5);box-shadow:0 3px 0 #5d4627,0 5px 0 #0a0f0b,0 19px 45px #0008,inset 0 1px 0 #f6dfa67a,inset 1px 0 0 #d8b8785c,inset 0 0 0 4px #1b211a,inset 0 0 0 5px #a68b4c66,inset 0 -8px 18px #070e0a6b}
+.panel::before,.panel::after{width:28px;height:28px;border-color:#d7ba78;box-shadow:-2px -2px 0 #181c16,1px 1px 0 #94703d70}
+.lesson .lesson-heading{color:#f9e8bf;text-shadow:0 2px 1px #0009,0 0 24px #d4a04c18;letter-spacing:.08em}
+.lesson .lesson-heading::after{content:"◇";font-size:12px;float:right;color:#c29d59;line-height:3}
+#lessonTitle{text-shadow:0 2px 2px #0008}
+.task-list li{border-radius:3px}
+.task-list li.active{border-color:#b9955473;background:linear-gradient(110deg,#be954629,#9a793715 75%,transparent);box-shadow:inset 3px 0 #eac46c,inset 0 1px 0 #f5db9d25,inset 0 -1px 0 #0005,0 3px 9px #0003}
+.task-list b{background:radial-gradient(circle at 35% 20%,#e2bd6a24,#111a14);box-shadow:inset 0 1px 1px #ffe5ad36,0 2px 4px #0006}
+.chapter-bar{filter:drop-shadow(0 5px 3px #0008)}
+.chapter-pill{box-shadow:inset 0 2px 0 #ffe9b334,inset 0 -4px 0 #090f0c99;background:linear-gradient(150deg,#454033,#18211a 65%,#111811)}
+.chapter-pill.active{background:linear-gradient(165deg,#fff4cd 0,#e2c17c 14%,#fff0b7 45%,#cd9f52 82%,#916325);box-shadow:inset 0 1px 0 #fff7dc,inset 0 -5px 0 #785625,inset 0 0 0 4px #ac8141,inset 0 0 0 5px #fff0be9e}
+.chapter-pill::after{content:"";position:absolute;inset:7px 13px;border:1px solid #c4a26550;pointer-events:none;clip-path:polygon(4% 0,96% 0,100% 50%,96% 100%,4% 100%,0 50%)}
+.chapter-pill.active::after{border-color:#a5732e}
+.ui-button,.camera-actions button{border-radius:3px;text-shadow:0 1px 1px #0008;box-shadow:inset 0 1px 0 #f9e6b753,inset 0 -4px 0 #080e0a99,inset 0 0 0 3px #20271e,inset 0 0 0 4px #9b7e4966;transition:filter .2s,transform .15s}
+.ui-button.primary,.camera-actions button{background:linear-gradient(165deg,#fff6d5,#edd396 18%,#fff0be 46%,#d4aa62 82%,#b68740);color:#402b12;text-shadow:0 1px 0 #fff8da;box-shadow:inset 0 1px 0 #fff9e6,inset 0 -4px 0 #956a2f,inset 0 0 0 3px #d6ac68,inset 0 0 0 4px #fff4c2}
+.ui-button:active,.camera-actions button:active{transform:translateY(2px);filter:brightness(.97)}
+.ui-button:disabled{filter:saturate(.45);opacity:.5}
+.camera-actions{filter:drop-shadow(0 5px 6px #0006)}
+.camera-view{border:1px solid #92836524;box-shadow:inset 0 6px 18px #0005;background:radial-gradient(ellipse,#ffffff02,#080e0a45)}
+.gesture-row{padding-top:5px}
+.guide-glove{filter:drop-shadow(0 6px 4px #0007);transition:transform .2s}
+.guide-glove.pinch{background-image:url("../gesture-gloves/pinch-v17.svg");background-size:contain;background-position:center}
+.guide-glove.open,.guide-glove.palm{background-image:url("../gesture-gloves/open-palm-v17.svg");background-size:contain;background-position:center}
+.gesture-item strong{font-size:16px;letter-spacing:.03em}
+.gesture-item small{color:#c2b69b}
+.cursor.pose-grab .glove-icon{background-image:url("../gesture-gloves/pinch-v17.svg");background-size:contain;background-position:center}
+.cursor.pose-release .glove-icon,.cursor.pose-rotate .glove-icon{background-image:url("../gesture-gloves/open-palm-v17.svg");background-size:contain;background-position:center}
+.mode-pill{box-shadow:inset 0 1px 0 #f5dfa63c,0 4px 15px #0006;background:linear-gradient(130deg,#242c20eb,#0d160feb);color:#f4dba5}
+@media(max-width:1100px){.gesture-item strong{font-size:12px}.panel::before,.panel::after{width:20px;height:20px}}
+@media(max-width:700px){.panel::before,.panel::after{width:12px;height:12px}.chapter-pill::after{inset:6px 10px}.task-list li.active{box-shadow:inset 0 -2px #b4934c66,inset 0 1px #ffe2a427}}
