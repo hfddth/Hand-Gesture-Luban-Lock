@@ -94,6 +94,10 @@ body.is-compact .lesson{padding:20px;min-height:520px}
 .camera-actions{filter:drop-shadow(0 5px 6px #0006)}
 .camera-view{border:1px solid #92836524;box-shadow:inset 0 6px 18px #0005;background:radial-gradient(ellipse,#ffffff02,#080e0a45)}
 .mode-pill{box-shadow:inset 0 1px 0 #f5dfa63c,0 4px 15px #0006;background:linear-gradient(130deg,#242c20eb,#0d160feb);color:#f4dba5}
+.camera-card{width:21.5%;max-width:360px;right:2.1vw;overflow:hidden}
+.camera-card .camera-view{position:relative;width:100%;height:auto;aspect-ratio:4/3;overflow:hidden;isolation:isolate;background:#0b100c}
+.camera-card #video,.camera-card #handCanvas{position:absolute;display:block;max-width:100%;max-height:100%}
+.camera-card #handCanvas{z-index:1;pointer-events:none}
 @media(max-width:1100px){.gesture-item strong{font-size:12px}.panel::before,.panel::after{width:20px;height:20px}}
 @media(max-width:700px){.panel::before,.panel::after{width:12px;height:12px}.chapter-pill::after{inset:6px 10px}.task-list li.active{box-shadow:inset 0 -2px #b4934c66,inset 0 1px #ffe2a427}}
 
