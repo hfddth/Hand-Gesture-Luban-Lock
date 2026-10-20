@@ -1,0 +1,53 @@
+:root{--motion-premium:cubic-bezier(.4,0,.2,1);--motion-enter:cubic-bezier(.05,.7,.1,1)}
+.graduation{display:block;z-index:35;isolation:isolate;background:none;backdrop-filter:none;overflow:hidden}
+.graduation::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,#07110ce8 0%,#0a130fc4 30%,#0c160e38 56%,transparent 76%);z-index:-1}
+.graduation::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 66% 83%,#ffca6130,transparent 37%);z-index:-1;pointer-events:none}
+.graduation-content{position:absolute;left:10.8%;top:20%;width:46%;max-width:760px;color:#f4e6c2}
+.graduation-eyebrow{display:flex;align-items:center;gap:18px;color:#d6b775;font-size:16px;letter-spacing:.3em}
+.completion-medal{width:76px;height:88px;color:#f1d28f;flex:none;filter:drop-shadow(0 0 13px #e5ae3c36)}
+.completion-medal path{fill:#5a421522;stroke:currentColor;stroke-width:1.2;stroke-dasharray:280;stroke-dashoffset:0}
+.completion-medal text{fill:#f6dfa6;font-family:KaiTi,STKaiti,serif;font-size:29px}
+.graduation h2{font-family:var(--serif);font-size:clamp(56px,6.1vw,102px);line-height:1.3;font-weight:400;letter-spacing:.1em;color:#ffe9ae;text-shadow:0 3px 1px #0008,0 0 28px #dbac4426;margin:24px 0 22px}
+.graduation-description{font-size:22px;line-height:1.95;color:#d9cbb0;margin:0 0 24px;letter-spacing:.08em}
+.graduation-achievements{display:flex;gap:22px;color:#b4c8ac;font-size:14px;letter-spacing:.08em;padding:14px 0 28px;border-top:1px solid #d5b46c39;max-width:440px}
+.graduation-actions{display:flex;align-items:center;gap:24px}
+.graduation .enter-workshop{display:inline-flex;align-items:center;gap:36px;text-decoration:none;font-size:24px;min-width:230px;justify-content:center;padding:17px 26px;filter:drop-shadow(0 7px 10px #0006)}
+.graduation #againButton{border:0;background:none;color:#bbae94;padding:12px 0;font:15px var(--serif);cursor:pointer;text-underline-offset:6px}
+.graduation #againButton:hover{color:#f0d28e;text-decoration:underline}
+.graduation-footnote{position:absolute;bottom:36px;left:10.8%;font-size:12px;letter-spacing:.35em;color:#b39d79}
+.graduation .wake-light{position:absolute;width:120px;height:200px;border-radius:50%;pointer-events:none;mix-blend-mode:screen;background:radial-gradient(ellipse,#ffb8385c,transparent 68%);filter:blur(12px);opacity:0;transform:scale(.94);z-index:-1}
+.graduation .wake-light.one{left:46%;top:12%}.graduation .wake-light.two{left:82%;top:34%}.graduation .wake-light.three{left:20%;top:42%}
+.is-graduating .lesson,.is-graduating .camera-card,.is-graduating .chapter-bar,.is-graduating .utility,.is-graduating .lesson-actions,.is-graduating .mode-pill,.is-graduating .rotation-cue{opacity:0;pointer-events:none;transition:opacity 280ms cubic-bezier(.3,0,1,1),transform 350ms cubic-bezier(.3,0,1,1)}
+.is-graduating .lesson{transform:translateX(-22px)}.is-graduating .camera-card{transform:translateX(22px)}.is-graduating .chapter-bar{transform:translate(-50%,-16px)}.is-graduating .lesson-actions{transform:translateY(18px)}
+.is-graduating #gestureCursor,.is-graduating #toast{visibility:hidden}
+.is-graduating .ambient{opacity:.35}
+.graduation:not(.hidden) .completion-medal path{animation:seal-complete 850ms var(--motion-premium) both}
+.graduation:not(.hidden) .graduation-eyebrow{animation:graduate-enter 600ms var(--motion-enter) 140ms both}
+.graduation:not(.hidden) h2{animation:graduate-enter 600ms var(--motion-enter) 300ms both}
+.graduation:not(.hidden) .graduation-description{animation:graduate-enter 500ms var(--motion-enter) 380ms both}
+.graduation:not(.hidden) .graduation-achievements{animation:graduate-enter 450ms var(--motion-enter) 440ms both}
+.graduation:not(.hidden) .graduation-actions{animation:graduate-enter 450ms var(--motion-enter) 490ms both}
+.graduation:not(.hidden) .wake-light{animation:lantern-wake 1100ms var(--motion-premium) both}
+.graduation:not(.hidden) .wake-light.one{animation-delay:100ms}.graduation:not(.hidden) .wake-light.two{animation-delay:240ms}.graduation:not(.hidden) .wake-light.three{animation-delay:380ms}
+@keyframes graduate-enter{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes seal-complete{from{stroke-dashoffset:280}to{stroke-dashoffset:0}}
+@keyframes lantern-wake{from{opacity:0;transform:scale(.94)}to{opacity:.8;transform:scale(1)}}
+@media(prefers-reduced-motion:reduce){.graduation *,.is-graduating *{animation:none!important;transition:none!important}.graduation .wake-light{opacity:.55}.completion-medal path{stroke-dashoffset:0}}
+.is-graduating .brand{z-index:40}
+#graduationTitle:focus{outline:none}
+/* One desktop composition, scaled uniformly for every landscape viewport. */
+body.is-graduating{position:absolute;left:50%;top:50%;width:1672px;height:941px;min-height:941px;overflow:hidden;transform:translate(-50%,-50%) scale(var(--graduation-scale,1));transform-origin:center}
+.is-graduating #scene,.is-graduating .graduation{position:absolute;width:1672px;height:941px;inset:0}
+.is-graduating #scene canvas{width:1672px!important;height:941px!important}
+.is-graduating .brand{left:70px;top:30px;gap:22px}.is-graduating .brand .seal{width:72px;height:80px}.is-graduating .brand strong{font-size:42px;letter-spacing:.15em}.is-graduating .brand span{font-size:12px;letter-spacing:.4em}
+.graduation::before{background:linear-gradient(90deg,#020b08f0 0%,#06100bd6 32%,#07110b42 60%,transparent 83%)}
+.graduation-content{left:94px;top:148px;width:850px;max-width:none}.graduation-eyebrow{gap:28px;font-size:23px;letter-spacing:.22em;white-space:nowrap}.graduation-eyebrow::after{content:"";width:246px;height:1px;background:linear-gradient(90deg,#d4ab54,#916622);margin-left:0}.completion-medal{width:96px;height:100px}
+.graduation h2{position:relative;font-size:164px;font-weight:600;line-height:1.02;letter-spacing:-.015em;margin:6px 0 14px;color:#ffeab5;text-shadow:0 2px 1px #8e62285c,0 0 23px #f4c86d20}.graduation h2 span{display:block;width:max-content;max-width:100%;background:linear-gradient(115deg,#fff9d8 0%,#f6d58c 33%,#fff0c2 61%,#d4a854 80%,#fff2bd 100%);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent}.graduation h2 span+span{margin-left:202px;font-size:154px;line-height:1.06}
+.graduation h2::before,.graduation h2::after{content:"";position:absolute;height:17px;width:100px;border-block:1px solid #b68d3a66;border-radius:50px;pointer-events:none}.graduation h2::before{right:68px;top:-8px}.graduation h2::after{left:44px;bottom:35px}
+.graduation-description{position:relative;width:max-content;font-size:28px;line-height:1.52;letter-spacing:.1em;color:#f1e1b5;margin:0 0 16px}.graduation-stamp{display:inline-flex;flex-direction:column;position:absolute;right:-34px;bottom:6px;padding:2px;border:1px solid #a54c22;font:12px/11px KaiTi,serif;color:#c8753c;font-style:normal;text-align:center;box-shadow:inset 0 0 0 1px #9d4b2944}
+.graduation-achievements{display:flex;align-items:center;gap:0;max-width:none;width:728px;border-top:1px solid #b78d3c99;padding:14px 0 25px;font-size:19px;letter-spacing:.1em;color:#f0deb0}.graduation-achievements span{padding:0 20px;border-right:1px solid #ba8d3c;white-space:nowrap}.graduation-achievements span:first-child{padding-left:0}.graduation-achievements span:last-child{border:0}.graduation-achievements b{font:32px/1 var(--serif);color:#f2cc73;vertical-align:-3px;margin-right:5px;font-weight:400}
+.graduation-actions{gap:44px}.graduation .enter-workshop{position:relative;min-width:382px;height:90px;font-size:38px;gap:30px;padding:15px 30px;border-radius:17px;clip-path:polygon(4% 0,96% 0,100% 14%,100% 86%,96% 100%,4% 100%,0 86%,0 14%);border:2px solid #ffe5a3;background:linear-gradient(155deg,#fff7d7,#eed29b 35%,#f9e3b5 55%,#c29851);box-shadow:inset 0 0 0 4px #c19753,inset 0 0 0 6px #fff2c8,0 0 17px #ffc45f55;color:#382812;letter-spacing:.13em}.graduation .enter-workshop::after{content:"";position:absolute;inset:9px;border:1px solid #d3a55e;border-radius:10px;pointer-events:none}.graduation #againButton{font-size:24px;color:#edd9a6;border-bottom:1px solid #d4ae63;padding:10px 0;letter-spacing:.12em}.graduation-footnote{left:70px;bottom:49px;font-size:14px;color:#c7a866;letter-spacing:.25em}.graduation-footnote::after{content:"";display:inline-block;width:115px;height:1px;background:linear-gradient(90deg,#b7984c,transparent);margin-left:25px;vertical-align:middle}
+@media(prefers-reduced-motion:reduce){.graduation *{animation:none!important;transition:none!important}}
+.graduation h2{color:#fff0bf;text-shadow:none;filter:drop-shadow(0 1px 1px #0005) drop-shadow(0 0 16px #f9ce7320)}
+.graduation h2 span{background-image:linear-gradient(115deg,#fff9da 0%,#f7dda2 32%,#fff4cf 61%,#ebca83 80%,#fff2c3 100%)}
+
