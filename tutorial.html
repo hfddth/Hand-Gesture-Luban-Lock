@@ -507,7 +507,7 @@
     }
   </style>
   <link rel="stylesheet" href="assets/landing/tutorial-v16.css?v=17">
-  <link rel="stylesheet" href="assets/landing/graduation-v19.css?v=20">
+  <link rel="stylesheet" href="assets/landing/graduation-v25.css?v=25">
 </head>
 <body>
   <main id="scene" aria-label="鲁班锁三维教学场景"></main>
@@ -586,10 +586,10 @@
     <div class="wake-light one" aria-hidden="true"></div><div class="wake-light two" aria-hidden="true"></div><div class="wake-light three" aria-hidden="true"></div>
     <div class="graduation-content">
       <div class="graduation-eyebrow"><svg class="completion-medal" viewBox="0 0 76 88" aria-hidden="true"><path d="M38 3 72 22v44L38 85 4 66V22Z M38 10 66 26v36L38 78 10 62V26Z"/><text x="38" y="54" text-anchor="middle">成</text></svg><span>出师入坊 · 初习告成</span></div>
-      <h2 id="graduationTitle" tabindex="-1">初习已成，<br>巧思待启</h2>
-      <p class="graduation-description">一榫一卯，你已知其法。<br>接下来，去解开属于你的机关。</p>
-      <div class="graduation-achievements"><span>✓ 抓取放置 · 已掌握</span><span>✓ 托物旋转 · 已掌握</span></div>
-      <div class="graduation-actions"><a class="ui-button primary enter-workshop" href="modes.html?v=21"><span>入坊探索</span><span aria-hidden="true">→</span></a><button type="button" id="againButton">重温教程</button></div>
+      <h2 id="graduationTitle" tabindex="-1"><span>初习已成，</span><span>巧思待启</span></h2>
+      <p class="graduation-description">一榫一卯，你已知其法。<br>接下来，去解开属于你的机关。<i class="graduation-stamp" aria-hidden="true">榫<br>局</i></p>
+      <div class="graduation-achievements"><span><b>✓</b> 抓取放置</span><span><b>✓</b> 已掌握</span><span><b>✓</b> 结构旋转</span><span><b>✓</b> 已掌握</span></div>
+      <div class="graduation-actions"><a class="ui-button primary enter-workshop" href="modes.html?v=24"><span>入坊探索</span><span aria-hidden="true">→</span></a><button type="button" id="againButton">查看教程</button></div>
     </div>
     <div class="graduation-footnote">一榫一卯 · 皆有章法</div>
   </section>
@@ -1201,8 +1201,10 @@
     function beginGraduation(preview=false){
       if(graduationMotion)return;
       tutorialStarted=false;grabbed=false;
+      camera3d.position.set(0,2.5,12.5);camera3d.lookAt(0,.25,0);camera3d.clearViewOffset();camera3d.aspect=1672/941;camera3d.updateProjectionMatrix();renderer.setSize(1672,941);
       graduationMotion={start:performance.now(),baseZ:camera3d.position.z,baseX:puzzleGroup.position.x,baseY:puzzleGroup.position.y,modelScale:puzzleGroup.scale.x,tableScale:table.scale.x};
       document.body.classList.add("is-graduating");
+      fitGraduationStage();
       document.querySelectorAll(".lesson,.camera-card,.chapter-bar,.utility,.lesson-actions").forEach(e=>{e.inert=true;e.setAttribute("data-graduation-inert","");});
       successEl.classList.remove("hidden");
       motes.geometry.setDrawRange(0,16);
@@ -1506,6 +1508,7 @@
     againButton.addEventListener("click", resetTutorial);
 
     window.addEventListener("resize", () => {
+      if(graduationMotion){fitGraduationStage();return;}
       camera3d.aspect = innerWidth / innerHeight;
       fitWorkshop();
       camera3d.updateProjectionMatrix();
@@ -1540,12 +1543,13 @@
         const p=reduceMotion.matches?1:THREE.MathUtils.clamp((performance.now()-graduationMotion.start)/1100,0,1);
         const ease=.5-Math.cos(p*Math.PI)*.5;
         camera3d.position.z=graduationMotion.baseZ+ease*1.8;
-        if(innerWidth>=701){
-          puzzleGroup.position.x=THREE.MathUtils.lerp(graduationMotion.baseX,4.8,ease);
-          puzzleGroup.position.y=THREE.MathUtils.lerp(graduationMotion.baseY,-.03,ease);
-          puzzleGroup.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.modelScale,.78,ease));
+        {
+          puzzleGroup.position.x=THREE.MathUtils.lerp(graduationMotion.baseX,5.7,ease);
+          puzzleGroup.position.y=THREE.MathUtils.lerp(graduationMotion.baseY,-1.75,ease);
+          puzzleGroup.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.modelScale,.52,ease));
           table.position.x=puzzleGroup.position.x;
-          table.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.tableScale,.67,ease));
+          table.position.y=THREE.MathUtils.lerp(-2.13,-3.45,ease);
+          table.scale.setScalar(THREE.MathUtils.lerp(graduationMotion.tableScale,.52,ease));
         }
         brass.emissive.setHex(0xb57c24);brass.emissiveIntensity=ease*.28;
       }
@@ -1573,7 +1577,9 @@
       chapterOneEl.setAttribute("aria-current",currentPart===1?"step":"false");
       chapterTwoEl.setAttribute("aria-current",currentPart===2?"step":"false");
     }
+    function fitGraduationStage(){document.body.style.setProperty('--graduation-scale',Math.min(innerWidth/1672,innerHeight/941));}
     function fitWorkshop(){
+      table.position.y=-2.13;renderer.setSize(innerWidth,innerHeight);camera3d.aspect=innerWidth/innerHeight;
       const mobile=innerWidth<701;
       camera3d.position.set(0,mobile?3.8:2.5,mobile?16:innerWidth/innerHeight<1.45?15.4:12.5);
       camera3d.lookAt(0,mobile?.6:.25,0);
