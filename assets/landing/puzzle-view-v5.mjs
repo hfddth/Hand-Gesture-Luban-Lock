@@ -300,7 +300,8 @@ function addHalo(T, scene, camera) {
     const tangent = point(u+.001).sub(point(u-.001));
     const normal = new T.Vector3(-tangent.y,tangent.x,0).normalize();
     const crest = Math.pow(.5 + .5 * Math.cos(u * Math.PI * 2 - 3.85), 5);
-    const width = .045 + .43 * crest;
+    const far = .5 + .5 * Math.sin(u * Math.PI * 2);
+    const width = .07 + .38 * crest + .10 * far;
     for (const side of [-1,1]) {
       positions.push(...p.clone().addScaledVector(normal,width*side).toArray());
       uv.push(u,(side+1)/2);
@@ -321,14 +322,17 @@ function addHalo(T, scene, camera) {
       void main(){
         float x=vUv.x, d=abs(vUv.y-.5)*2.;
         float crest=pow(.5+.5*cos(x*6.2831853-3.85),5.);
+        float nearSide=.5-.5*sin(x*6.2831853);
+        float focus=smoothstep(.18,.88,nearSide);
+        float veil=.50+.50*pow(.5+.5*cos(x*6.2831853-.55),2.);
         float pulse=.48+.52*crest;
         float flare=crest*(.90+.10*sin(time*.5));
-        float core=exp(-d*d*280.)*(.50+pulse*.50);
-        float warm=exp(-d*d*75.)*(.30+flare*.48);
-        float haze=exp(-d*d*5.)*(.055+flare*.09);
+        float core=exp(-d*d*mix(90.,360.,focus))*(.16+.84*focus)*(.50+pulse*.50);
+        float warm=exp(-d*d*mix(16.,65.,focus))*(.12+flare*.38);
+        float haze=exp(-d*d*mix(3.,6.,focus))*(.035+flare*.11);
         vec3 color=vec3(1.,.64,.10)*(warm+haze)*1.18+vec3(1.,.92,.58)*core*1.2;
         float strength=max(color.r,max(color.g,color.b));
-        gl_FragColor=vec4(color/max(strength,.0001),clamp(strength*(.72+.28*crest),0.,1.));
+        gl_FragColor=vec4(color/max(strength,.0001),clamp(strength*(.36+.64*focus)*veil,0.,1.));
       }`
   });
   orbit.add(new T.Mesh(geometry,material));
@@ -348,6 +352,16 @@ function addHalo(T, scene, camera) {
     sprite.position.copy(p);const size=i%7===0?.21:.055+(i%3)*.018;
     sprite.scale.set(size,size,1);orbit.add(sprite);
   }
+  // A few gold chips catch the light; they do not form a second orbit.
+  const chipGeometry = new T.BufferGeometry();
+  chipGeometry.setAttribute('position',new T.Float32BufferAttribute([0,.11,0,-.035,0,0,0,-.11,0,0,.11,0,0,-.11,0,.035,0,0],3));
+  const chipMaterial = new T.MeshBasicMaterial({color:0xffcf64,transparent:true,opacity:.82,blending:T.AdditiveBlending,depthWrite:false,side:T.DoubleSide,toneMapped:false});
+  [[-.12,.56,.06],[.57,-.3,.11],[.76,-.42,-.08]].forEach(([u,dy,dx],i)=>{
+    const p=point(u);p.y+=dy;p.x+=dx;
+    const chip=new T.Mesh(chipGeometry,chipMaterial);chip.position.copy(p);chip.rotation.z=-.65+i*.25;chip.scale.setScalar(.6+i*.15);orbit.add(chip);
+    const glint=new T.Sprite(new T.SpriteMaterial({map,color:0xffb939,transparent:true,opacity:.4,blending:T.AdditiveBlending,depthWrite:false,toneMapped:false}));
+    glint.position.copy(p);glint.scale.set(.38,.38,1);orbit.add(glint);
+  });
   scene.add(orbit);
   return time => {material.uniforms.time.value=time*.001;};
 }
