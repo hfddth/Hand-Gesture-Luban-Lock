@@ -307,79 +307,6 @@
     button:hover { background: rgba(215, 169, 75, .19); border-color: var(--gold); }
     button:active { transform: translateY(1px); }
 
-    .cursor {
-      --flip: 1;
-      position: fixed;
-      z-index: 20;
-      width: 76px;
-      height: 108px;
-      pointer-events: none;
-      opacity: 0;
-      transform: translate(-50%, -48%);
-      transition: opacity .18s;
-    }
-
-    .cursor.right { --flip: -1; }
-
-    .glove-icon {
-      width: 76px;
-      height: 101px;
-      background-image: url("assets/gesture-gloves/cartoon-glove-gestures.png?v=3");
-      background-repeat: no-repeat;
-      background-size: 400% 100%;
-      background-position-y: center;
-      transform: scaleX(var(--flip));
-      transform-origin: center;
-      filter: drop-shadow(0 4px 5px rgba(0, 0, 0, .7)) drop-shadow(0 0 2px rgba(255, 255, 255, .45));
-      transition: filter .16s, transform .16s;
-    }
-
-    .cursor.pose-select .glove-icon {
-      background-position-x: 0;
-      animation: glove-float 1.2s ease-in-out infinite;
-    }
-
-    .cursor.pose-grab .glove-icon {
-      background-position-x: 33.333%;
-      transform: scaleX(var(--flip)) scale(.88);
-      filter: drop-shadow(0 0 8px rgba(215, 169, 75, .8)) drop-shadow(0 4px 5px rgba(0, 0, 0, .7));
-    }
-
-    .cursor.pose-release .glove-icon {
-      background-position-x: 66.667%;
-      animation: glove-release .38s ease-out infinite alternate;
-    }
-
-    .cursor.pose-rotate .glove-icon {
-      background-position-x: 100%;
-      animation: glove-rotate 1s ease-in-out infinite;
-    }
-
-    .hand-label {
-      position: absolute;
-      left: 50%;
-      bottom: -4px;
-      padding: 3px 8px;
-      border: 1px solid rgba(255, 255, 255, .28);
-      border-radius: 10px;
-      color: white;
-      background: rgba(16, 17, 14, .92);
-      box-shadow: 0 3px 9px rgba(0, 0, 0, .55);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: .08em;
-      white-space: nowrap;
-      transform: translateX(-50%);
-    }
-
-    .cursor.visible { opacity: 1; }
-    .cursor.pose-grab .hand-label, .cursor.pose-release .hand-label { color: #f5d98d; border-color: rgba(215, 169, 75, .6); }
-    .cursor.pose-rotate .hand-label { color: #9ce7d1; border-color: rgba(98, 180, 154, .6); }
-
-    @keyframes glove-float { 50% { transform: scaleX(var(--flip)) translateY(-3px); } }
-    @keyframes glove-release { to { transform: scaleX(var(--flip)) scale(1.08); filter: drop-shadow(0 0 9px rgba(215, 169, 75, .8)) drop-shadow(0 4px 5px rgba(0, 0, 0, .7)); } }
-    @keyframes glove-rotate { 25% { transform: scaleX(var(--flip)) rotate(-5deg); } 75% { transform: scaleX(var(--flip)) rotate(5deg); } }
-
     .toast {
       position: fixed;
       left: 50%;
@@ -506,7 +433,7 @@
       .intro-card, .success-card, .chapter-card { padding: 32px 22px; }
     }
   </style>
-  <link rel="stylesheet" href="assets/landing/tutorial-v16.css?v=17">
+  <link rel="stylesheet" href="assets/landing/tutorial-v33.css?v=33">
   <link rel="stylesheet" href="assets/landing/graduation-v25.css?v=25">
 </head>
 <body>
@@ -535,7 +462,6 @@
     <p id="lessonText">将食指移动到发光的木构件上。识别成功后，构件边缘会变成金色。</p>
     <p id="rotationProgress" hidden style="color:#f5d68e;font-size:16px;line-height:1.6;margin:10px 0 12px" aria-live="off">累计旋转：0° / 360°</p>
     <ol class="task-list" id="taskList"><li><b>1</b><span>选择构件</span></li><li><b>2</b><span>捏合抓取</span></li><li><b>3</b><span>移动放置</span></li></ol>
-    <section class="gesture-guide" aria-label="操作示意"><h3>操作示意</h3><div class="gesture-row" id="gestureGuide"></div></section>
     <div class="lesson-foot">
       <span id="actionHint">摄像头模式：保持手掌正对镜头</span>
       <span><span class="kbd">鼠标</span> 可备用操作</span>
@@ -559,7 +485,6 @@
     <div class="camera-caption">⌁ 鼠标也可操作</div>
   </aside>
 
-  <div class="cursor right pose-select" id="gestureCursor"><div class="glove-icon" aria-hidden="true"></div><span class="hand-label">右手 · 选择</span></div>
   <div class="toast" id="toast"></div>
   <div class="mode-pill" id="modePill">鼠标：拖拽移动 · 松开放置</div>
 
@@ -567,7 +492,7 @@
     <div class="intro-card">
       <div class="intro-mark"><span>锁</span></div>
       <h1>鲁班锁 · 入门</h1>
-      <p>教程分为两部分：先学习指向、两指靠近抓取、移位、手腕转向与放置，再用张开的手掌托住并旋转整个鲁班锁。</p>
+      <p>教程分为两部分：先学习指向、两指靠近抓取、移位与放置，再用张开的手掌托住并旋转整个鲁班锁。</p>
       <button type="button" id="startButton">开始教学</button>
       <span class="intro-note">推荐使用桌面版 Chrome 或 Edge，并允许摄像头权限</span>
     </div>
@@ -599,7 +524,7 @@
   <canvas class="ambient" aria-hidden="true"></canvas>
   <svg class="rotation-cue" viewBox="0 0 600 110" aria-hidden="true"><path d="M25 18C10 110 565 110 575 18"/><polygon points="25,18 12,34 39,28"/><polygon points="575,18 561,28 588,34"/></svg>
   <footer class="lesson-actions"><button class="ui-button" id="previousButton" type="button" hidden>上一步</button><button class="ui-button" id="skipButton" type="button">跳过本部分</button><button class="ui-button primary" id="nextButton" type="button" disabled>进入旋转 ›</button></footer>
-  <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle">指尖入门</h2><p>抓取放置：将手套移到榫木附近，拇指与食指靠近抓取；移动手掌调整位置，分开手指并张掌放置。</p><p>托物旋转：张开手掌，轻转手腕或移动手掌。鼠标也可拖动构件与视角。</p><button class="ui-button primary" data-close type="button">开始练习</button></dialog>
+  <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle">指尖入门</h2><p>抓取放置：用食指指向榫木，拇指与食指靠近抓取；移动手掌调整位置，分开手指并张掌放置。</p><p>托物旋转：张开手掌，原地转动手腕。鼠标也可拖动构件与视角。</p><button class="ui-button primary" data-close type="button">开始练习</button></dialog>
   <dialog id="settingsDialog" aria-labelledby="settingsTitle"><h2 id="settingsTitle">操作设置</h2><label class="setting-row">金色光粒<input type="checkbox" id="particlesToggle" checked></label><label class="setting-row">镜像交互<span>已开启 · 与手同向</span></label><button class="ui-button" id="restartLesson" type="button">重新练习</button> <button class="ui-button primary" data-close type="button">返回练习</button></dialog>
   <script type="module">
     let THREE;
@@ -616,11 +541,11 @@
     }
 
     const { createCoverLock } = await import("./assets/landing/lock-structure-v27.mjs?v=28");
+    const {RecognitionEngine,startRecognitionCamera,drawCameraHand}=await import("./assets/recognition-v33/engine.mjs?v=33");
     const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
     const sceneRoot = document.getElementById("scene");
     const video = document.getElementById("video");
     const handCanvas = document.getElementById("handCanvas");
-    const handCtx = handCanvas.getContext("2d");
     const cameraButton = document.getElementById("cameraButton");
     const resetButton = document.getElementById("resetButton");
     const startButton = document.getElementById("startButton");
@@ -628,7 +553,6 @@
     const againButton = document.getElementById("againButton");
     const cameraStatus = document.getElementById("cameraStatus");
     const cameraPlaceholder = document.getElementById("cameraPlaceholder");
-    const cursorEl = document.getElementById("gestureCursor");
     const toastEl = document.getElementById("toast");
     const introEl = document.getElementById("intro");
     const chapterTransitionEl = document.getElementById("chapterTransition");
@@ -643,15 +567,15 @@
     const dots = [...document.querySelectorAll(".step-dot")];
 
     const grabLessons = [
-      ["当前教学 · 抓取放置", "对准榫木，准备抓取", "将手套移到榫木附近，或用鼠标指向上方的木构件。"],
+      ["当前教学 · 抓取放置", "对准榫木，准备抓取", "用食指指向榫木，或用鼠标指向上方的木构件。"],
       ["当前教学 · 抓取放置", "捏合，拿起榫木", "拇指与食指靠近，即可抓取。也可按住鼠标拖动榫木。"],
-      ["当前教学 · 抓取放置", "移动，靠近安装区", "抓住后移动手掌，将榫木靠近绿色轮廓；轻转手腕可调整朝向。"],
+      ["当前教学 · 抓取放置", "移动，靠近安装区", "抓住后移动手掌，将榫木靠近绿色轮廓。"],
       ["当前教学 · 抓取放置", "张开手掌，完成放置", "进入绿色范围后分开手指、张掌放置。鼠标松开即可，系统会自动对齐。"]
     ];
 
     const rotationLessons = [
       ["当前教学 · 托物旋转", "张开手掌，轻转手腕", "像托住实物一样，缓慢改变手掌朝向；也可拖动空白处旋转。"],
-      ["当前教学 · 托物旋转", "掌随物转，观察另一面", "保持张掌，轻转手腕或平稳移动，感受榫卯之间的咬合。"]
+      ["当前教学 · 托物旋转", "掌随物转，观察另一面", "保持张掌，原地转动手腕，感受榫卯之间的咬合。"]
     ];
 
     let tutorialStarted = false;
@@ -662,19 +586,6 @@
     let hovered = false;
     let grabCandidate = null;
     let handVisible = false;
-    let smoothedCursorX = null;
-    let smoothedCursorY = null;
-    let grabNeedsReanchor = false;
-    const PINCH_GRAB_RATIO = .72;
-    const PINCH_INTENT_RATIO = .94;
-    const PALM_RELEASE_RATIO = 1.02;
-    const SELECTION_LOOKBACK_MS = 200;
-    const hoverHistory = [];
-    let intentCandidate = null;
-    let grabIntentActive = false;
-    let cursorTargetX = null;
-    let cursorTargetY = null;
-    let previousPalmPoint = null;
     let viewRotationAmount = 0;
     const REQUIRED_ROTATION = Math.PI * 2;
     let previousRotationProgressPose = null;
@@ -688,7 +599,6 @@
     let mouseDown = false;
     let mouseMovedDistance = 0;
     let mouseStart = new THREE.Vector2();
-    let detectedHandIsLeft = false;
 
     const scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x20251b, 0.008);
@@ -854,12 +764,6 @@
     const planeHit = new THREE.Vector3();
     const dragTarget = new THREE.Vector3();
     const dragOffset = new THREE.Vector3();
-    const grabPointerOffset = new THREE.Vector2();
-    const gripStartHand = new THREE.Quaternion();
-    const gripStartObject = new THREE.Quaternion();
-    const gripFilteredHand = new THREE.Quaternion();
-    const targetGripQuaternion = new THREE.Quaternion();
-    let gripPoseReady = false;
     const initialPosition = movable.position.clone();
     const initialRotation = movable.rotation.clone();
 
@@ -939,8 +843,8 @@
         : "鼠标：按住拖动 · 旋转视角";
       if (cameraRunning) {
         actionHint.textContent = currentPart === 1
-          ? "摄像头模式：两指靠近抓取 · 转腕调整朝向 · 张掌释放"
-          : "摄像头模式：保持张掌 · 移动手掌旋转";
+          ? "摄像头模式：指向 · 捏合抓取 · 移动手掌 · 分开两指释放"
+          : "摄像头模式：保持张掌 · 原地转动手腕";
       }
     }
 
@@ -956,35 +860,15 @@
       toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1700);
     }
 
-    function setCursorPose(pose) {
-      cursorEl.classList.remove("pose-select", "pose-grab", "pose-release", "pose-rotate");
-      cursorEl.classList.add(`pose-${pose}`);
-      cursorEl.classList.toggle("left", detectedHandIsLeft);
-      cursorEl.classList.toggle("right", !detectedHandIsLeft);
-      const action = { select: "选择", grab: "夹取", release: "释放", rotate: "旋转" }[pose];
-      modePill.textContent = `${detectedHandIsLeft ? "左手" : "右手"} · ${action}`;
-      cursorEl.querySelector(".hand-label").textContent = `${detectedHandIsLeft ? "左手" : "右手"} · ${action}`;
-    }
-
     function resetTutorial(announce = true) {
       if(graduationMotion){graduationMotion=null;document.body.classList.remove("is-graduating");brass.emissive.setHex(0);brass.emissiveIntensity=0;motes.geometry.setDrawRange(0,180);motes.material.size=.022;fitWorkshop();document.querySelectorAll("[data-graduation-inert]").forEach(e=>{e.inert=false;e.removeAttribute("data-graduation-inert");});}
       tutorialStarted = true;
       currentPart = 1;
+      recognition.resetInteraction();handRotationTarget=null;
       assembledGroup.visible=false;lockGroup.visible=true;movable.visible=true;target.visible=true;
-      previousViewPose=null;
       grabbed = false;
-      gripPoseReady = false;
-      grabNeedsReanchor = false;
       hovered = false;
       grabCandidate = null;
-      smoothedCursorX = null;
-      smoothedCursorY = null;
-      cursorTargetX = null;
-      cursorTargetY = null;
-      grabIntentActive = false;
-      intentCandidate = null;
-      hoverHistory.length = 0;
-      previousPalmPoint = null;
       viewRotationAmount = 0;
       rotationCompleted = false;
       targetPuzzleRotationX = .20;
@@ -996,9 +880,7 @@
       movable.position.copy(initialPosition);
       dragTarget.copy(initialPosition);
       movable.rotation.copy(initialRotation);
-      targetGripQuaternion.copy(movable.quaternion);
       dragOffset.set(0, 0, 0);
-      grabPointerOffset.set(0, 0);
       movable.scale.setScalar(1);
       movable.material.emissive.setHex(0x000000);
       target.material.opacity = .25;
@@ -1022,9 +904,6 @@
       const hit = raycaster.intersectObject(movable, true).length > 0;
       hovered = hit;
       grabCandidate = hit ? movable : null;
-      const now = performance.now();
-      if (hit) hoverHistory.push({ object: movable, at: now });
-      pruneHoverHistory(now);
       edges.material.opacity = THREE.MathUtils.lerp(edges.material.opacity, hit ? .95 : 0, .24);
       movable.material.emissive.setHex(hit ? 0x3b2b0c : 0x000000);
       if (hit && currentStep === 0) {
@@ -1033,21 +912,10 @@
       }
     }
 
-    function pruneHoverHistory(now = performance.now()) {
-      while (hoverHistory.length && now - hoverHistory[0].at > SELECTION_LOOKBACK_MS) hoverHistory.shift();
-    }
-
-    function recentHoverTarget(now = performance.now()) {
-      pruneHoverHistory(now);
-      return hoverHistory.length ? hoverHistory[hoverHistory.length - 1].object : null;
-    }
-
     function beginGrab(candidate = grabCandidate) {
       const hasCandidate = candidate === movable;
       if (!hasCandidate || grabbed || !tutorialStarted || currentPart !== 1) return false;
       grabbed = true;
-      gripPoseReady = false;
-      targetGripQuaternion.copy(movable.quaternion);
       dragOffset.set(0, 0, 0);
       if (raycaster.ray.intersectPlane(dragPlane, planeHit)) {
         puzzleGroup.worldToLocal(planeHit);
@@ -1057,7 +925,7 @@
       movable.scale.setScalar(1.035);
       edges.material.opacity = 1;
       nextStep(1);
-      showToast("已抓住：移动手掌移位，转动手腕转向，张掌释放");
+      showToast("已抓住：移动手掌移位，分开两指释放");
       return true;
     }
 
@@ -1078,94 +946,18 @@
       }
     }
 
-    function updateSmoothCursor(dt) {
-      if (!handVisible || cursorTargetX === null) return;
-      if (smoothedCursorX === null) {
-        smoothedCursorX = cursorTargetX;
-        smoothedCursorY = cursorTargetY;
-      } else {
-        const alpha = 1 - Math.exp(-dt / .04);
-        smoothedCursorX += (cursorTargetX - smoothedCursorX) * alpha;
-        smoothedCursorY += (cursorTargetY - smoothedCursorY) * alpha;
-      }
-      cursorEl.style.left = `${smoothedCursorX}px`;
-      cursorEl.style.top = `${smoothedCursorY}px`;
-    }
-
     function updateSmoothDrag(dt) {
       if (!grabbed) return;
       // 轨迹只有一次平滑，无死区、速度上限或每帧位移限制。
-      const alpha = 1 - Math.exp(-dt / .035);
+      const alpha = 1 - Math.exp(-dt / .055);
       movable.position.lerp(dragTarget, alpha);
-      movable.quaternion.slerp(targetGripQuaternion, alpha);
-    }
-
-    function getPalmCenter(marks) {
-      const ids = [0, 5, 9, 13, 17];
-      const center = ids.reduce((p, id) => ({ x: p.x + marks[id].x, y: p.y + marks[id].y }), { x: 0, y: 0 });
-      return { x: (1 - center.x / ids.length) * innerWidth, y: center.y / ids.length * innerHeight };
-    }
-
-    function measurePinch(marks, worldMarks = null) {
-      const points = worldMarks || marks;
-      const aspect = worldMarks ? 1 : (video.videoWidth || 640) / (video.videoHeight || 480);
-      const distance = (a, b) => Math.hypot(
-        (points[a].x - points[b].x) * aspect,
-        points[a].y - points[b].y,
-        worldMarks ? (points[a].z || 0) - (points[b].z || 0) : 0
-      );
-      const palmSize = Math.max(worldMarks ? .015 : .04, distance(5, 17), distance(0, 9) * .8);
-      return distance(4, 8) / palmSize;
-    }
-
-    function getPalmOrientation(marks, worldMarks = null) {
-      const points = worldMarks || marks;
-      const aspect = worldMarks ? 1 : (video.videoWidth || 640) / (video.videoHeight || 480);
-      const point = i => new THREE.Vector3(-points[i].x * aspect, -points[i].y, -(points[i].z || 0) * aspect);
-      // 用掌骨构造姿态，不让捏合时指尖的变化控制旋转。
-      const across = point(5).sub(point(17));
-      const forward = point(9).sub(point(0));
-      if (across.lengthSq() < .000001 || forward.lengthSq() < .000001) return null;
-      across.normalize();
-      forward.addScaledVector(across, -forward.dot(across));
-      if (forward.lengthSq() < .000001) return null;
-      forward.normalize();
-      const normal = new THREE.Vector3().crossVectors(across, forward).normalize();
-      return new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(across, forward, normal));
-    }
-
-    function anchorGripOrientation(pose) {
-      gripPoseReady = Boolean(pose);
-      if (!pose) return;
-      gripStartHand.copy(pose);
-      gripFilteredHand.copy(pose);
-      gripStartObject.copy(movable.quaternion);
-      targetGripQuaternion.copy(movable.quaternion);
-    }
-
-    function updateGripOrientation(pose) {
-      if (!pose) return false;
-      if (!gripPoseReady) { anchorGripOrientation(pose); return false; }
-      const before = gripFilteredHand.clone();
-      gripFilteredHand.copy(pose);
-      const delta = gripFilteredHand.clone().multiply(gripStartHand.clone().invert());
-      const parentWorld = puzzleGroup.getWorldQuaternion(new THREE.Quaternion());
-      const cameraToParent = parentWorld.invert().multiply(camera3d.quaternion);
-      const localDelta = cameraToParent.clone().multiply(delta).multiply(cameraToParent.clone().invert());
-      const next = localDelta.multiply(gripStartObject).normalize();
-      targetGripQuaternion.copy(next);
-      return before.angleTo(gripFilteredHand) > .012; // 仅用于显示“旋转”手套，不限制物体转动。
     }
 
     function finishGrab() {
       if (!grabbed || currentPart !== 1) return;
       grabbed = false;
-      gripPoseReady = false;
-      grabNeedsReanchor = false;
       hovered = false;
       grabCandidate = null;
-      intentCandidate = null;
-      hoverHistory.length = 0;
       movable.scale.setScalar(1);
       const distance = movable.position.distanceTo(target.position);
       if (distance < POSITION_TOLERANCE) {
@@ -1185,16 +977,15 @@
 
     function startRotationChapter() {
       currentPart = 2;
+      recognition.resetInteraction();handRotationTarget=null;
       assembledGroup.scale.setScalar(.616);assembledGroup.position.y=-.4928;
       assembledGroup.visible=true;lockGroup.visible=false;movable.visible=false;target.visible=false;
       movable.position.copy(target.position);movable.rotation.copy(target.rotation);
-      previousViewPose=null;
       tutorialStarted = true;
       chapterTransitionEl.classList.add("hidden");
       target.material.opacity = 0;
       floorRing.material.opacity = 0;
       movable.material.emissive.setHex(0x000000);
-      previousPalmPoint = null;
       viewRotationAmount = 0;
       rotationCompleted = false;
       targetPuzzleRotationX = .08;
@@ -1210,7 +1001,7 @@
 
     function beginGraduation(preview=false){
       if(graduationMotion)return;
-      tutorialStarted=false;grabbed=false;
+      tutorialStarted=false;grabbed=false;recognition.resetInteraction();handRotationTarget=null;
       assembledGroup.scale.setScalar(.77);assembledGroup.position.y=0;
       camera3d.position.set(0,2.5,12.5);camera3d.lookAt(0,.25,0);camera3d.clearViewOffset();camera3d.aspect=1672/941;camera3d.updateProjectionMatrix();renderer.setSize(1672,941);
       graduationMotion={start:performance.now(),baseZ:camera3d.position.z,baseX:puzzleGroup.position.x,baseY:puzzleGroup.position.y,modelScale:puzzleGroup.scale.x,tableScale:table.scale.x};
@@ -1244,229 +1035,53 @@
       el.dataset.degrees=String(degrees);el.dataset.required='360';
     }
 
-    let previousViewPose=null;
-    function updateViewRotationFromPalm(marks, openPalmNow, pose) {
-      const ids = [0, 5, 9, 13, 17];
-      const palm = ids.reduce((point, id) => {
-        point.x += 1 - marks[id].x;
-        point.y += marks[id].y;
-        return point;
-      }, { x: 0, y: 0 });
-      palm.x /= ids.length;
-      palm.y /= ids.length;
-      cursorTargetX = palm.x * innerWidth;
-      cursorTargetY = palm.y * innerHeight;
-      if (!openPalmNow) {
-        previousViewPose=null;
-        previousPalmPoint = null;
+    let handRotationTarget=null,cameraSession=null;
+    const recognition=new RecognitionEngine({
+      getRotation:()=>puzzleGroup.quaternion,
+      hitTest:point=>{
+        if(!tutorialStarted||currentPart!==1)return null;
+        setPointerFromScreen(point.x*innerWidth,point.y*innerHeight);
+        // The incoming grab lab permits a broad central ellipse for its single target.
+        const hit=raycaster.intersectObject(movable,true).length>0;
+        const dx=(point.x-.5)/.45,dy=(point.y-.54)/.42;
+        hovered=hit||dx*dx+dy*dy<=1;grabCandidate=hovered?movable:null;
+        edges.material.opacity=hovered?.8:0;movable.material.emissive.setHex(hovered?0x3a280c:0);
+        if(hovered&&currentStep===0)nextStep(0);
+        return hovered?'movable':null;
+      }
+    });
+    document.body.dataset.recognitionEngine='snapshot-v33';
+    async function startCamera(){
+      if(cameraRunning)return;cameraButton.disabled=true;cameraStatus.textContent='连接中';
+      try{
+        cameraSession=await startRecognitionCamera(video,onHandResults);recognition.start();cameraRunning=true;
+        document.querySelector('.camera-card').classList.add('camera-live');cameraPlaceholder.style.display='none';cameraStatus.textContent='请张掌校准';cameraStatus.classList.add('live');cameraButton.textContent='摄像头已开启';
+        showToast('请张开手掌约1秒，自动校准后即可操作');
+      }catch(error){cameraSession?.stop();cameraSession=null;cameraRunning=false;cameraButton.disabled=false;cameraStatus.textContent='开启失败';cameraStatus.classList.remove('live');cameraPlaceholder.style.display='grid';cameraPlaceholder.textContent='摄像头未能开启，可继续使用鼠标';showToast('请检查摄像头权限，或使用鼠标操作');console.error(error);}
+    }
+    function onHandResults(results){
+      const marks=results.multiHandLandmarks?.[0]||null;handVisible=Boolean(marks);drawCameraHand(video,handCanvas,marks);
+      if(graduationMotion||!tutorialStarted)return;
+      const frame=recognition.process(results,{aspect:(video.videoWidth||640)/(video.videoHeight||480),mode:currentPart===1?'grab':'rotate'});
+      document.body.dataset.recognitionState=frame.openRotate?'ROTATE':frame.snapshot.state;
+      if(!frame.calibrated){cameraStatus.textContent=`张掌校准 ${Math.min(18,frame.calibrationSamples)}/18`;modePill.textContent='请张开手掌，完成自动校准';return;}
+      cameraStatus.textContent=marks?'识别中':'等待手掌';
+      if(currentPart===2){
+        if(frame.openRotate&&frame.rotationTarget){handRotationTarget=frame.rotationTarget;if(currentStep===0)setStep(1);modePill.textContent='张掌 · 转腕旋转';}
+        else{if(handRotationTarget){const e=new THREE.Euler().setFromQuaternion(puzzleGroup.quaternion);targetPuzzleRotationX=e.x;targetPuzzleRotationY=e.y;targetPuzzleRotationZ=e.z;handRotationTarget=null;}modePill.textContent=marks?'张开手掌，原地转动手腕':'请将手移回画面';}
         return;
       }
-
-      if (currentStep === 0) {
-        setStep(1);
-        showToast("已托住，移动手掌旋转鲁班锁");
+      const snapshot=frame.snapshot;
+      for(const event of frame.events){
+        if(event.type==='GRAB'&&snapshot.pointer){setPointerFromScreen(snapshot.pointer.x*innerWidth,snapshot.pointer.y*innerHeight);if(beginGrab(movable)){movable.material.emissive.setHex(0x0d352b);}else recognition.resetInteraction();}
+        if(event.type==='RELEASE')finishGrab();
       }
-      if(pose && previousViewPose){
-        const delta=pose.clone().multiply(previousViewPose.clone().invert());
-        const e=new THREE.Euler().setFromQuaternion(delta,"YXZ");
-        targetPuzzleRotationY+=e.y;targetPuzzleRotationZ+=e.z;targetPuzzleRotationX=THREE.MathUtils.clamp(targetPuzzleRotationX+e.x,-.85,.85);
-      }
-      previousViewPose=pose?.clone()||null;
-      if (previousPalmPoint) {
-        let dx = palm.x - previousPalmPoint.x;
-        let dy = palm.y - previousPalmPoint.y;
-        targetPuzzleRotationY += dx * 4.8;
-        targetPuzzleRotationX = THREE.MathUtils.clamp(targetPuzzleRotationX + dy * 3.8, -.85, .85);
-      }
-      previousPalmPoint = palm;
+      if(grabbed&&snapshot.state==='GRABBED'&&snapshot.pointer){setPointerFromScreen(snapshot.pointer.x*innerWidth,snapshot.pointer.y*innerHeight);updateGrabPosition();}
+      const labels={POINT:'食指指向 · 捏合抓取',ARMED:'目标已锁定 · 继续捏合',GRABBED:'已抓取 · 移动手掌',HOLD:'手掌暂时离开 · 构件保持'};
+      modePill.textContent=labels[snapshot.state]||'等待手掌';
+      actionHint.textContent=currentPart===1?'指向 · 捏合抓取 · 移动手掌 · 分开两指释放':'保持张掌 · 原地转动手腕';
     }
 
-    let mediaPipeReady;
-    function loadMediaPipe(){
-      if(!mediaPipeReady)mediaPipeReady=Promise.all([
-        ["camera_utils/camera_utils.js","https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"],
-        ["hands/hands.js","https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"]
-      ].map(([path,fallback])=>new Promise((resolve,reject)=>{
-        const s=document.createElement("script");let retried=false;
-        s.src="https://unpkg.com/@mediapipe/"+path;s.onload=resolve;
-        s.onerror=()=>{if(retried){reject(new Error("手势资源加载失败"));return;}retried=true;s.src=fallback;};document.head.append(s);
-      }))).catch(error=>{mediaPipeReady=null;throw error;});
-      return mediaPipeReady;
-    }
-    async function startCamera() {
-      if (cameraRunning) return;
-      cameraButton.disabled = true;
-      cameraStatus.textContent = "连接中";
-      try {
-        await loadMediaPipe();
-        if (typeof Hands === "undefined" || typeof Camera === "undefined") {
-          throw new Error("手势模型资源未加载");
-        }
-        const hands = new Hands({
-          locateFile: file => `https://unpkg.com/@mediapipe/hands/${file}`
-        });
-        hands.setOptions({
-          maxNumHands: 1,
-          modelComplexity: 0,
-          minDetectionConfidence: .62,
-          minTrackingConfidence: .68
-        });
-        hands.onResults(onHandResults);
-        const inputCamera = new Camera(video, {
-          // Camera 等待本次识别结束再发送下一帧，避免积累过时帧。
-          onFrame: async () => hands.send({ image: video }),
-          width: 640,
-          height: 480
-        });
-        await inputCamera.start();
-        cameraRunning = true;
-        document.querySelector(".camera-card").classList.add("camera-live");
-        cameraPlaceholder.style.display = "none";
-        cameraStatus.textContent = "识别中";
-        cameraStatus.classList.add("live");
-        cameraButton.textContent = "摄像头已开启";
-        actionHint.textContent = currentPart === 1
-          ? "摄像头模式：两指靠近抓取 · 转腕调整朝向 · 张掌释放"
-          : "摄像头模式：保持张掌 · 移动手掌旋转";
-        showToast("摄像头已开启，请将手放入画面");
-      } catch (error) {
-        cameraStatus.textContent = "开启失败";
-        cameraStatus.classList.remove("live");
-        cameraButton.disabled = false;
-        cameraPlaceholder.style.display = "grid";
-        cameraPlaceholder.innerHTML = "摄像头未能开启<br>可继续使用鼠标完成教学";
-        showToast("请检查摄像头权限，或使用鼠标操作");
-        console.error(error);
-      }
-    }
-
-    function onHandResults(results) {
-      const width = video.videoWidth || 640;
-      const height = video.videoHeight || 480;
-      if (handCanvas.width !== width) handCanvas.width = width;
-      if (handCanvas.height !== height) handCanvas.height = height;
-      handCtx.clearRect(0, 0, width, height);
-      const marks = results.multiHandLandmarks?.[0];
-      handVisible = Boolean(marks);
-      cursorEl.classList.toggle("visible", handVisible);
-      if (!marks) {
-        if (!grabbed) {
-          hoverHistory.length = 0;
-          intentCandidate = null;
-          grabIntentActive = false;
-        }
-        // 遮挡时没有新位置，停在当前位置，重新识别后接续。
-        previousPalmPoint = null;
-        previousViewPose=null;
-        modePill.textContent="请将手移回画面";
-        if (grabbed) {
-          grabNeedsReanchor = true;
-          dragTarget.copy(movable.position);
-          targetGripQuaternion.copy(movable.quaternion);
-        }
-        return;
-      }
-      const now = performance.now();
-      detectedHandIsLeft = (results.multiHandedness?.[0]?.label || "Left") !== "Left";
-      drawSkeleton(marks, width, height);
-      const palm = getPalmCenter(marks);
-      const worldMarks = results.multiHandWorldLandmarks?.[0];
-      const pose = getPalmOrientation(marks, worldMarks);
-      const pinchRatio = measurePinch(marks, worldMarks);
-      const pinchingNow = pinchRatio <= PINCH_GRAB_RATIO;
-      const pinchIntent = pinchRatio < PINCH_INTENT_RATIO;
-      const openPalmNow = pinchRatio > PALM_RELEASE_RATIO && isOpenPalm(marks);
-      if (currentPart === 2) {
-        setCursorPose(openPalmNow ? "rotate" : "select");
-        updateViewRotationFromPalm(marks, openPalmNow, pose);
-        return;
-      }
-
-      const indexX = (1 - marks[8].x) * innerWidth;
-      const indexY = marks[8].y * innerHeight;
-      if (!grabbed && !pinchIntent) {
-        grabIntentActive = false;
-        intentCandidate = null;
-      }
-      if (!grabbed && pinchIntent && !grabIntentActive) {
-        // 先回看抓取动作前最近指向的物体；不冻结光标，也不等待计时器。
-        grabIntentActive = true;
-        intentCandidate = recentHoverTarget(now);
-      }
-      if (grabbed && grabNeedsReanchor) {
-        const anchorX = smoothedCursorX ?? indexX;
-        const anchorY = smoothedCursorY ?? indexY;
-        grabPointerOffset.set(anchorX - palm.x, anchorY - palm.y);
-        setPointerFromScreen(anchorX, anchorY);
-        if (raycaster.ray.intersectPlane(dragPlane, planeHit)) {
-          puzzleGroup.worldToLocal(planeHit);
-          dragOffset.copy(movable.position).sub(planeHit);
-        }
-        dragTarget.copy(movable.position);
-        anchorGripOrientation(pose);
-        grabNeedsReanchor = false;
-      }
-      cursorTargetX = grabbed ? palm.x + grabPointerOffset.x : indexX;
-      cursorTargetY = grabbed ? palm.y + grabPointerOffset.y : indexY;
-      setPointerFromScreen(cursorTargetX, cursorTargetY);
-      if (!grabbed && !pinchIntent) updateHover();
-      if (!grabbed && pinchIntent && !intentCandidate) {
-        // 没有历史目标时，仍可直接对准物体抓取，空处不会自动吸附。
-        updateHover();
-        intentCandidate = recentHoverTarget(now);
-      }
-      if (!grabbed && pinchingNow && beginGrab(intentCandidate)) {
-        grabPointerOffset.set(cursorTargetX - palm.x, cursorTargetY - palm.y);
-        anchorGripOrientation(pose);
-      } else if (grabbed && openPalmNow) {
-        finishGrab();
-        grabIntentActive = false;
-        intentCandidate = null;
-        hoverHistory.length = 0;
-      }
-      setCursorPose(grabbed ? (openPalmNow ? "release" : "grab") : "select");
-      if (grabbed && !openPalmNow) {
-        updateGrabPosition();
-        if (updateGripOrientation(pose)) setCursorPose("rotate");
-      }
-    }
-
-    function isOpenPalm(marks) {
-      const wrist = marks[0];
-      const fingerJoints = [[8, 6], [12, 10], [16, 14], [20, 18]];
-      let extendedFingers = 0;
-      for (const [tipIndex, jointIndex] of fingerJoints) {
-        const tip = marks[tipIndex];
-        const joint = marks[jointIndex];
-        const tipDistance = Math.hypot(tip.x - wrist.x, tip.y - wrist.y);
-        const jointDistance = Math.hypot(joint.x - wrist.x, joint.y - wrist.y);
-        if (tipDistance > jointDistance * 1.1) extendedFingers++;
-      }
-      return extendedFingers >= 3;
-    }
-
-    function drawSkeleton(marks, width, height) {
-      const pairs = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
-      handCtx.save();
-      // handCanvas 已通过 CSS 与视频一起镜像，这里直接按模型坐标绘制，
-      // 避免二次翻转导致骨骼、手套光标与实际手势方向相反。
-      handCtx.strokeStyle = "rgba(215,169,75,.86)";
-      handCtx.lineWidth = 3;
-      handCtx.lineCap = "round";
-      for (const [a, b] of pairs) {
-        handCtx.beginPath();
-        handCtx.moveTo(marks[a].x * width, marks[a].y * height);
-        handCtx.lineTo(marks[b].x * width, marks[b].y * height);
-        handCtx.stroke();
-      }
-      for (let i = 0; i < marks.length; i++) {
-        handCtx.beginPath();
-        handCtx.arc(marks[i].x * width, marks[i].y * height, i === 8 || i === 4 ? 6 : 3, 0, Math.PI * 2);
-        handCtx.fillStyle = i === 8 || i === 4 ? "#f3e5b8" : "#62b49a";
-        handCtx.fill();
-      }
-      handCtx.restore();
-    }
 
     renderer.domElement.addEventListener("pointermove", event => {
       if (handVisible) return;
@@ -1546,16 +1161,18 @@
         floorRing.material.opacity = 0;
         target.material.opacity = 0;
       }
+      if(handRotationTarget&&!graduationMotion){puzzleGroup.quaternion.slerp(handRotationTarget,1-Math.exp(-dt/.065));}else{
       puzzleGroup.rotation.x = THREE.MathUtils.lerp(puzzleGroup.rotation.x, targetPuzzleRotationX, 1 - Math.exp(-dt / .055));
       puzzleGroup.rotation.y = THREE.MathUtils.lerp(puzzleGroup.rotation.y, targetPuzzleRotationY, 1 - Math.exp(-dt / .055));
       puzzleGroup.rotation.z=THREE.MathUtils.lerp(puzzleGroup.rotation.z,targetPuzzleRotationZ,1-Math.exp(-dt/.055));
+      }
       if(currentPart===2&&tutorialStarted&&currentStep>0&&!graduationMotion){
         if(previousRotationProgressPose)viewRotationAmount+=previousRotationProgressPose.angleTo(puzzleGroup.quaternion);
         previousRotationProgressPose=puzzleGroup.quaternion.clone();
         updateRotationProgress();
         if(viewRotationAmount>=REQUIRED_ROTATION)completeRotationTutorial();
       }
-      updateSmoothCursor(dt);
+
       updateSmoothDrag(dt);
       if (!grabbed && tutorialStarted && movable.position.distanceTo(target.position) > .01) {
         movable.position.y += Math.sin(t * 1.8) * .0007;
@@ -1594,8 +1211,6 @@
         li.classList.toggle("active",i===active);li.classList.toggle("done",i<active||(!tutorialStarted&&currentPart===1));
         li.querySelector("b").textContent=(i<active||(!tutorialStarted&&currentPart===1))?"✓":i+1;
       });
-      const cards=currentPart===1?[["","手指张开","对准发光构件"],["pinch","捏合抓取","拇指食指靠近"],["open","张开手掌","放入绿色范围"]]:[["palm","张开手掌","像托住实物"],["palm","轻转手腕","保持自然张掌"],["palm","观察另一面","缓慢转动视角"]];
-      document.getElementById("gestureGuide").innerHTML=cards.map(([pose,title,sub],i)=>'<div class="gesture-item"><div class="guide-glove '+pose+'" style="'+(currentPart===2?'transform:rotate('+((i-1)*18)+'deg)':'')+'"></div><strong>'+title+'</strong><small>'+sub+'</small></div>').join("");
       nextButton.textContent=currentPart===1?"进入旋转 ›":"完成教程 ›";
       nextButton.disabled=currentPart===1?tutorialStarted:!rotationCompleted;
       document.getElementById("previousButton").hidden=currentPart===1;
@@ -1625,7 +1240,7 @@
     document.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click",()=>b.closest("dialog").close()));
     document.getElementById("particlesToggle").addEventListener("change",event=>{document.querySelector(".ambient").hidden=!event.target.checked;motes.visible=event.target.checked;});
     document.getElementById("restartLesson").addEventListener("click",()=>{resetTutorial(false);settingsDialog.close();});
-    window.addEventListener("pagehide",()=>video.srcObject?.getTracks().forEach(track=>track.stop()));
+    window.addEventListener("pagehide",()=>cameraSession?.stop());
     renderer.domElement.addEventListener("pointerdown",event=>{if(event.isPrimary)renderer.domElement.setPointerCapture(event.pointerId);});
     renderer.domElement.addEventListener("pointercancel",()=>{mouseDown=false;finishGrab();});
     fitWorkshop();resetTutorial(false);document.body.dataset.ready="true";
