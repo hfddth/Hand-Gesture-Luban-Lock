@@ -507,6 +507,7 @@
     }
   </style>
   <link rel="stylesheet" href="assets/landing/tutorial-v16.css?v=17">
+  <link rel="stylesheet" href="assets/landing/graduation-v19.css?v=19">
 </head>
 <body>
   <main id="scene" aria-label="鲁班锁三维教学场景"></main>
@@ -581,15 +582,16 @@
     </div>
   </section>
 
-  <section class="success hidden" id="success">
-    <div class="success-card">
-      <div class="success-ring">✓</div>
-      <div class="eyebrow">教学完成</div>
-      <h2>合木成锁</h2>
-      <p>你已掌握抓取放置与托物旋转。用你的双手，感受榫卯之间的巧思。</p>
-      <a class="ui-button" href="./" style="display:inline-block;text-decoration:none;margin:12px">返回封面</a>
-      <button type="button" id="againButton">再试一次</button>
+  <section class="success hidden graduation" id="success" aria-labelledby="graduationTitle">
+    <div class="wake-light one" aria-hidden="true"></div><div class="wake-light two" aria-hidden="true"></div><div class="wake-light three" aria-hidden="true"></div>
+    <div class="graduation-content">
+      <div class="graduation-eyebrow"><svg class="completion-medal" viewBox="0 0 76 88" aria-hidden="true"><path d="M38 3 72 22v44L38 85 4 66V22Z M38 10 66 26v36L38 78 10 62V26Z"/><text x="38" y="54" text-anchor="middle">成</text></svg><span>出师入坊 · 初习告成</span></div>
+      <h2 id="graduationTitle" tabindex="-1">初习已成，<br>巧思待启</h2>
+      <p class="graduation-description">一榫一卯，你已知其法。<br>接下来，去解开属于你的机关。</p>
+      <div class="graduation-achievements"><span>✓ 抓取放置 · 已掌握</span><span>✓ 托物旋转 · 已掌握</span></div>
+      <div class="graduation-actions"><a class="ui-button primary enter-workshop" href="modes.html?v=19"><span>入坊探索</span><span aria-hidden="true">→</span></a><button type="button" id="againButton">重温教程</button></div>
     </div>
+    <div class="graduation-footnote">一榫一卯 · 皆有章法</div>
   </section>
 
 
@@ -653,6 +655,7 @@
 
     let tutorialStarted = false;
     let currentPart = 1;
+    let graduationMotion=null;
     let currentStep = 0;
     let grabbed = false;
     let hovered = false;
@@ -959,6 +962,7 @@
     }
 
     function resetTutorial(announce = true) {
+      if(graduationMotion){graduationMotion=null;document.body.classList.remove("is-graduating");brass.emissive.setHex(0);brass.emissiveIntensity=0;motes.geometry.setDrawRange(0,180);motes.material.size=.022;fitWorkshop();document.querySelectorAll("[data-graduation-inert]").forEach(e=>{e.inert=false;e.removeAttribute("data-graduation-inert");});}
       tutorialStarted = true;
       currentPart = 1;
       assembledGroup.visible=false;lockGroup.visible=true;movable.visible=true;target.visible=true;
@@ -1191,6 +1195,20 @@
       targetPuzzleRotationY = -.42;
       setStep(0);
       showToast("第二部分：张开手掌托住鲁班锁");
+    }
+
+
+    function beginGraduation(preview=false){
+      if(graduationMotion)return;
+      tutorialStarted=false;grabbed=false;
+      graduationMotion={start:performance.now(),baseZ:camera3d.position.z};
+      document.body.classList.add("is-graduating");
+      document.querySelectorAll(".lesson,.camera-card,.chapter-bar,.utility,.lesson-actions").forEach(e=>{e.inert=true;e.setAttribute("data-graduation-inert","");});
+      successEl.classList.remove("hidden");
+      motes.geometry.setDrawRange(0,16);
+      motes.material.size=.045;
+      if(!preview){try{localStorage.setItem("sunju-tutorial-complete-v1","true");}catch{}}
+      document.getElementById("graduationTitle").focus({preventScroll:true});
     }
 
     function completeRotationTutorial() {
@@ -1518,6 +1536,12 @@
       if (grabbed) {
         edges.material.opacity = .75 + Math.sin(t * 6) * .2;
       }
+      if(graduationMotion){
+        const p=reduceMotion.matches?1:THREE.MathUtils.clamp((performance.now()-graduationMotion.start)/1100,0,1);
+        const ease=.5-Math.cos(p*Math.PI)*.5;
+        camera3d.position.z=graduationMotion.baseZ+ease*1.2;
+        brass.emissive.setHex(0xb57c24);brass.emissiveIntensity=ease*.28;
+      }
       renderer.render(scene, camera3d);
     }
 
@@ -1548,9 +1572,10 @@
       camera3d.lookAt(0,mobile?.6:.25,0);
       camera3d.setViewOffset(innerWidth,innerHeight,mobile?innerWidth*.10:0,mobile?innerHeight*.19:0,innerWidth,innerHeight);
       puzzleGroup.position.x=mobile?0:1.35;puzzleGroup.scale.setScalar(mobile?.56:1);table.scale.setScalar(mobile?.50:.86);table.position.x=puzzleGroup.position.x;floorRing.position.x=puzzleGroup.position.x;
+      if(graduationMotion)graduationMotion.baseZ=camera3d.position.z;
       camera3d.updateProjectionMatrix();
     }
-    nextButton.addEventListener("click",()=>{if(currentPart===1)startRotationChapter();else successEl.classList.remove("hidden");});
+    nextButton.addEventListener("click",()=>{if(currentPart===1)startRotationChapter();else beginGraduation();});
     skipButton.addEventListener("click",()=>{if(currentPart===1)startRotationChapter();else startRotationChapter();});
     document.getElementById("previousButton").addEventListener("click",()=>resetTutorial(false));
     chapterOneEl.addEventListener("click",()=>resetTutorial(false));
@@ -1564,6 +1589,7 @@
     renderer.domElement.addEventListener("pointerdown",event=>{if(event.isPrimary)renderer.domElement.setPointerCapture(event.pointerId);});
     renderer.domElement.addEventListener("pointercancel",()=>{mouseDown=false;finishGrab();});
     fitWorkshop();resetTutorial(false);document.body.dataset.ready="true";
+    if(new URLSearchParams(location.search).get("stage")==="graduation"){startRotationChapter();rotationCompleted=true;syncInterface();beginGraduation(true);}
     animate();
   </script>
 </body>
