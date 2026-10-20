@@ -5,7 +5,7 @@ shadow:{title:"榫影成画",copy:"在灯下比出影形，让手影与画中轮
 };
 const cards=[...document.querySelectorAll(".mode-card")],dialog=document.getElementById("modeDialog");
 const landscapePrompt=document.createElement('div');landscapePrompt.className='landscape-prompt';landscapePrompt.innerHTML='请横屏体验<span>旋转手机，进入与电脑相同的完整界面</span>';document.documentElement.append(landscapePrompt);
-function fitStage(){const w=innerWidth,h=innerHeight;const fit=w<1672||h<941;document.documentElement.classList.toggle('fit-stage',fit);document.documentElement.style.setProperty('--stage-scale',Math.min(w/1672,h/941));landscapePrompt.hidden=!(w<h&&w<900&&matchMedia('(pointer:coarse)').matches);}
+function fitStage(){const w=innerWidth,h=innerHeight;const fit=true;document.documentElement.classList.toggle('fit-stage',fit);document.documentElement.style.setProperty('--stage-scale',Math.min(w/1692,h/930));landscapePrompt.hidden=!(w<h&&w<900&&matchMedia('(pointer:coarse)').matches);}
 addEventListener('resize',fitStage);fitStage();
 let selected="burr";try{const saved=localStorage.getItem("sunju-selected-mode");if(descriptions[saved])selected=saved;}catch{}
 function choose(mode){selected=mode;cards.forEach(card=>{const active=card.dataset.mode===mode;card.classList.toggle("selected",active);card.setAttribute("aria-pressed",String(active));});document.getElementById("selectedDescription").textContent="当前选择："+descriptions[mode].title;try{localStorage.setItem("sunju-selected-mode",mode);}catch{}}
