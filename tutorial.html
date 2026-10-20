@@ -506,7 +506,7 @@
       .intro-card, .success-card, .chapter-card { padding: 32px 22px; }
     }
   </style>
-  <link rel="stylesheet" href="assets/landing/tutorial-v16.css?v=16">
+  <link rel="stylesheet" href="assets/landing/tutorial-v16.css?v=17">
 </head>
 <body>
   <main id="scene" aria-label="鲁班锁三维教学场景"></main>
@@ -559,7 +559,7 @@
 
   <div class="cursor right pose-select" id="gestureCursor"><div class="glove-icon" aria-hidden="true"></div><span class="hand-label">右手 · 选择</span></div>
   <div class="toast" id="toast"></div>
-  <div class="mode-pill" id="modePill">鼠标：拖拽移动 · 松开安装</div>
+  <div class="mode-pill" id="modePill">鼠标：拖拽移动 · 松开放置</div>
 
   <section class="intro hidden" id="intro">
     <div class="intro-card">
@@ -643,7 +643,7 @@
       ["当前教学 · 抓取放置", "对准榫木，准备抓取", "将手套移到榫木附近，或用鼠标指向上方的木构件。"],
       ["当前教学 · 抓取放置", "捏合，拿起榫木", "拇指与食指靠近，即可抓取。也可按住鼠标拖动榫木。"],
       ["当前教学 · 抓取放置", "移动，靠近安装区", "抓住后移动手掌，将榫木靠近绿色轮廓；轻转手腕可调整朝向。"],
-      ["当前教学 · 抓取放置", "松开，木已就位", "进入绿色范围后分开手指、张掌放置。鼠标松开即可，系统会自动对齐。"]
+      ["当前教学 · 抓取放置", "张开手掌，完成放置", "进入绿色范围后分开手指、张掌放置。鼠标松开即可，系统会自动对齐。"]
     ];
 
     const rotationLessons = [
@@ -751,16 +751,16 @@
     const lockGroup = new THREE.Group();
     puzzleGroup.add(lockGroup);
 
-    const fixedA = makeBeam(darkWoodMaterial, 5.4, .82, .82);
-    fixedA.rotation.z = Math.PI / 2;
-    fixedA.rotation.x = .16;
-    fixedA.position.set(.1, 0, 0);
+    const fixedA = makeBeam(darkWoodMaterial, 4.9, 1.05, 1.05);
+    fixedA.rotation.z = 0;
+    fixedA.rotation.x = 0;
+    fixedA.position.set(0, -1.65, 0);
     lockGroup.add(fixedA);
 
-    const fixedB = makeBeam(woodMaterial, 5.2, .8, .8);
+    const fixedB = makeBeam(woodMaterial, 4.8, 1.02, 1.02);
     fixedB.rotation.y = Math.PI / 2;
-    fixedB.rotation.z = -.1;
-    fixedB.position.set(0, -.12, .02);
+    fixedB.rotation.z = 0;
+    fixedB.position.set(0, -1.65, .02);
     lockGroup.add(fixedB);
 
     const targetMaterial = new THREE.MeshBasicMaterial({
@@ -770,13 +770,15 @@
       opacity: .25,
       depthWrite: false
     });
-    const target = new THREE.Mesh(new THREE.BoxGeometry(5.1, .78, .78), targetMaterial);
-    target.position.set(0, .08, .03);
+    const target = new THREE.Mesh(new THREE.BoxGeometry(4.9, 1.0, 1.0), targetMaterial);
+    target.position.set(0, -.73, .03);
+    target.rotation.x = Math.PI;
     target.rotation.z = 0;
     puzzleGroup.add(target);
 
-    const movable = makeBeam(woodMaterial.clone(), 5.1, .78, .78);
-    movable.position.set(0, 2.35, .35);
+    const movable = makeBeam(woodMaterial.clone(), 4.9, 1.0, 1.0);
+    movable.position.set(0, 1.45, .15);
+    movable.rotation.x = Math.PI;
     movable.rotation.z = 0;
     movable.userData.baseY = movable.position.y;
     puzzleGroup.add(movable);
@@ -871,7 +873,7 @@
       // Central seating notch, cut from a single continuous beam.
       const shape=new THREE.Shape(),L=x/2,H=y/2,N=.51,D=y*.52;
       shape.moveTo(-L,-H);shape.lineTo(L,-H);shape.lineTo(L,H);shape.lineTo(N,H);shape.lineTo(N,H-D);shape.lineTo(-N,H-D);shape.lineTo(-N,H);shape.lineTo(-L,H);shape.closePath();
-      const cut=new THREE.ExtrudeGeometry(shape,{depth:z,bevelEnabled:true,bevelSize:.018,bevelThickness:.018,bevelSegments:2,steps:1});
+      const cut=new THREE.ExtrudeGeometry(shape,{depth:z,bevelEnabled:true,bevelSize:.032,bevelThickness:.032,bevelSegments:3,steps:1});
       cut.translate(0,0,-z/2);
       const pos=cut.attributes.position,uv=cut.attributes.uv;
       for(let i=0;i<pos.count;i++){uv.setXY(i,(pos.getX(i)+L)/x,(pos.getY(i)+pos.getZ(i)+1.2)/2.4);}
@@ -1515,7 +1517,7 @@
         li.classList.toggle("active",i===active);li.classList.toggle("done",i<active||(!tutorialStarted&&currentPart===1));
         li.querySelector("b").textContent=(i<active||(!tutorialStarted&&currentPart===1))?"✓":i+1;
       });
-      const cards=currentPart===1?[["","手指张开","对准发光构件"],["pinch","捏合抓取","拇指食指靠近"],["release","松开放置","移至绿色范围"]]:[["palm","张开手掌","像托住实物"],["palm","轻转手腕","保持自然张掌"],["palm","观察另一面","缓慢转动视角"]];
+      const cards=currentPart===1?[["","手指张开","对准发光构件"],["pinch","捏合抓取","拇指食指靠近"],["open","张开手掌","放入绿色范围"]]:[["palm","张开手掌","像托住实物"],["palm","轻转手腕","保持自然张掌"],["palm","观察另一面","缓慢转动视角"]];
       document.getElementById("gestureGuide").innerHTML=cards.map(([pose,title,sub],i)=>'<div class="gesture-item"><div class="guide-glove '+pose+'" style="'+(currentPart===2?'transform:rotate('+((i-1)*18)+'deg)':'')+'"></div><strong>'+title+'</strong><small>'+sub+'</small></div>').join("");
       nextButton.textContent=currentPart===1?"进入旋转 ›":"完成教程 ›";
       nextButton.disabled=currentPart===1?tutorialStarted:!rotationCompleted;
@@ -1550,4 +1552,3 @@
   </script>
 </body>
 </html>
-
