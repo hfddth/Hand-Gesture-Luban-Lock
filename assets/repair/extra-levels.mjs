@@ -1,0 +1,10 @@
+export const EXTRA_LEVELS=[
+{name:'棘轮止逆',family:'ratchet',difficulty:2,goal:'选择方向正确的止逆棘爪，让木轮逐齿前进、回程不倒转。',lesson:'棘爪方向决定单向止逆',ratio:1,parts:[{id:'wheel',label:'十二齿棘轮',kind:'ratchet'},{id:'pawl',label:'顺向棘爪',kind:'pawl',direction:1},{id:'reverse',label:'反向棘爪',kind:'pawl',direction:-1},{id:'out',label:'输出摇柄',kind:'crank'}],slots:[{id:'wheel',label:'棘轮轴',kind:'ratchet',solution:'wheel',requires:[]},{id:'pawl',label:'止逆铰座',kind:'pawl',solution:'pawl',requires:['wheel']},{id:'out',label:'输出轴',kind:'crank',solution:'out',requires:['pawl']}]},
+{name:'平行移灯',family:'parallel',difficulty:3,goal:'配齐两根等长摆臂，让灯台移动时始终保持水平。',lesson:'平行四边形 · 对边等长',ratio:1,parts:[{id:'left',label:'左摆臂 1.6',kind:'arm',length:1.6},{id:'right',label:'右摆臂 1.6',kind:'arm',length:1.6},{id:'short',label:'短摆臂 1.0',kind:'arm',length:1},{id:'out',label:'水平灯台',kind:'platform'}],slots:[{id:'left',label:'左支点',kind:'arm',solution:'left',requires:[]},{id:'right',label:'右支点',kind:'arm',solution:'right',requires:['left']},{id:'out',label:'上连架',kind:'platform',solution:'out',requires:['right']}]},
+{name:'四时分度',family:'geneva',difficulty:5,goal:'匹配四槽分度轮与拨销，使输入每转一圈，输出停走交替并推进九十度。',lesson:'槽轮机构 · 连续转动化为间歇分度',ratio:1,parts:[{id:'four',label:'四槽分度轮',kind:'geneva',slots:4},{id:'six',label:'六槽分度轮',kind:'geneva',slots:6},{id:'pin',label:'标准拨销',kind:'driverpin',radius:1.2*Math.SQRT1_2},{id:'short',label:'短径拨销',kind:'driverpin',radius:.45},{id:'out',label:'分度指针',kind:'crank'}],slots:[{id:'wheel',label:'分度轴',kind:'geneva',solution:'four',requires:[]},{id:'pin',label:'主动拨盘',kind:'driverpin',solution:'pin',requires:['wheel']},{id:'out',label:'分度输出',kind:'crank',solution:'out',requires:['pin']}]}];
+export function evaluateExtra(level,get){
+ if(level.family==='ratchet'&&get('pawl').direction!==1)return {ok:false,reason:'棘爪朝向相反，会阻挡前进方向；请换顺向棘爪。'};
+ if(level.family==='parallel'&&(get('left').length!==1.6||get('right').length!==1.6))return {ok:false,reason:'两侧摆臂与支点设计不匹配；需要两根等长的 1.6 摆臂。'};
+ if(level.family==='geneva'&&(get('wheel').slots!==4||Math.abs(get('pin').radius-1.2*Math.SQRT1_2)>.001))return {ok:false,reason:'槽数或拨销半径与轴距不匹配，不能完成九十度分度。'};
+ return null;
+}
