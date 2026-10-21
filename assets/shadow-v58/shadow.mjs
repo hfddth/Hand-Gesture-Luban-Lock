@@ -1,3 +1,4 @@
+import {recordCompletion} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS} from './levels.mjs?v=59';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),requested=Number(params.get('level')??0);
@@ -21,7 +22,7 @@ function draw(){
 }
 function paintArtwork(){const image=$('rewardImage'),pending=$('artworkPending');image.hidden=!artwork;$('rewardView').hidden=!artwork;pending.hidden=!!artwork;$('artworkHeading').textContent=artwork?'原画已解锁':'画卷留白';if(artwork){image.src=artwork;$('rewardAmbience').style.backgroundImage='url('+JSON.stringify(artwork)+')';}}
 function finish(){if(shown)return;shown=true;draw();$('matchImage').src=canvas.toDataURL('image/png');$('resultScore').textContent=Math.floor(state.score)+'%';$('resultFill').style.width=state.score+'%';$('successSubtitle').textContent=level.name+' · '+(demo?'演示完成':'匹配成功');$('resultNotice').textContent=demo?'演示预览，不计入正式通关。':'影形已匹配，'+level.animal+'画卷已解锁。';
- if(!demo){try{const key='sunju-shadow-complete-v1',old=JSON.parse(localStorage.getItem(key)||'[]');localStorage.setItem(key,JSON.stringify([...new Set([...(Array.isArray(old)?old:[]),level.id])]));}catch{}}
+ if(!demo){recordCompletion('shadow',level.id,{score:state.score,holdMs:level.holdMs});try{const key='sunju-shadow-complete-v1',old=JSON.parse(localStorage.getItem(key)||'[]');localStorage.setItem(key,JSON.stringify([...new Set([...(Array.isArray(old)?old:[]),level.id])]));}catch{}}
  paintArtwork();$('successDialog').showModal();note(demo?'演示完成 · 可重新对影':'影形相合，画卷已解锁');}
 function submitScore(score,mask){if(state.paused||state.complete)return state.snapshot();if(demo){stopDemo();state.reset();}actual=mask||null;state.update(score,performance.now());updateHUD();draw();if(state.complete)finish();else note(score>=level.threshold?'轮廓已贴合，保持手势稳定':'继续调整，让影子贴近白色虚线');return state.snapshot();}
 function submitMask({mask,width=128,height=128,levelId=level.id}={}){if(levelId!==level.id)return {ignored:true,reason:'different-level'};const normalized=normalizeMask(mask,width,height);return submitScore(overlapScore(target,normalized),normalized);}
