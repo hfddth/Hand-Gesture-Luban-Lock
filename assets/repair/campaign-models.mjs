@@ -48,8 +48,9 @@ case 'gear':return gear(p.teeth,wood[1]);case 'belt':return belt(p.crossed);case
  }
  for(const s of level.slots)targets[s.id]??=output.clone();
  for(const p of level.parts){const g=piece(p);g.userData.partId=p.id;g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});parts[p.id]=g;root.add(g);}
- const defaults=new Map();
- function reset(){source.rotation.z=0;for(const id in parts){parts[id].rotation.set(0,0,0);parts[id].scale.setScalar(1);}if(stageA)stageA.rotation.z=0;if(idlerOut)idlerOut.rotation.z=0;}
+ const defaults=new Map(),initialTransforms=new Map();
+ root.traverse(o=>initialTransforms.set(o,{position:o.position.clone(),quaternion:o.quaternion.clone(),scale:o.scale.clone()}));
+ function reset(){for(const [o,t] of initialTransforms){o.position.copy(t.position);o.quaternion.copy(t.quaternion);o.scale.copy(t.scale);}for(const o of defaults.values())o.removeFromParent();defaults.clear();}
  function animate(t,installed){const theta=t*.75;source.rotation.z=theta;
   const a=installed.a?parts[installed.a]:null,b=installed.b?parts[installed.b]:null;const gearA=a?-level.fixed/level.parts.find(p=>p.id===installed.a).teeth:1;const beltSign=installed.belt&&level.parts.find(p=>p.id===installed.belt).crossed?-1:1;
   if(beltSource){beltSource.rotation.z=theta;beltDriven.rotation.z=theta*beltSign;}if(level.family==='finale')source.rotation.z=theta*beltSign;if(a)a.rotation.z=theta*gearA*beltSign;if(stageA)stageA.rotation.z=theta*gearA*beltSign;if(b)b.rotation.z=theta*level.ratio;
