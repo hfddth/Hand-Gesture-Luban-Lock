@@ -36,7 +36,7 @@ export function evaluateMechanism(level,installed){
 export class CampaignSession{
   constructor(level){this.level=level;this.reset();}
   reset(){this.installed={};this.history=[];this.held=null;this.status='assembly';}
-  begin(id){if(this.status!=='assembly'||this.held||Object.values(this.installed).includes(id)||!this.level.parts.some(p=>p.id===id))return false;this.held=id;return true;}
+  begin(id){if(this.status!=='assembly'||this.held||!this.level.parts.some(p=>p.id===id))return false;const slotId=Object.keys(this.installed).find(slot=>this.installed[slot]===id);if(slotId)this.remove(slotId);this.held=id;return true;}
   cancel(){this.held=null;}
   release(slotId){const id=this.held;this.held=null;const s=this.level.slots.find(s=>s.id===slotId),p=this.level.parts.find(p=>p.id===id);if(!s||!p)return {ok:false,reason:'未放入接口，构件已回位'};if(this.installed[slotId])return {ok:false,reason:'接口已被占用'};this.installed[s.id]=id;this.history.push(s.id);return {ok:true,id,slot:s.id};}
   remove(slotId){if(this.status!=='assembly'||!this.installed[slotId])return [];const id=this.installed[slotId];delete this.installed[slotId];this.history=this.history.filter(s=>s!==slotId);return [id];}
