@@ -1,0 +1,82 @@
+[
+  {
+    "id": "goose",
+    "source": "01.png",
+    "output": "assets/shadow-v58/artwork-v59/goose.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 523150
+  },
+  {
+    "id": "butterfly",
+    "source": "02.png",
+    "output": "assets/shadow-v58/artwork-v59/butterfly.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 479890
+  },
+  {
+    "id": "deer",
+    "source": "03.png",
+    "output": "assets/shadow-v58/artwork-v59/deer.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 499924
+  },
+  {
+    "id": "snail",
+    "source": "04.png",
+    "output": "assets/shadow-v58/artwork-v59/snail.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 501516
+  },
+  {
+    "id": "rabbit",
+    "source": "05.png",
+    "output": "assets/shadow-v58/artwork-v59/rabbit.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 504572
+  },
+  {
+    "id": "owl",
+    "source": "06.png",
+    "output": "assets/shadow-v58/artwork-v59/owl.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 526164
+  },
+  {
+    "id": "crab",
+    "source": "07.png",
+    "output": "assets/shadow-v58/artwork-v59/crab.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 512272
+  },
+  {
+    "id": "fox",
+    "source": "08.png",
+    "output": "assets/shadow-v58/artwork-v59/fox.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 534586
+  },
+  {
+    "id": "dog",
+    "source": "09.png",
+    "output": "assets/shadow-v58/artwork-v59/dog.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 540140
+  },
+  {
+    "id": "pegasus",
+    "source": "10.png",
+    "output": "assets/shadow-v58/artwork-v59/pegasus.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 519980
+  }
+]

@@ -1,0 +1,82 @@
+[
+  {
+    "id": "goose",
+    "animal": "大雁",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 4127,
+    "paths": 1
+  },
+  {
+    "id": "butterfly",
+    "animal": "蝴蝶",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 5427,
+    "paths": 1
+  },
+  {
+    "id": "deer",
+    "animal": "鹿",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 4951,
+    "paths": 1
+  },
+  {
+    "id": "snail",
+    "animal": "蜗牛",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 3154,
+    "paths": 1
+  },
+  {
+    "id": "rabbit",
+    "animal": "兔子",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 3839,
+    "paths": 1
+  },
+  {
+    "id": "owl",
+    "animal": "猫头鹰",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 7620,
+    "paths": 1
+  },
+  {
+    "id": "crab",
+    "animal": "螃蟹",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 4506,
+    "paths": 1
+  },
+  {
+    "id": "fox",
+    "animal": "狐狸",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 2807,
+    "paths": 1
+  },
+  {
+    "id": "dog",
+    "animal": "狗",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 4107,
+    "paths": 1
+  },
+  {
+    "id": "pegasus",
+    "animal": "飞马",
+    "revision": "manual-v59",
+    "method": "Reference-guided vector redraw",
+    "pixels": 4145,
+    "paths": 1
+  }
+]

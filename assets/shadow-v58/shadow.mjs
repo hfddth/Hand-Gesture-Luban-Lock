@@ -1,4 +1,4 @@
-import {SHADOW_LEVELS} from './levels.mjs';
+import {SHADOW_LEVELS} from './levels.mjs?v=59';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),requested=Number(params.get('level')??0);
 const level=SHADOW_LEVELS[Number.isInteger(requested)&&requested>=0&&requested<SHADOW_LEVELS.length?requested:0];
@@ -7,8 +7,8 @@ addEventListener('resize',fit);fit();
 $('levelTitle').textContent=`第 ${level.index+1} 关 · ${level.name}`;$('animalTitle').textContent=level.animal+' · 目标影形';$('thresholdValue').textContent=level.threshold;
 document.title=level.name+'｜榫影成画';$('referenceImage').src=level.reference;$('hintCopy').textContent=level.hint;
 const canvas=$('shadowCanvas'),ctx=canvas.getContext('2d'),maskCanvas=document.createElement('canvas');maskCanvas.width=maskCanvas.height=128;const maskCtx=maskCanvas.getContext('2d');
-let target;
-try{const response=await fetch(level.mask);if(!response.ok)throw Error('Target missing');const data=await response.json();target=normalizeMask(data.mask,data.width,data.height);}catch(e){$('liveNote').textContent='目标影形加载失败，请刷新重试';throw e;}
+let target,targetPaths=[];
+try{const response=await fetch(level.mask);if(!response.ok)throw Error('Target missing');const data=await response.json();target=normalizeMask(data.mask,data.width,data.height);targetPaths=(data.paths||[]).map(path=>new Path2D(path));}catch(e){$('liveNote').textContent='目标影形加载失败，请刷新重试';throw e;}
 const loops=contourLoops(target).map(loop=>simplifyLoop(loop)),state=new ShadowSession(level);let actual=null,stream=null,demo=false,demoElapsed=0,lastTick=performance.now(),shown=false,artwork=level.artwork;
 function note(text){$('liveNote').textContent=text;}
 function updateHUD(){const s=state.snapshot();$('matchScore').innerHTML=Math.floor(s.score)+'<small>%</small>';$('matchFill').style.width=s.score+'%';$('holdFill').style.width=s.heldMs/level.holdMs*100+'%';$('holdText').textContent=(s.score>=level.threshold?'保持稳定':'等待影形')+' · '+(s.heldMs/1000).toFixed(1)+' / 2 秒';document.body.dataset.score=String(Math.floor(s.score));document.body.dataset.status=s.complete?'complete':s.paused?'paused':'matching';}
@@ -16,11 +16,11 @@ function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();const scale=3.65;ctx.translate((canvas.width-128*scale)/2,(canvas.height-128*scale)/2);ctx.scale(scale,scale);
  if(actual){const image=maskCtx.createImageData(128,128);for(let i=0;i<actual.length;i++)if(actual[i]){image.data[i*4]=62;image.data[i*4+1]=35;image.data[i*4+2]=18;image.data[i*4+3]=190;}maskCtx.putImageData(image,0,0);ctx.imageSmoothingEnabled=true;ctx.shadowColor='#52311955';ctx.shadowBlur=1.6;ctx.drawImage(maskCanvas,0,0);ctx.shadowBlur=0;}
  ctx.strokeStyle='#fff9e8';ctx.lineWidth=.72;ctx.lineCap='round';ctx.lineJoin='round';ctx.setLineDash([2.1,1.3]);ctx.shadowColor='#fff8d9';ctx.shadowBlur=1.1;
- for(const loop of loops){ctx.beginPath();for(let i=0;i<loop.length;i++){const [x,y]=loop[i];i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.stroke();}
+ if(targetPaths.length){for(const path of targetPaths)ctx.stroke(path);}else for(const loop of loops){ctx.beginPath();for(let i=0;i<loop.length;i++){const [x,y]=loop[i];i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.stroke();}
  ctx.restore();
 }
-function paintArtwork(){const image=$('rewardImage'),pending=$('artworkPending');image.hidden=!artwork;pending.hidden=!!artwork;$('artworkHeading').textContent=artwork?'原画已解锁':'画卷留白';if(artwork)image.src=artwork;}
-function finish(){if(shown)return;shown=true;draw();$('matchImage').src=canvas.toDataURL('image/png');$('resultScore').textContent=Math.floor(state.score)+'%';$('resultFill').style.width=state.score+'%';$('successSubtitle').textContent=level.name+' · '+(demo?'演示完成':'匹配成功');$('resultNotice').textContent=demo?'演示预览，不计入正式通关。':'影形已匹配，原画位置待补充。';
+function paintArtwork(){const image=$('rewardImage'),pending=$('artworkPending');image.hidden=!artwork;$('rewardView').hidden=!artwork;pending.hidden=!!artwork;$('artworkHeading').textContent=artwork?'原画已解锁':'画卷留白';if(artwork){image.src=artwork;$('rewardAmbience').style.backgroundImage='url('+JSON.stringify(artwork)+')';}}
+function finish(){if(shown)return;shown=true;draw();$('matchImage').src=canvas.toDataURL('image/png');$('resultScore').textContent=Math.floor(state.score)+'%';$('resultFill').style.width=state.score+'%';$('successSubtitle').textContent=level.name+' · '+(demo?'演示完成':'匹配成功');$('resultNotice').textContent=demo?'演示预览，不计入正式通关。':'影形已匹配，'+level.animal+'画卷已解锁。';
  if(!demo){try{const key='sunju-shadow-complete-v1',old=JSON.parse(localStorage.getItem(key)||'[]');localStorage.setItem(key,JSON.stringify([...new Set([...(Array.isArray(old)?old:[]),level.id])]));}catch{}}
  paintArtwork();$('successDialog').showModal();note(demo?'演示完成 · 可重新对影':'影形相合，画卷已解锁');}
 function submitScore(score,mask){if(state.paused||state.complete)return state.snapshot();if(demo){stopDemo();state.reset();}actual=mask||null;state.update(score,performance.now());updateHUD();draw();if(state.complete)finish();else note(score>=level.threshold?'轮廓已贴合，保持手势稳定':'继续调整，让影子贴近白色虚线');return state.snapshot();}
