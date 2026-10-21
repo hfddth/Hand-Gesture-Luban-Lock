@@ -1,0 +1,122 @@
+[
+  {
+    "id": "goose",
+    "name": "大雁",
+    "source": "28d609a32734a5fb88e216f8e4a7109f.png",
+    "crop": [
+      5,
+      140,
+      237,
+      160
+    ],
+    "pixels": 2809
+  },
+  {
+    "id": "butterfly",
+    "name": "蝴蝶",
+    "source": "405eb43ab8221205c0cbe7d9a9922cae.png",
+    "crop": [
+      34,
+      89,
+      193,
+      129
+    ],
+    "pixels": 3255
+  },
+  {
+    "id": "deer",
+    "name": "鹿",
+    "source": "60ddc9864dec70dd1831ff744484939f.png",
+    "crop": [
+      17,
+      60,
+      234,
+      201
+    ],
+    "pixels": 3690
+  },
+  {
+    "id": "snail",
+    "name": "蜗牛",
+    "source": "90e23186a197d9edcbecc4187c262c2e.png",
+    "crop": [
+      4,
+      129,
+      190,
+      66
+    ],
+    "pixels": 2033
+  },
+  {
+    "id": "rabbit",
+    "name": "兔子",
+    "source": "93e126df75c27e5ebac10dcbccb7e0e3.png",
+    "crop": [
+      60,
+      75,
+      152,
+      157
+    ],
+    "pixels": 3639
+  },
+  {
+    "id": "owl",
+    "name": "猫头鹰",
+    "source": "94e0d711438178732d3211b52cd60930.png",
+    "crop": [
+      4,
+      112,
+      227,
+      126
+    ],
+    "pixels": 1508
+  },
+  {
+    "id": "crab",
+    "name": "螃蟹",
+    "source": "a6680159c6d257cdb894983fd48ae02c.png",
+    "crop": [
+      4,
+      144,
+      220,
+      94
+    ],
+    "pixels": 2488
+  },
+  {
+    "id": "fox",
+    "name": "狐狸",
+    "source": "bc98990efc8b51e1cbc924a84c028c14.png",
+    "crop": [
+      69,
+      108,
+      99,
+      124
+    ],
+    "pixels": 3335
+  },
+  {
+    "id": "dog",
+    "name": "狗",
+    "source": "dcb368394149e80dc9be065dd3614181.png",
+    "crop": [
+      64,
+      134,
+      130,
+      87
+    ],
+    "pixels": 3438
+  },
+  {
+    "id": "pegasus",
+    "name": "飞马",
+    "source": "fcc421f3818d9b42b56290288e38bb36.png",
+    "crop": [
+      23,
+      123,
+      186,
+      128
+    ],
+    "pixels": 3144
+  }
+]
