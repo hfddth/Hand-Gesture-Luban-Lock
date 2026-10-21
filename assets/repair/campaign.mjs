@@ -30,7 +30,7 @@ for(const id of ids){const materials=[];parts[id].traverse(o=>{if(!o.isMesh)retu
 function hoverPart(id){hoveredPart=id;document.body.dataset.hoveredPart=id||'';}
 const reduceMotion=matchMedia('(prefers-reduced-motion: reduce)');
 function readyToInstall(id){return state.status==='assembly'&&!Object.values(state.installed).includes(id)&&level.slots.some(slot=>slot.solution===id&&!state.installed[slot.id]&&slot.requires.every(key=>Boolean(state.installed[key])));}
-function glowParts(now){const pulse=reduceMotion.matches?.65:.45+.25*(.5+.5*Math.sin(now*.0025));for(const [id,materials]of hoverMaterials)for(const mat of materials)if(mat.emissive){mat.emissive.setHex(0x9b6422);mat.emissiveIntensity=state.held===id?.42:hoveredPart===id?.34:0;}for(const slot of level.slots){const marker=slotLights[slot.id];marker.visible=state.status==='assembly'&&!state.installed[slot.id]&&slot.requires.every(key=>Boolean(state.installed[key]));marker.material.opacity=pulse;}}
+function glowParts(now){const pulse=reduceMotion.matches?.65:.45+.25*(.5+.5*Math.sin(now*.0025));for(const [id,materials]of hoverMaterials)for(const mat of materials)if(mat.emissive){mat.emissive.setHex(0x9b6422);mat.emissiveIntensity=state.held===id?.42:hoveredPart===id?.34:0;}for(const slot of level.slots){const marker=slotLights[slot.id];marker.visible=state.status==='assembly'&&!state.installed[slot.id];marker.material.opacity=pulse;}}
 function pick(x,y,hand=false){
   if(!setRay(x,y))return null;
   root.updateWorldMatrix(true,true);
