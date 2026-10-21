@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+<defs><linearGradient id="wood" x2=".8" y2="1"><stop stop-color="#d4a567"/><stop offset=".22" stop-color="#a7753e"/><stop offset=".5" stop-color="#d0a066"/><stop offset=".76" stop-color="#926135"/><stop offset="1" stop-color="#c39253"/></linearGradient><linearGradient id="gold" x2=".2" y2="1"><stop stop-color="#ffe0a0"/><stop offset=".5" stop-color="#c28a40"/><stop offset="1" stop-color="#f4cf8a"/></linearGradient><g id="corner" stroke-linejoin="round"><path d="M23 63V28L28 23H63" stroke="#f0c985" stroke-width="1.6"/><path d="M30 55V30H55M37 48V37H48M23 37H43V23M37 23V43H23" stroke="#bd8b48" stroke-width="1.4"/><path d="M23 63H31V56H38" stroke="#e7bc75" stroke-width="1.2"/></g></defs>
+<path d="M25 8H231L248 25V231L231 248H25L8 231V25Z" stroke="#402a17" stroke-width="14"/>
+<path d="M25 8H231L248 25V231L231 248H25L8 231V25Z" stroke="url(#wood)" stroke-width="10"/>
+<path d="M25 5H231L251 25V231L231 251H25L5 231V25Z" stroke="#e3b473" stroke-width="2"/>
+<path d="M27 13H229L243 27V229L229 243H27L13 229V27Z" stroke="url(#gold)" stroke-width="2"/>
+<path d="M29 19H227L237 29V227L227 237H29L19 227V29Z" stroke="#86572c" stroke-width="2"/>
+<path d="M33 22H223L234 33V223L223 234H33L22 223V33Z" stroke="#dfb575" stroke-width="1"/>
+<use href="#corner"/><use href="#corner" transform="translate(256 0) scale(-1 1)"/><use href="#corner" transform="translate(0 256) scale(1 -1)"/><use href="#corner" transform="translate(256 256) scale(-1 -1)"/>
+</svg>
+
