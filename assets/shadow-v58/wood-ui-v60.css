@@ -1,15 +1,15 @@
-/* Independent transparent wood frame, nine-sliced to retain carved corners. */
-:root{--carved-frame:url('ui-v60/carved-wood-frame.webp')}
+/* Light honey wood, beveled gold edges and restrained fretwork, matching the result reference. */
+:root{--carved-frame:url('ui-v64/light-wood-frame.svg')}
 .ornament{border:3px solid #392011;background:linear-gradient(125deg,#523821f5,#332719f5 58%,#432d1bf5);box-shadow:inset 0 0 22px #0008,0 9px 24px #0009}
 .ornament:before{display:none}
-.ornament:after{content:"";display:block;position:absolute;inset:-8px;transform:none;width:auto;height:auto;border:60px solid transparent;border-image-source:var(--carved-frame);border-image-slice:320;border-image-width:60px;border-image-repeat:stretch;background:none;z-index:3;pointer-events:none;filter:brightness(1.5) saturate(.86) drop-shadow(0 3px 3px #0008);font-size:0}
+.ornament:after{content:"";display:block;position:absolute;inset:-8px;transform:none;width:auto;height:auto;border:40px solid transparent;border-image-source:var(--carved-frame);border-image-slice:72;border-image-width:40px;border-image-repeat:stretch;background:none;z-index:3;pointer-events:none;filter:drop-shadow(0 3px 3px #0008);font-size:0}
 .instruction{padding:31px 25px 25px}
 .camera-card{padding:20px 17px 15px}
-.title-plaque{border:5px ridge #89512c;background:linear-gradient(105deg,#523119,#21180e 48%,#482b16);box-shadow:inset 0 1px 1px #d3a166,0 5px 15px #000b;color:#ffe5af}
-.screen-top{background:linear-gradient(110deg,#4c2d17,#28190e 60%,#422917);border:3px solid #704220;box-shadow:0 4px 10px #0009}
+.title-plaque{border:5px ridge #c09355;background:linear-gradient(105deg,#523119,#21180e 48%,#482b16);box-shadow:inset 0 1px 1px #d3a166,0 5px 15px #000b;color:#ffe5af}
+.screen-top{background:linear-gradient(110deg,#4c2d17,#28190e 60%,#422917);border:3px solid #b98a4e;box-shadow:0 4px 10px #0009}
 .screen-top:after{border-image-width:46px;border-width:46px;inset:-7px}
-.wood-screen{border:0;background:#39200f;box-shadow:0 18px 40px #0009,0 0 25px #d58d3420}
-.wood-screen:before{content:"";position:absolute;inset:-12px;left:-12px;right:-12px;top:-12px;bottom:-12px;width:auto;height:auto;border:105px solid transparent;border-image-source:var(--carved-frame);border-image-slice:320;border-image-width:105px;border-image-repeat:stretch;background:none;z-index:4;pointer-events:none;filter:brightness(1.5) saturate(.86) drop-shadow(0 6px 5px #0008)}
+.wood-screen{border:0;background:transparent;box-shadow:0 18px 40px #0009,0 0 25px #d58d3420}
+.wood-screen:before{content:"";position:absolute;inset:-12px;left:-12px;right:-12px;top:-12px;bottom:-12px;width:auto;height:auto;border:50px solid transparent;border-image-source:var(--carved-frame);border-image-slice:72;border-image-width:50px;border-image-repeat:stretch;background:none;z-index:4;pointer-events:none;filter:drop-shadow(0 6px 5px #0008)}
 .wood-screen:after{display:none}
 .paper-screen{inset:24px;box-shadow:inset 0 0 32px #6a371d77,inset 0 0 0 2px #895a2d;isolation:isolate}
 .target-legend{right:44px;bottom:23px;font-size:14px}
@@ -19,19 +19,19 @@
 .side-tools span{background:radial-gradient(at 30% 20%,#895632,#312114 75%);border-color:#ad7b43;box-shadow:inset 0 0 0 3px #422a17,0 4px 10px #0009}
 .back-button{background:#172017ed;border:1px solid #b79a61;box-shadow:0 3px 10px #0005;clip-path:polygon(6% 0,94% 0,100% 50%,94% 100%,6% 100%,0 50%)}
 .success-dialog{border:12px solid #39200f;background:linear-gradient(130deg,#593b25f5,#33281bfc 68%);box-shadow:0 25px 70px #000b,inset 0 0 24px #0007;padding:25px 31px}
-.success-dialog:after{border-image-width:100px;border-width:100px;inset:-14px}
-.success-dialog>h2{background:linear-gradient(110deg,#5a351b,#281b10 60%,#503019);border:5px ridge #8d592e;box-shadow:inset 0 1px 1px #c8985c77,0 5px 15px #0009;z-index:4}
+.success-dialog:after{border-image-width:50px;border-width:50px;inset:-14px}
+.success-dialog>h2{background:linear-gradient(110deg,#5a351b,#281b10 60%,#503019);border:5px ridge #c79b60;box-shadow:inset 0 1px 1px #c8985c77,0 5px 15px #0009;z-index:4}
 .result-grid{gap:27px}
-.result-grid h3{background:linear-gradient(100deg,#54321a,#291c11 65%,#4b2e17);border:4px ridge #83512a;box-shadow:0 3px 8px #0008;color:#ffe3a6;z-index:4}
+.result-grid h3{background:linear-gradient(100deg,#54321a,#291c11 65%,#4b2e17);border:4px ridge #bc9156;box-shadow:0 3px 8px #0008;color:#ffe3a6;z-index:4}
 .comparison,.artwork-frame{background:linear-gradient(120deg,#4c3422,#30271b)}
-.comparison:after,.artwork-frame:after{border-image-width:63px;border-width:63px;inset:-5px}
+.comparison:after,.artwork-frame:after{border-image-width:43px;border-width:43px;inset:-5px}
 .comparison-paper{margin-top:10px}
 .reward-view{margin-top:10px;background:#162419}
 .result-actions{position:relative;z-index:4}
 .small-dialog{padding:34px 41px}
-.small-dialog:after{border-image-width:80px;border-width:80px}
+.small-dialog:after{border-image-width:55px;border-width:55px}
 .dialog-close{z-index:5}
-.reference-frame{border:7px ridge #704321;box-shadow:0 5px 18px #0009}
+.reference-frame{border:7px ridge #b6874d;box-shadow:0 5px 18px #0009}
 .camera-view{border-color:#80552f}
 .artwork-caption{z-index:4;bottom:8px;background:linear-gradient(90deg,transparent,#2b2115e8,transparent)}
 
