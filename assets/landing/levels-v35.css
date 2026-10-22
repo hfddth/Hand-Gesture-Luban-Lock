@@ -23,3 +23,5 @@ body[data-mode=repair] .level-name small{font-size:23px;color:#c5b489;margin-rig
 body[data-mode=repair] .card-wrap:has([aria-pressed=true]){filter:drop-shadow(0 0 4px #f3be65) drop-shadow(0 8px 14px #000b)}
 body[data-mode=repair] .level-card:hover .level-art{filter:brightness(1.22) saturate(1)}
 #chapterInfo{left:330px;right:330px;bottom:4px;padding:3px 10px;background:#10150fe8;font-size:16px;z-index:2}
+
+.level-track[data-count="1"],.level-track[data-count="2"]{justify-content:center}

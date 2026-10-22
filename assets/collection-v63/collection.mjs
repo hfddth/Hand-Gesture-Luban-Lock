@@ -3,7 +3,7 @@ import {REPAIR_LEVELS} from '../repair/campaign-levels.mjs?v=53';
 import {isComplete,reports} from './progress.mjs';
 const $=id=>document.getElementById(id),titles={burr:'榫卯解谜',repair:'机关修复',shadow:'榫影成画'};
 const catalog={
- burr:['三通初合','六木相制','十字连环','九木巧结','玲珑藏机','匠心初试'].map((name,index)=>({id:'burr-'+index,index,name,image:index===0?'assets/burr-v62/santong-preview.webp':'assets/mode-art-v21/burr-art.svg'})),
+ burr:[1,2,3,4,5,0].map((id,index)=>({id:'burr-'+id,index,name:['三通旋解','六木相制','十字连环','九木巧结','玲珑藏机','匠心初试'][id],image:id===0?'assets/burr-v62/santong-preview.webp':'assets/mode-art-v21/burr-art.svg'})),
  repair:REPAIR_LEVELS.map(l=>({...l,image:`assets/repair/previews-v41/level-${l.index+1}.webp`})),
  shadow:SHADOW_LEVELS.map(l=>({...l,image:l.artwork}))
 };
@@ -38,4 +38,3 @@ function showReport(){
 document.querySelectorAll('[data-mode]').forEach(b=>b.onclick=()=>{mode=b.dataset.mode;selected=null;render();$('collectionGrid').scrollTop=0;});
  $('collectionGrid').onclick=e=>{const b=e.target.closest('[data-id]');if(b){selected=b.dataset.id;document.querySelectorAll('[data-id]').forEach(c=>c.setAttribute('aria-pressed',String(c===b)));showReport();}};
 addEventListener('storage',render);addEventListener('sunju-progress',render);addEventListener('pageshow',render);render();
-
