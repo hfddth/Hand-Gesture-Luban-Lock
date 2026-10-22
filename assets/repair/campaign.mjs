@@ -1,4 +1,4 @@
-import {createHandPointer} from '../recognition-v81/hand-pointer.mjs';
+import {createHandPointer} from '../recognition-v81/hand-pointer.mjs?v=90';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {THREE as T} from '../landing/three-runtime-v5.mjs';
 import {createCoverLock} from '../landing/lock-structure-v27.mjs?v=28';

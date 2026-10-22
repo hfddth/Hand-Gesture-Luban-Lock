@@ -1,4 +1,4 @@
-import {createHandPointer} from '../recognition-v81/hand-pointer.mjs';
+import {createHandPointer} from '../recognition-v81/hand-pointer.mjs?v=90';
 import {BurrGuide} from './burr-guide-v70.mjs?v=87';
 import {BURR_LEVELS,BURR_ORDER,BURR_CHAPTERS,BURR_GROUPS} from './burr-campaign-v68.mjs?v=87';
 import {BurrPhysics,qAxis,qMultiply,rotate} from './burr-physics-v66.mjs?v=87';
