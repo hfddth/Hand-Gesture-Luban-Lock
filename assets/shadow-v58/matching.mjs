@@ -12,7 +12,7 @@ export function normalizeMask(input,width,height,size=128){
  return out;
 }
 export class ShadowSession{
- constructor({threshold=70,holdMs=1000}={}){this.threshold=threshold;this.holdMs=holdMs;this.reset();}
+ constructor({threshold=60,holdMs=1000}={}){this.threshold=threshold;this.holdMs=holdMs;this.reset();}
  reset(){this.score=0;this.heldMs=0;this.lastFrame=null;this.complete=false;this.paused=false;}
  update(score,now){
   if(!Number.isFinite(score)||score<0||score>100||!Number.isFinite(now))throw new Error('Invalid match result');
