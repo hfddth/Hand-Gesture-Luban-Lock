@@ -28,6 +28,7 @@ function showReport(){
  if(r?.completedAt&&Number.isFinite(Date.parse(r.completedAt)))rows.push(['最近完成',new Date(r.completedAt).toLocaleString('zh-CN',{hour12:false})]);
  if(Number.isFinite(r?.score))rows.push(['匹配度',Math.floor(r.score)+'%']);
  if(Number.isFinite(r?.holdMs))rows.push(['稳定保持',(r.holdMs/1000).toFixed(1)+' 秒']);
+ if(Number.isInteger(r?.extractedCount))rows.push(['抽出构件',r.extractedCount+' 根']);
  if(Number.isInteger(r?.installedCount))rows.push(['安装构件',r.installedCount+' 件']);
  if(Number.isInteger(r?.attempts))rows.push(['启动次数',r.attempts+' 次']);
  if(Number.isInteger(r?.hints))rows.push(['线索使用',r.hints+' 次']);
