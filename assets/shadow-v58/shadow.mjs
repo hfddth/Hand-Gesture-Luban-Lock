@@ -1,3 +1,4 @@
+import {ShadowCamera} from '../shadow-v86/camera.mjs?v=86';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS} from './levels.mjs?v=59';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs';
@@ -28,21 +29,49 @@ function submitScore(score,mask){if(state.paused||state.complete)return state.sn
 function submitMask({mask,width=128,height=128,levelId=level.id}={}){if(levelId!==level.id)return {ignored:true,reason:'different-level'};const normalized=normalizeMask(mask,width,height);return submitScore(overlapScore(target,normalized),normalized);}
 function submitResult({score,mask=null,width=128,height=128,levelId=level.id}={}){if(levelId!==level.id)return {ignored:true,reason:'different-level'};if(!Number.isFinite(score)||score<0||score>100)throw Error('score must be between 0 and 100');return submitScore(score,mask?normalizeMask(mask,width,height):null);}
 function stopDemo(){demo=false;demoElapsed=0;$('demoBadge').hidden=true;$('demoButton').textContent='▷ 预览演示';document.body.dataset.demo='false';}
-function reset(){stopDemo();state.reset();actual=null;shown=false;for(const id of ['successDialog','pauseDialog','hintDialog'])if($(id).open)$(id).close();updateHUD();draw();note('观察目标轮廓，准备你的手影');$('projectionStatus').textContent='静候影来 · 对准轮廓，唤醒画卷';}
+function reset(){stopDemo();state.reset();actual=null;shown=false;for(const id of ['successDialog','pauseDialog','hintDialog','shadowSettingsDialog'])if($(id).open)$(id).close();updateHUD();draw();note('观察目标轮廓，准备你的手影');$('projectionStatus').textContent='静候影来 · 对准轮廓，唤醒画卷';}
 function showDialog(id){if(state.complete)return;state.pause(true);updateHUD();$(id).showModal();}
 $('hintButton').onclick=()=>showDialog('hintDialog');$('pauseButton').onclick=()=>showDialog('pauseDialog');
-for(const id of ['hintDialog','pauseDialog'])$(id).addEventListener('close',()=>{state.pause(false);updateHUD();});
+for(const id of ['hintDialog','pauseDialog','shadowSettingsDialog'])$(id).addEventListener('close',()=>{state.pause(false);updateHUD();});
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.close).close());
 $('resetButton').onclick=reset;$('retryButton').onclick=reset;
-$('nextButton').textContent=level.index<SHADOW_LEVELS.length-1?'下一关 →':'返回关卡';$('nextButton').onclick=()=>location.href=level.index<SHADOW_LEVELS.length-1?'shadow-level.html?level='+(level.index+1)+'&v=58':'levels.html?mode=shadow&v=58';
+$('nextButton').textContent=level.index<SHADOW_LEVELS.length-1?'下一关 →':'返回关卡';$('nextButton').onclick=()=>location.href=level.index<SHADOW_LEVELS.length-1?'shadow-level.html?level='+(level.index+1)+'&v=86':'levels.html?mode=shadow&v=86';
 $('demoButton').onclick=()=>{if(demo){reset();return;}reset();demo=true;document.body.dataset.demo='true';$('demoBadge').hidden=false;$('demoButton').textContent='■ 停止演示';$('projectionStatus').textContent='演示预览 · 观察影子如何贴合轮廓';note('正在演示影形比对；演示不计入通关');};
-function disconnect(){if(stream)for(const track of stream.getTracks())track.stop();stream=null;$('cameraVideo').srcObject=null;$('cameraVideo').hidden=true;$('cameraEmpty').hidden=false;$('cameraDot').classList.remove('connected');$('cameraState').textContent='摄像头未连接';$('cameraButton').textContent='连接摄像头';if(!state.complete){state.reset();actual=null;updateHUD();draw();}}
-async function attachStream(mediaStream){if(!mediaStream||typeof mediaStream.getTracks!=='function')throw Error('A MediaStream is required');if(stream&&stream!==mediaStream)for(const t of stream.getTracks())t.stop();stream=mediaStream;$('cameraVideo').srcObject=mediaStream;$('cameraVideo').hidden=false;$('cameraEmpty').hidden=true;$('cameraDot').classList.add('connected');$('cameraState').textContent='手势投影 · 已连接';$('cameraButton').textContent='断开摄像头';$('cameraNote').textContent='调整双手，观察屏风中的影形';await $('cameraVideo').play().catch(()=>{});}
-$('cameraButton').onclick=()=>{if(stream){disconnect();return;}$('cameraNote').textContent='摄像头暂未连接，可先预览对影效果';window.dispatchEvent(new CustomEvent('sunju:shadow-camera-request',{detail:{levelId:level.id,adapter:window.sunjuShadow}}));};
+let cameraPending=false,editMode='roi',editDrag=null;
+function cameraState(info){
+ const online=camera.active,calibrating=info.phase==='calibrating';stream=camera.stream;
+ $('cameraVideo').hidden=!online;$('cameraOverlay').hidden=!online;$('cameraEmpty').hidden=online;
+ $('cameraDot').classList.toggle('connected',online);$('cameraState').textContent=online?(calibrating?'空背景采集中':info.ready?'真实手影 · 已连接':'等待采集空背景'):'摄像头未连接';
+ $('cameraButton').textContent=online?'断开摄像头':'连接摄像头';$('captureBackground').disabled=$('settingsCapture').disabled=!online||calibrating;
+ $('captureBackground').textContent=calibrating?'采集中 · '+Math.ceil((1-info.progress)*3)+' 秒':info.ready?'重新采集空背景':'采集空背景 · 3 秒';$('captureFill').style.width=info.progress*100+'%';
+ $('cameraNote').textContent=$('settingsCaptureStatus').textContent=info.message;
+ $('shadowAssistStatus').textContent=camera.modelFailed?'手部辅助不可用 · 仍可使用真实背景差分':info.guided?'双手辅助定位已启用 · 当前 '+info.hands+' 只手':online?'真实差分成影 · 手部辅助仅用于缩小识别区域':'手部辅助暂未连接；不可用时仍可用背景差分成影。';
+ if(!demo&&!state.complete){$('projectionStatus').textContent=info.ready?'真实手影 · 调整位置与大小，贴合白色虚线':calibrating?'采集空背景 · 双手移出绿色区域':online?'准备对影 · 先采集空背景':'静候影来 · 连接摄像头后采集空背景';if(!info.ready)note(info.message);}
+ if(!online&&!state.complete){state.reset();actual=null;updateHUD();draw();}
+ document.body.dataset.recognition='shadow-v10-pixels-v86';document.body.dataset.cameraPhase=info.phase;
+}
+const camera=new ShadowCamera({video:$('cameraVideo'),preview:$('cameraOverlay'),settingsPreview:$('shadowSettingsPreview'),assist:!(params.has('test')&&params.get('vision')==='synthetic'),onState:cameraState,onMask:mask=>{if(!demo&&!state.paused&&!state.complete)submitMask({mask});}});
+function disconnect(){camera.stop();}
+async function attachStream(mediaStream){if(!mediaStream||typeof mediaStream.getTracks!=='function')throw Error('A MediaStream is required');await camera.attach(mediaStream);}
+$('cameraButton').onclick=async()=>{
+ if(cameraPending)return;if(camera.active){disconnect();return;}cameraPending=true;$('cameraButton').disabled=true;$('cameraNote').textContent='正在连接摄像头…';
+ try{await camera.start();}catch(error){disconnect();const message=error.name==='NotAllowedError'?'摄像头权限未开启，请允许访问后重试':error.name==='NotFoundError'?'未找到摄像头，请连接设备后重试':error.name==='NotReadableError'?'摄像头可能被其他应用占用，请关闭占用后重试':error.message||'摄像头连接失败，请重试';$('cameraNote').textContent=message;note(message);}finally{cameraPending=false;$('cameraButton').disabled=false;}
+};
+function captureBackground(){try{stopDemo();state.reset();actual=null;shown=false;if($('successDialog').open)$('successDialog').close();state.pause($('shadowSettingsDialog').open||$('pauseDialog').open||$('hintDialog').open);updateHUD();draw();camera.capture();}catch(error){note(error.message);$('cameraNote').textContent=error.message;}}
+$('captureBackground').onclick=$('settingsCapture').onclick=captureBackground;$('shadowSettings').onclick=()=>showDialog('shadowSettingsDialog');
+for(const [id,key,unit]of [['shadowThreshold','threshold',''],['shadowRepair','repair','%'],['shadowSkin','skinRange','%'],['shadowZoom','zoom','%']])$(id).oninput=()=>{const value=Number($(id).value);$(id+'Value').textContent=value+unit;if(key==='zoom')camera.zoom=value/100;else camera.segmenter.options[key]=value;camera.segmenter.reset();};
+$('shadowGuided').onchange=()=>{camera.segmenter.options.guided=$('shadowGuided').checked;camera.segmenter.reset();};
+function setEditMode(mode){editMode=mode;$('editShadowRoi').setAttribute('aria-pressed',String(mode==='roi'));$('editShadowExclude').setAttribute('aria-pressed',String(mode==='exclude'));}
+$('editShadowRoi').onclick=()=>setEditMode('roi');$('editShadowExclude').onclick=()=>setEditMode('exclude');$('clearShadowExclusions').onclick=()=>{camera.segmenter.setExclusions([]);camera.drawPreview();};
+const editCanvas=$('shadowSettingsPreview'),editPoint=e=>{const box=editCanvas.getBoundingClientRect();return {x:Math.max(0,Math.min(320,(e.clientX-box.left)*320/box.width)),y:Math.max(0,Math.min(240,(e.clientY-box.top)*240/box.height))};};
+editCanvas.onpointerdown=e=>{if(!camera.active)return;editDrag={start:editPoint(e),end:editPoint(e)};editCanvas.setPointerCapture(e.pointerId);};
+editCanvas.onpointermove=e=>{if(!editDrag)return;editDrag.end=editPoint(e);camera.drawPreview();const c=editCanvas.getContext('2d'),a=editDrag.start,b=editDrag.end;c.strokeStyle=editMode==='roi'?'#dcf8b0':'#ffbb61';c.lineWidth=2;c.setLineDash([4,3]);c.strokeRect(Math.min(a.x,b.x),Math.min(a.y,b.y),Math.abs(a.x-b.x),Math.abs(a.y-b.y));c.setLineDash([]);};
+editCanvas.onpointerup=e=>{if(!editDrag)return;editDrag.end=editPoint(e);const a=editDrag.start,b=editDrag.end,r={x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)};editDrag=null;if(r.w<10||r.h<10)return;if(editMode==='roi'){camera.segmenter.setRoi(r);camera.invalidate();}else camera.segmenter.setExclusions([...camera.segmenter.snapshot().exclusions,r]);camera.drawPreview();};editCanvas.onpointercancel=()=>editDrag=null;
 function setArtwork(url){if(typeof url!=='string'||!url.trim())throw Error('Artwork URL required');artwork=url;paintArtwork();}
-window.sunjuShadow={version:1,level:{id:level.id,index:level.index,threshold:level.threshold,holdMs:level.holdMs,maskSize:128},submitMask,submitResult,attachStream,disconnect,reset,setArtwork,snapshot:()=>({...state.snapshot(),demo,levelId:level.id})};
+window.sunjuShadow={version:2,level:{id:level.id,index:level.index,threshold:level.threshold,holdMs:level.holdMs,maskSize:128},submitMask,submitResult,attachStream,disconnect,reset,setArtwork,snapshot:()=>({...state.snapshot(),demo,levelId:level.id})};
 window.dispatchEvent(new CustomEvent('sunju:shadow-ready',{detail:window.sunjuShadow}));
 let alive=true;function tick(now){if(!alive)return;const dt=Math.min(now-lastTick,100);lastTick=now;if(!document.hidden&&!state.paused&&!state.complete){if(demo){demoElapsed+=dt;const dx=Math.round(Math.max(0,1-demoElapsed/4000)*20),dy=Math.round(Math.max(0,1-demoElapsed/4000)*-10),mask=new Uint8Array(128*128);for(let y=0;y<128;y++)for(let x=0;x<128;x++){const a=x-dx,b=y-dy;if(a>=0&&a<128&&b>=0&&b<128)mask[y*128+x]=target[b*128+a];}actual=mask;state.update(overlapScore(target,mask),now);if(state.complete)finish();}else{state.stale(now);if(state.lastFrame===null)actual=null;}updateHUD();draw();}requestAnimationFrame(tick);}
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&!state.complete){state.pause(true);updateHUD();}else if(!$('hintDialog').open&&!$('pauseDialog').open){state.pause(false);updateHUD();}});
-addEventListener('pagehide',()=>{alive=false;disconnect();});updateHUD();draw();paintArtwork();document.body.dataset.ready='true';document.body.dataset.level=level.id;document.body.dataset.recognition='adapter-only';requestAnimationFrame(tick);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)camera.suspend();if(document.hidden&&!state.complete){state.pause(true);updateHUD();}else if(!$('hintDialog').open&&!$('pauseDialog').open&&!$('shadowSettingsDialog').open){state.pause(false);updateHUD();}});
+addEventListener('pagehide',()=>{alive=false;disconnect();});updateHUD();draw();paintArtwork();document.body.dataset.ready='true';document.body.dataset.level=level.id;document.body.dataset.recognition='shadow-v10-pixels-v86';requestAnimationFrame(tick);
 
+if(params.has('test'))window.shadowVisionTest={camera,segmenter:camera.segmenter,target:()=>new Uint8Array(target),level};
