@@ -16,7 +16,7 @@ function loadHands(){
 export class ShadowCamera{
  constructor({video,preview,settingsPreview,onMask,onState,assist=true}){
   Object.assign(this,{video,preview,settingsPreview,onMask,onState,assist});
-  this.segmenter=createShadowSegmenter();this.zoom=1;this.active=false;this.generation=0;
+  this.segmenter=createShadowSegmenter();this.zoom=1.25;this.active=false;this.generation=0;
   this.frame=document.createElement('canvas');this.frame.width=640;this.frame.height=480;
   this.ctx=this.frame.getContext('2d',{willReadFrequently:true});
   for(const canvas of [preview,settingsPreview]){canvas.width=640;canvas.height=480;}
