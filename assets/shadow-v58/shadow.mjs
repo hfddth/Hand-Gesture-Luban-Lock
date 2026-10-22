@@ -1,19 +1,19 @@
 import {ShadowCamera} from '../shadow-v86/camera.mjs?v=86';
 import {recordCompletion} from '../collection-v63/progress.mjs';
-import {SHADOW_LEVELS} from './levels.mjs?v=59';
-import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs';
+import {SHADOW_LEVELS} from './levels.mjs?v=89';
+import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=89';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),requested=Number(params.get('level')??0);
 const level=SHADOW_LEVELS[Number.isInteger(requested)&&requested>=0&&requested<SHADOW_LEVELS.length?requested:0];
 function fit(){document.documentElement.style.setProperty('--fit',Math.min(innerWidth/1672,innerHeight/941));$('landscapePrompt').hidden=!(innerWidth<innerHeight&&innerWidth<900&&matchMedia('(pointer:coarse)').matches);}
 addEventListener('resize',fit);fit();
-$('levelTitle').textContent=`第 ${level.index+1} 关 · ${level.name}`;$('animalTitle').textContent=level.animal+' · 目标影形';$('thresholdValue').textContent=level.threshold;
+$('levelTitle').textContent=`第 ${level.index+1} 关 · ${level.name}`;$('animalTitle').textContent=level.animal+' · 目标影形';$('thresholdValue').textContent=level.threshold;$('holdRequirement').textContent='稳定保持 '+level.holdMs/1000+' 秒';document.querySelector('.result-hold').textContent='稳定保持 '+level.holdMs/1000+' 秒';
 document.title=level.name+'｜榫影成画';$('referenceImage').src=level.reference;$('hintCopy').textContent=level.hint;
 const canvas=$('shadowCanvas'),ctx=canvas.getContext('2d'),maskCanvas=document.createElement('canvas');maskCanvas.width=maskCanvas.height=128;const maskCtx=maskCanvas.getContext('2d');
 let target,targetPaths=[];
 try{const response=await fetch(level.mask);if(!response.ok)throw Error('Target missing');const data=await response.json();target=normalizeMask(data.mask,data.width,data.height);targetPaths=(data.paths||[]).map(path=>new Path2D(path));}catch(e){$('liveNote').textContent='目标影形加载失败，请刷新重试';throw e;}
 const loops=contourLoops(target).map(loop=>simplifyLoop(loop)),state=new ShadowSession(level);let actual=null,stream=null,demo=false,demoElapsed=0,lastTick=performance.now(),shown=false,artwork=level.artwork;
 function note(text){$('liveNote').textContent=text;}
-function updateHUD(){const s=state.snapshot();$('matchScore').innerHTML=Math.floor(s.score)+'<small>%</small>';$('matchFill').style.width=s.score+'%';$('holdFill').style.width=s.heldMs/level.holdMs*100+'%';$('holdText').textContent=(s.score>=level.threshold?'保持稳定':'等待影形')+' · '+(s.heldMs/1000).toFixed(1)+' / 2 秒';document.body.dataset.score=String(Math.floor(s.score));document.body.dataset.status=s.complete?'complete':s.paused?'paused':'matching';}
+function updateHUD(){const s=state.snapshot();$('matchScore').innerHTML=Math.floor(s.score)+'<small>%</small>';$('matchFill').style.width=s.score+'%';$('holdFill').style.width=s.heldMs/level.holdMs*100+'%';$('holdText').textContent=(s.score>=level.threshold?'保持稳定':'等待影形')+' · '+(s.heldMs/1000).toFixed(1)+' / '+(level.holdMs/1000)+' 秒';document.body.dataset.score=String(Math.floor(s.score));document.body.dataset.status=s.complete?'complete':s.paused?'paused':'matching';}
 function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();const scale=3.65;ctx.translate((canvas.width-128*scale)/2,(canvas.height-128*scale)/2);ctx.scale(scale,scale);
  if(actual){const image=maskCtx.createImageData(128,128);for(let i=0;i<actual.length;i++)if(actual[i]){image.data[i*4]=62;image.data[i*4+1]=35;image.data[i*4+2]=18;image.data[i*4+3]=190;}maskCtx.putImageData(image,0,0);ctx.imageSmoothingEnabled=true;ctx.shadowColor='#52311955';ctx.shadowBlur=1.6;ctx.drawImage(maskCanvas,0,0);ctx.shadowBlur=0;}

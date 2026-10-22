@@ -12,7 +12,7 @@ export function normalizeMask(input,width,height,size=128){
  return out;
 }
 export class ShadowSession{
- constructor({threshold=84,holdMs=2000}={}){this.threshold=threshold;this.holdMs=holdMs;this.reset();}
+ constructor({threshold=70,holdMs=1000}={}){this.threshold=threshold;this.holdMs=holdMs;this.reset();}
  reset(){this.score=0;this.heldMs=0;this.lastFrame=null;this.complete=false;this.paused=false;}
  update(score,now){
   if(!Number.isFinite(score)||score<0||score>100||!Number.isFinite(now))throw new Error('Invalid match result');
@@ -51,4 +51,3 @@ export function simplifyLoop(points,tolerance=.6){
  };
  const half=Math.floor(points.length/2);return [...simplify(points.slice(0,half+1)).slice(0,-1),...simplify(points.slice(half))];
 }
-
