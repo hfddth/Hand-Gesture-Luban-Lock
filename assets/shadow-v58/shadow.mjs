@@ -1,6 +1,6 @@
 import {ShadowCamera} from '../shadow-v86/camera.mjs?v=91';
 import {recordCompletion} from '../collection-v63/progress.mjs';
-import {SHADOW_LEVELS} from './levels.mjs?v=89';
+import {SHADOW_LEVELS} from './levels.mjs?v=92';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=89';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),requested=Number(params.get('level')??0);
 const level=SHADOW_LEVELS[Number.isInteger(requested)&&requested>=0&&requested<SHADOW_LEVELS.length?requested:0];
