@@ -1,4 +1,4 @@
-import {ShadowCamera} from '../shadow-v86/camera.mjs?v=91';
+import {ShadowCamera} from '../shadow-v86/camera.mjs?v=95';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS} from './levels.mjs?v=94';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=94';
