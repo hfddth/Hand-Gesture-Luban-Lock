@@ -9,7 +9,7 @@ export class RecognitionEngine extends ArchiveEngine{
   const hitTest=this.hitTest;let frame;
   if(this.openRotate||now<this.rotateCooldownUntil)this.hitTest=()=>null;
   try{frame=super.process(results,{now,aspect,mode:'grab'});}finally{this.hitTest=hitTest;}
-  const {analysis,handQuaternion}=frame,open=analysis&&analysis.extended>=3&&analysis.pinchRatio>.45,still=analysis&&analysis.extended>=2&&analysis.pinchRatio>.3;
+  const {analysis,handQuaternion}=frame,open=analysis&&analysis.extended>=3&&analysis.pinchRatio>(this.rotationOpenRatio??.45),still=analysis&&analysis.extended>=2&&analysis.pinchRatio>(this.rotationHoldRatio??.3);
   if(frame.calibrated){
    if(!this.openRotate){if(open&&handQuaternion){this.openSince??=now;if(now-this.openSince>=100){this.openRotate=true;this.openSince=null;this.openExitSince=null;this.openHand=handQuaternion.clone();this.openLock=this.getRotation().clone();this.rotationTarget=this.openLock.clone();const held=['GRABBED','HOLD'].includes(frame.snapshot.state);this.controller.reset();frame.events=frame.events.filter(e=>!['ARM','GRAB'].includes(e.type));if(held&&!frame.events.some(e=>e.type==='RELEASE'))frame.events.push({type:'RELEASE',reason:'open-rotate'});frame.events.push({type:'OPEN_ROTATE'});}}else this.openSince=null;}
    else if(still&&handQuaternion){this.openExitSince=null;this.rotationTarget=handQuaternion.clone().multiply(this.openHand.clone().invert()).multiply(this.openLock).normalize();}
