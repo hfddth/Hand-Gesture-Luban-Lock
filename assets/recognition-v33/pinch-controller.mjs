@@ -352,6 +352,10 @@ export class PinchGrabController {
     return this.snapshot();
   }
 
+  canArm() {
+    return this.lastHand && this.lastHand.indexReach >= 0.98 && this.lastHand.thumbReach >= 0.35;
+  }
+
   updatePoint(filtered, now, hoverId) {
     if (this.resumeFrom) {
       const progress = clamp((now - this.resumeAt) / this.timings.resumeMs, 0, 1);
@@ -367,11 +371,9 @@ export class PinchGrabController {
 
     // A closed fist also brings the thumb close to the index tip. Requiring
     // the index to still be extended keeps a fist from becoming a "grab".
-    const gesturing = this.lastHand
-      && this.lastHand.indexReach >= 0.98
-      && this.lastHand.thumbReach >= 0.35;
+    const gesturing = this.canArm();
     const coolingDown = now - this.lastReleaseAt < 240;
-    if (!hoverId || !gesturing || coolingDown || this.ratio >= this.thresholds.arm) {
+    if (hoverId == null || !gesturing || coolingDown || this.ratio >= this.thresholds.arm) {
       this.armSince = 0;
       return;
     }
