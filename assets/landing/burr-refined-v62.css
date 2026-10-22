@@ -14,3 +14,9 @@
 
 body[data-part-count="9"] .piece-list{gap:9px 11px}body[data-part-count="9"] .piece-button svg{height:47px}body[data-part-count="9"] .piece-button{padding:1px 0;gap:3px}body[data-part-count="9"] .paper .progress{margin-top:17px;margin-bottom:12px}body[data-part-count="9"] .paper .scroll-foot{margin-top:12px;font-size:12px}body[data-part-count="9"] .paper h2{font-size:31px}
 #guideAdvance{border-color:#eac87d;background:linear-gradient(#f5d994,#b18643);color:#21170c;padding:8px 13px;touch-action:none}#guideAdvance:active{filter:brightness(1.15)}
+
+body[data-intro=true] #taskTitle{font-size:29px;line-height:1.4}
+body[data-intro=true] #taskCopy{font-size:18px;line-height:1.7}
+body[data-intro=true] .piece-list{gap:10px}
+body[data-intro=true] .piece-button svg{height:56px}
+body[data-intro=true] .paper .progress{margin-top:18px;margin-bottom:15px}
