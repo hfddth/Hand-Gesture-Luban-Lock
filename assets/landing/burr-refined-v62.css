@@ -8,3 +8,6 @@
 
 #burrSuccessCopy{white-space:pre-line}
 
+.burr-controls{position:absolute;left:510px;bottom:80px;z-index:5;display:flex;gap:9px;align-items:center;padding:8px 10px;background:#172017ee;border:1px solid #af8a50;color:#e9cf97;font-size:18px}.burr-controls button,.burr-controls select{font:inherit;color:#e9cf97;background:#25291c;border:1px solid #9f7b43;padding:8px 13px}.burr-controls button[aria-pressed=true]{background:linear-gradient(#f5dfa9,#c49a58);color:#322414}.burr-controls label{margin-left:4px}.burr-controls select{padding:8px 4px}.burr-controls button:focus-visible,.burr-controls select:focus-visible{outline:2px solid #fff0bc;outline-offset:3px}body[data-collision=blocked] .interaction-note{color:#ffd38e}#pauseDialog{position:fixed;left:50%;top:50%;margin:0;transform:translate(-50%,-50%) scale(var(--fit,1));max-width:none}
+
+.burr-controls{left:50%;transform:translateX(-50%)}
