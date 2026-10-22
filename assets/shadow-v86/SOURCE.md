@@ -14,9 +14,9 @@ Adapted from the user's `Shadow_Art_V10_手势识别与真实轮廓修复版.zip
 
 ## Game adaptation
 
-- Process a mirrored, aspect-preserving center crop at 320×240; use the same frame for hand localization and pixel segmentation.
-- Default square hand workspace maps into the existing 128×128 matching mask. Projection zoom is adjustable without replacing the player's silhouette with a preset.
-- Match the current level's target using the existing overlap score, threshold and two-second continuous hold. Calibration, empty video, paused dialogs and stale frames cannot accumulate progress.
+- Process a mirrored, aspect-preserving center crop at 640×480. Native video (ideal 1280×720) feeds hand inference; landmarks map into the mirrored crop exactly as in the supplied HTML.
+- Restore the original rectangular workspace (64,45,512,354) and original defaults (repair 50, stability 45, min area 90). Render the full-resolution mask; only scoring uses 128×128. The workspace gates pixels without recentering or magnifying the projection. Projection zoom is adjustable without replacing the player's silhouette with a preset.
+- Match the current level's target using the existing overlap score, 70% threshold and one-second continuous hold. Calibration, empty video, paused dialogs and stale frames cannot accumulate progress.
 - Preserve the ten existing targets, hints, artwork, saved completion and demo separation. Demo completion never records a real clear.
 - Add in-frame background capture, capture progress, region/exclusion editing, tolerance/repair/skin/zoom controls, disconnect and permission failure handling.
 - Keep PC proportions for landscape mobile. No separate portrait game layout.
@@ -27,3 +27,5 @@ Adapted from the user's `Shadow_Art_V10_手势识别与真实轮廓修复版.zip
 `scripts/test-shadow-camera-v86.cjs` checks segmentation, two foreground regions, exclusions, guided override, temporal clearing, calibration, a synthetic video stream through the actual camera processing loop, continuous matching and unlock, permission denial, model loading failure, disconnect and landscape display. This is automated synthetic-input validation, not a physical webcam usability trial.
 
 `scripts/test-shadow-v59.cjs` checks all ten level assets, matching and hold rules, demo separation, completion saving, hints, artwork and landscape UI.
+
+Version 91 fidelity checks: `scripts/test-shadow-parity-v91.cjs` passes identical pixel frames through the original HTML and adapted segmenter and compares every mask pixel in pure, guided and excluded modes. It also checks that ROI edits do not change projection scale and runs a video-stream-to-clear test. Camera usability remains to be checked with the user’s physical setup.

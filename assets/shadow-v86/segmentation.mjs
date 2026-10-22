@@ -1,10 +1,10 @@
 // Pixel segmentation adapted from the user-provided Shadow Art V10, Oct 2026.
 // Hand landmarks restrict candidates only. They are never rendered as silhouette.
-export function createShadowSegmenter({width:W=320,height:H=240}={}){
- const N=W*H,options={threshold:24,cleanup:2,stability:35,minArea:22,repair:60,skinRange:60,autoNoise:true,guided:true};
+export function createShadowSegmenter({width:W=640,height:H=480}={}){
+ const N=W*H,options={threshold:24,cleanup:2,stability:45,minArea:90,repair:50,skinRange:60,autoNoise:true,guided:true};
  const rawMask=new Uint8Array(N),denoiseMask=new Uint8Array(N),scratch=new Uint8Array(N),stable=new Float32Array(N),cleanMask=new Uint8Array(N),visited=new Uint8Array(N),queue=new Int32Array(N),region=new Int32Array(N),handGuide=new Uint8Array(N),exclusionMask=new Uint8Array(N),bgNoise=new Uint8Array(N);
  const guideCanvas=document.createElement('canvas');guideCanvas.width=W;guideCanvas.height=H;const guideCtx=guideCanvas.getContext('2d',{willReadFrequently:true});
- let background=null,lastPixels=null,handColors=[],handGuideCount=0,handStamp=0,hasRoi=true,roi={x:Math.round((W-H*.8)/2),y:Math.round(H*.05),w:Math.round(H*.8),h:Math.round(H*.8)},exclusions=[],bgAcc=null,bgLumSq=null,bgCount=0,calibrateStart=null;
+ let background=null,lastPixels=null,handColors=[],handGuideCount=0,handStamp=0,hasRoi=true,roi={x:Math.round(W*.1),y:Math.round(H*45/480),w:Math.round(W*.8),h:Math.round(H*354/480)},exclusions=[],bgAcc=null,bgLumSq=null,bgCount=0,calibrateStart=null;
  const guideValid=()=>options.guided&&handGuideCount>0&&performance.now()-handStamp<650;
  const roiValid=(x,y)=>!hasRoi||(x>=roi.x&&x<roi.x+roi.w&&y>=roi.y&&y<roi.y+roi.h);
  function resetSeg(){stable.fill(0);cleanMask.fill(0);rawMask.fill(0);denoiseMask.fill(0);scratch.fill(0);}
@@ -17,7 +17,7 @@ export function createShadowSegmenter({width:W=320,height:H=240}={}){
   if(progress>=1){if(bgCount<6){invalidate();return {ready:false,progress:0,error:'采样帧数不足，请保持网页在前台后重试'};}background=new Uint8Array(N*3);for(let k=0;k<N;k++){const i=k*3,R=bgAcc[i]/bgCount,G=bgAcc[i+1]/bgCount,B=bgAcc[i+2]/bgCount,lum=.299*R+.587*G+.114*B;background[i]=Math.round(R);background[i+1]=Math.round(G);background[i+2]=Math.round(B);bgNoise[k]=Math.min(52,Math.round(Math.sqrt(Math.max(0,bgLumSq[k]/bgCount-lum*lum))));}bgAcc=bgLumSq=null;calibrateStart=null;resetSeg();}
   return {ready:!!background,progress};
  }
- function setRoi(r){if(!r||![r.x,r.y,r.w,r.h].every(Number.isFinite))throw Error('Invalid ROI');const size=Math.max(24,Math.min(W,H,Math.max(Math.abs(r.w),Math.abs(r.h))));roi={x:Math.round(Math.max(0,Math.min(W-size,r.x))),y:Math.round(Math.max(0,Math.min(H-size,r.y))),w:Math.round(size),h:Math.round(size)};invalidate();}
+ function setRoi(r){if(!r||![r.x,r.y,r.w,r.h].every(Number.isFinite)||r.w<10||r.h<10)throw Error('Invalid ROI');const x=Math.max(0,Math.min(W-10,r.x)),y=Math.max(0,Math.min(H-10,r.y));roi={x:Math.floor(x),y:Math.floor(y),w:Math.ceil(Math.min(W-x,r.w)),h:Math.ceil(Math.min(H-y,r.h))};invalidate();}
  function setExclusions(rects){exclusions=rects.slice(0,8).map(r=>({...r}));exclusionMask.fill(0);for(const r of exclusions){const left=Math.max(0,Math.floor(r.x)),right=Math.min(W,Math.ceil(r.x+r.w));for(let y=Math.max(0,Math.floor(r.y));y<Math.min(H,Math.ceil(r.y+r.h));y++)exclusionMask.fill(1,y*W+left,y*W+right);}resetSeg();}
 function rgbToChroma(r,g,b){return [128-.168736*r-.331264*g+.5*b,128+.5*r-.418688*g-.081312*b];}
 function handPixelColor(pxArr,x,y){
@@ -31,16 +31,16 @@ function updateHandGuide(landmarks){
  const samples=[];
  const pixels=lastPixels;
  for(const p of landmarks){
-  const span=Math.max(12,Math.hypot(p[5].x-p[17].x,p[5].y-p[17].y));
+  const span=Math.max(24,Math.hypot(p[5].x-p[17].x,p[5].y-p[17].y));
   // Hand-area prior only: never draw this prior as the final silhouette.
   guideCtx.beginPath();
   guideCtx.moveTo(p[0].x,p[0].y);
   for(const index of [1,2,5,9,13,17])guideCtx.lineTo(p[index].x,p[index].y);
-  guideCtx.closePath();guideCtx.fill();guideCtx.lineWidth=Math.max(4.5,span*.20);guideCtx.stroke();
+  guideCtx.closePath();guideCtx.fill();guideCtx.lineWidth=Math.max(9,span*.20);guideCtx.stroke();
   for(const [a,b,c,d] of [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]]){
    guideCtx.beginPath();guideCtx.moveTo(p[a].x,p[a].y);
    guideCtx.lineTo(p[b].x,p[b].y);guideCtx.lineTo(p[c].x,p[c].y);guideCtx.lineTo(p[d].x,p[d].y);
-   guideCtx.lineWidth=span*(a===1?.29:.25)+4.5;guideCtx.stroke();
+   guideCtx.lineWidth=span*(a===1?.29:.25)+9;guideCtx.stroke();
   }
   if(pixels){
    let cb=0,cr=0,count=0;
@@ -161,7 +161,7 @@ function segment(framePixels,config){
 }
 
  function process(pixels){lastPixels=pixels;const result=segment(pixels,{...options,useRoi:hasRoi,roi});return {...result,mask:cleanMask,guided:guideValid()};}
- function project(size=128,zoom=1){const out=new Uint8Array(size*size),side=Math.max(roi.w,roi.h),cx=roi.x+roi.w/2,cy=roi.y+roi.h/2;for(let y=0;y<size;y++)for(let x=0;x<size;x++){const sx=Math.floor(cx+(x+.5-size/2)*side/size/zoom),sy=Math.floor(cy+(y+.5-size/2)*side/size/zoom);if(sx>=0&&sy>=0&&sx<W&&sy<H&&roiValid(sx,sy))out[y*size+x]=cleanMask[sy*W+sx];}return out;}
+ function project(size=128,zoom=1){const out=new Uint8Array(size*size),side=Math.max(W,H),cx=W/2,cy=H/2;for(let y=0;y<size;y++)for(let x=0;x<size;x++){const sx=Math.floor(cx+(x+.5-size/2)*side/size/zoom),sy=Math.floor(cy+(y+.5-size/2)*side/size/zoom);if(sx>=0&&sy>=0&&sx<W&&sy<H&&roiValid(sx,sy))out[y*size+x]=cleanMask[sy*W+sx];}return out;}
  return {width:W,height:H,options,process,project,beginCalibration,sample,invalidate,setRoi,setExclusions,updateHandGuide,clearGuide(){handGuideCount=0;handGuide.fill(0);},setPixels(pixels){lastPixels=pixels;},reset:resetSeg,snapshot:()=>({ready:!!background,calibrating:calibrateStart!==null,roi:{...roi},exclusions:exclusions.map(r=>({...r})),guided:guideValid(),hands:guideValid()?handGuideCount:0}),
  setBackground(rgb){if(rgb.length!==N*3)throw Error('Invalid background');background=new Uint8Array(rgb);bgNoise.fill(0);calibrateStart=null;resetSeg();},setGuide(mask,colors=[]){if(mask.length!==N)throw Error('Invalid guide');handGuide.set(mask);handColors=colors;handGuideCount=1;handStamp=performance.now();}};
 }
