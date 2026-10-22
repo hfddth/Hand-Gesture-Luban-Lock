@@ -10,6 +10,6 @@ const records=[
  ['deer','鹿','鹿鸣幽谷','舒展鹿角，让枝杈层次清晰。'],
  ['pegasus','飞马','天马逐光','观察马头、翅膀与身形的组合。']
 ];
-export const SHADOW_LEVELS=records.map(([id,animal,name,hint],index)=>({id,animal,name,hint,index,chapter:index<4?'灯下初影':index<7?'影随心生':'万象入画',threshold:60,holdMs:1000,target:`assets/shadow-v58/targets-v59/${id}.svg`,mask:`assets/shadow-v58/targets-v59/${id}.json`,reference:`assets/shadow-v58/references/${id}.webp`,artwork:`assets/shadow-v58/artwork-v59/${id}.webp`}));
+export const SHADOW_LEVELS=records.map(([id,animal,name,hint],index)=>({id,animal,name,hint,index,chapter:index<4?'灯下初影':index<7?'影随心生':'万象入画',threshold:60,holdMs:2000,target:`assets/shadow-v58/targets-v59/${id}.svg`,mask:`assets/shadow-v58/targets-v59/${id}.json`,reference:`assets/shadow-v58/references/${id}.webp`,artwork:`assets/shadow-v58/artwork-v59/${id}.webp`}));
 Object.assign(SHADOW_LEVELS[0],{animal:'鸽子',name:'鸽影展翅',target:'assets/shadow-v92/bird.svg',mask:'assets/shadow-v92/bird.json',preview:'assets/shadow-v92/bird-preview.svg'});
 export const SHADOW_CHAPTERS=['灯下初影','影随心生','万象入画'];

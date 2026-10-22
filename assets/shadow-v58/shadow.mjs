@@ -1,7 +1,7 @@
 import {ShadowCamera} from '../shadow-v86/camera.mjs?v=91';
 import {recordCompletion} from '../collection-v63/progress.mjs';
-import {SHADOW_LEVELS} from './levels.mjs?v=93';
-import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=93';
+import {SHADOW_LEVELS} from './levels.mjs?v=94';
+import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=94';
 const $=id=>document.getElementById(id),params=new URLSearchParams(location.search),requested=Number(params.get('level')??0);
 const level=SHADOW_LEVELS[Number.isInteger(requested)&&requested>=0&&requested<SHADOW_LEVELS.length?requested:0];
 function fit(){document.documentElement.style.setProperty('--fit',Math.min(innerWidth/1672,innerHeight/941));$('landscapePrompt').hidden=!(innerWidth<innerHeight&&innerWidth<900&&matchMedia('(pointer:coarse)').matches);}
