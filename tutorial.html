@@ -3,10 +3,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script id="viewport-fit">(()=>{const r=document.documentElement,p=location.pathname.split('/').pop(),wide=p==='modes.html'||p==='collection.html';function fit(){const w=innerWidth,h=innerHeight;r.style.setProperty('--fit',Math.min(w/(wide?1692:1672),h/(wide?930:941)));r.style.setProperty('--stage-scale',Math.min(w/1692,h/930));r.style.setProperty('--graduation-scale',Math.min(w/1672,h/941));if(p==='modes.html')r.classList.add('fit-stage');}fit();addEventListener('resize',fit,{passive:true});})();</script>
   <meta name="theme-color" content="#10100d" />
   <title>掌中榫局｜新手教程</title>
-  <link rel="stylesheet" href="assets/landing/scene-v3.css">
-  <script src="assets/landing/particles.js?v=3" defer></script>
+  <link rel="stylesheet" href="assets/landing/scene-v3.css?v=96">
+  <script src="assets/landing/particles.js?v=96" defer></script>
   <style>
     :root {
       --paper: #eee6d2;
@@ -527,9 +528,10 @@
   <dialog id="helpDialog" aria-labelledby="helpTitle"><h2 id="helpTitle">指尖入门</h2><p>抓取放置：用食指指向榫木，拇指与食指靠近抓取；移动手掌调整位置，分开手指并张掌放置。</p><p>托物旋转：张开手掌，原地转动手腕。鼠标也可拖动构件与视角。</p><button class="ui-button primary" data-close type="button">开始练习</button></dialog>
   <dialog id="settingsDialog" aria-labelledby="settingsTitle"><h2 id="settingsTitle">操作设置</h2><label class="setting-row">金色光粒<input type="checkbox" id="particlesToggle" checked></label><label class="setting-row">镜像交互<span>已开启 · 与手同向</span></label><button class="ui-button" id="restartLesson" type="button">重新练习</button> <button class="ui-button primary" data-close type="button">返回练习</button></dialog>
   <script type="module">
+    import {renderPixelRatio,createFrameGate} from "./assets/landing/render-budget.mjs?v=96";
     let THREE;
     try {
-      ({ THREE } = await import("./assets/landing/three-runtime-v5.mjs"));
+      ({ THREE } = await import("./assets/landing/three-runtime-v5.mjs?v=96"));
     } catch (primaryError) {
       try {
         THREE = await import("https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js");
@@ -609,7 +611,7 @@
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(innerWidth, innerHeight);
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+    renderer.setPixelRatio(renderPixelRatio(innerWidth,innerHeight));
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1003,7 +1005,7 @@
       if(graduationMotion)return;
       tutorialStarted=false;grabbed=false;recognition.resetInteraction();handRotationTarget=null;
       assembledGroup.scale.setScalar(.77);assembledGroup.position.y=0;
-      camera3d.position.set(0,2.5,12.5);camera3d.lookAt(0,.25,0);camera3d.clearViewOffset();camera3d.aspect=1672/941;camera3d.updateProjectionMatrix();renderer.setSize(1672,941);
+      camera3d.position.set(0,2.5,12.5);camera3d.lookAt(0,.25,0);camera3d.clearViewOffset();camera3d.aspect=1672/941;camera3d.updateProjectionMatrix();renderer.setPixelRatio(renderPixelRatio(1672,941));renderer.setSize(1672,941);
       graduationMotion={start:performance.now(),baseZ:camera3d.position.z,baseX:puzzleGroup.position.x,baseY:puzzleGroup.position.y,modelScale:puzzleGroup.scale.x,tableScale:table.scale.x};
       document.body.classList.add("is-graduating");
       graduationFill.visible=true;targetPuzzleRotationX=.08;targetPuzzleRotationY=-1.0;targetPuzzleRotationZ=.06;
@@ -1148,9 +1150,10 @@
       renderer.setSize(innerWidth, innerHeight);
     });
 
-    const clock = new THREE.Clock();
+    const clock = new THREE.Clock(),frameGate=createFrameGate();
     function animate() {
       requestAnimationFrame(animate);
+      if(!frameGate(performance.now(),Boolean(grabbed||mouseDown||cameraSession||graduationMotion)))return;
       const dt = Math.min(clock.getDelta(), .05);
       const t = reduceMotion.matches ? 0 : clock.elapsedTime;
       if(!reduceMotion.matches)motes.rotation.y = t * .015;
@@ -1221,7 +1224,7 @@
     function fitGraduationStage(){document.body.style.setProperty('--graduation-scale',Math.min(innerWidth/1672,innerHeight/941));}
     function fitWorkshop(){
       graduationFill.visible=false;
-      table.position.y=-2.13;table.rotation.x=0;renderer.setSize(innerWidth,innerHeight);camera3d.aspect=innerWidth/innerHeight;
+      table.position.y=-2.13;table.rotation.x=0;renderer.setPixelRatio(renderPixelRatio(innerWidth,innerHeight));renderer.setSize(innerWidth,innerHeight);camera3d.aspect=innerWidth/innerHeight;
       const mobile=innerWidth<701;
       camera3d.position.set(0,mobile?3.8:2.5,mobile?16:innerWidth/innerHeight<1.45?15.4:12.5);
       camera3d.lookAt(0,mobile?.6:.25,0);

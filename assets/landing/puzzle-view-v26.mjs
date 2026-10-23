@@ -1,3 +1,4 @@
+import {renderPixelRatio,createFrameGate} from './render-budget.mjs?v=96';
 /*
 GitHub: matajoh/4M26-burrsolver / puzzle 0
 MIT License; Copyright (c) 2024 Matthew A Johnson
@@ -35,9 +36,9 @@ if (host) init().catch(error => {
 });
 
 async function init() {
-  const { THREE: T } = await import('./three-runtime-v5.mjs');
+  const { THREE: T } = await import('./three-runtime-v5.mjs?v=96');
   const renderer = new T.WebGLRenderer({ alpha: true, antialias: true, powerPreference: 'low-power' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setPixelRatio(renderPixelRatio(900, 900));
   renderer.outputColorSpace = T.SRGBColorSpace;
   renderer.toneMapping = T.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.12;
@@ -126,10 +127,12 @@ async function init() {
   });
 
   const reduce = matchMedia('(prefers-reduced-motion: reduce)');
+  const frameGate = createFrameGate();
   let frame = 0, last = 0, visible = true;
   function wake() { if (!frame && visible && !document.hidden) frame = requestAnimationFrame(draw); }
   function draw(time) {
     frame = 0;
+    if (!frameGate(time, pointer !== null || root.quaternion.angleTo(desired) > .001)) { wake(); return; }
     const dt = last ? Math.min((time - last) / 1000, .05) : 1 / 60;
     last = time;
     root.quaternion.slerp(desired, reduce.matches ? 1 : 1 - Math.exp(-dt / .045));
@@ -150,6 +153,7 @@ async function init() {
     camera.top = half * Math.max(1, 1 / aspect);
     camera.bottom = -camera.top;
     camera.updateProjectionMatrix();
+    renderer.setPixelRatio(renderPixelRatio(width, height));
     renderer.setSize(width, height, false); wake();
   }).observe(host);
   new IntersectionObserver(entries => { visible = entries[0].isIntersecting; if (visible) { last = 0; wake(); } }).observe(host);
