@@ -1,0 +1,13 @@
+:root { color-scheme: dark; background: #0b1713; color: #f5dfa8; }
+* { box-sizing: border-box; }
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; }
+body { position: fixed; inset: 0; background: radial-gradient(ellipse at center, #1b2d22, #07110d 80%); }
+#safe-area { position: fixed; inset: 0; padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px); visibility: hidden; pointer-events: none; }
+#landscape-plane { position: absolute; overflow: hidden; transform-origin: center; }
+#game-frame { position: absolute; left: 50%; top: 50%; width: 1672px; height: 941px; border: 0; display: block; transform-origin: center; background: #0b1713; }
+#fullscreenButton { position: absolute; z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; width: 44px; height: 48px; padding: 4px; border: 1px solid #b08a4b99; border-radius: 9px; color: #ffe7af; background: #15251ee8; font: 11px system-ui, sans-serif; touch-action: manipulation; cursor: pointer; }
+#fullscreenButton svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+#fullscreenButton:focus-visible { outline: 2px solid #ffe7af; outline-offset: 2px; }
+#fullscreenButton[hidden] { display: none; }
+#mobile-notice { position: absolute; z-index: 3; left: 50%; bottom: 10px; transform: translateX(-50%); max-width: 80%; margin: 0; padding: 8px 15px; border: 1px solid #b08a4b99; border-radius: 7px; background: #102019ed; color: #ffe7af; text-align: center; font: 14px/1.5 system-ui, sans-serif; pointer-events: none; }
+#mobile-notice:empty { display: none; }

@@ -1,0 +1,11 @@
+{
+  "name": "掌中榫局",
+  "short_name": "掌中榫局",
+  "lang": "zh-CN",
+  "start_url": "../../index.html",
+  "scope": "../../",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#0b1713",
+  "theme_color": "#0b1713"
+}

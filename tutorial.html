@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="utf-8" />
+<script src="assets/mobile/entry-v97.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script id="viewport-fit">(()=>{const r=document.documentElement,p=location.pathname.split('/').pop(),wide=p==='modes.html'||p==='collection.html';function fit(){const w=innerWidth,h=innerHeight;r.style.setProperty('--fit',Math.min(w/(wide?1692:1672),h/(wide?930:941)));r.style.setProperty('--stage-scale',Math.min(w/1692,h/930));r.style.setProperty('--graduation-scale',Math.min(w/1672,h/941));if(p==='modes.html')r.classList.add('fit-stage');}fit();addEventListener('resize',fit,{passive:true});})();</script>
   <meta name="theme-color" content="#10100d" />
@@ -1085,15 +1086,18 @@
     }
 
 
+    let pointerLastX = 0, pointerLastY = 0;
     renderer.domElement.addEventListener("pointermove", event => {
+      const pointerDX = event.clientX - pointerLastX, pointerDY = event.clientY - pointerLastY;
+      pointerLastX = event.clientX; pointerLastY = event.clientY;
       if (handVisible) return;
       if (currentPart === 2) {
         if (mouseDown && tutorialStarted) {
-          const dx = THREE.MathUtils.clamp(event.movementX / innerWidth, -.035, .035);
-          const dy = THREE.MathUtils.clamp(event.movementY / innerHeight, -.035, .035);
+          const dx = THREE.MathUtils.clamp(pointerDX / innerWidth, -.035, .035);
+          const dy = THREE.MathUtils.clamp(pointerDY / innerHeight, -.035, .035);
           targetPuzzleRotationY += dx * 4.8;
           targetPuzzleRotationX = THREE.MathUtils.clamp(targetPuzzleRotationX + dy * 3.8, -.85, .85);
-          mouseMovedDistance += Math.abs(event.movementX) + Math.abs(event.movementY);
+          mouseMovedDistance += Math.abs(pointerDX) + Math.abs(pointerDY);
           if (currentStep === 0) {
             setStep(1);
             showToast("正在旋转整个鲁班锁");
@@ -1104,7 +1108,7 @@
       setPointerFromScreen(event.clientX, event.clientY);
       updateHover();
       if (mouseDown && grabbed) {
-        mouseMovedDistance += Math.hypot(event.movementX, event.movementY);
+        mouseMovedDistance += Math.hypot(pointerDX, pointerDY);
         updateGrabPosition();
         if (currentStep === 2 && mouseMovedDistance > 45) nextStep(2);
       }
@@ -1114,6 +1118,7 @@
       if (handVisible || event.button !== 0) return;
       mouseDown = true;
       mouseStart.set(event.clientX, event.clientY);
+      pointerLastX = event.clientX; pointerLastY = event.clientY;
       mouseMovedDistance = 0;
       if (currentPart === 2) return;
       setPointerFromScreen(event.clientX, event.clientY);
