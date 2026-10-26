@@ -1,0 +1,10 @@
+/* Scoped to the desktop-sized frame; game positions and typography stay intact. */
+html.mobile-game { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+.mobile-game body { overscroll-behavior: none; }
+.mobile-game .puzzle-view,
+.mobile-game .model-view,
+.mobile-game canvas,
+.mobile-game #levelWindow { touch-action: none; }
+.mobile-game a,
+.mobile-game button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.mobile-game .landscape-prompt { display: none !important; }
