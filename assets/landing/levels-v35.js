@@ -1,4 +1,4 @@
-import {BURR_LEVELS,BURR_GROUPS,BURR_CHAPTERS} from './burr-campaign-v68.mjs?v=87';
+import {BURR_LEVELS,BURR_GROUPS,BURR_CHAPTERS} from './burr-campaign-v68.mjs?v=98';
 import {isComplete} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS,SHADOW_CHAPTERS} from '../shadow-v58/levels.mjs?v=94';
 (()=>{

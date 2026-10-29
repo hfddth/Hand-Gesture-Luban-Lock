@@ -1,0 +1,202 @@
+[
+  {
+    "kind": "turn",
+    "ids": [
+      0
+    ],
+    "axis": 0,
+    "angle": -1.5707963267948966,
+    "pivot": [
+      0,
+      -0.20357071428571424,
+      0.20357142857142874
+    ],
+    "text": "先转动第一根活榫 90°，让较细的方芯通过榫眼。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      0
+    ],
+    "vector": [
+      0,
+      -1,
+      0
+    ],
+    "distance": 0.06,
+    "removed": [],
+    "text": "轻移第一根活榫，为相邻花瓣让出间隙。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      2
+    ],
+    "vector": [
+      0,
+      -1,
+      0
+    ],
+    "distance": 0.49,
+    "removed": [],
+    "text": "向下错开第三根花瓣，再从侧面取出。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      2
+    ],
+    "vector": [
+      0,
+      0,
+      1
+    ],
+    "distance": 9,
+    "removed": [
+      2
+    ],
+    "text": "沿箭头抽出第三根花瓣。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      8
+    ],
+    "vector": [
+      0,
+      0,
+      1
+    ],
+    "distance": 9,
+    "removed": [
+      8
+    ],
+    "text": "抽出第九根花瓣，释放中央长榫。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      4
+    ],
+    "vector": [
+      1,
+      0,
+      0
+    ],
+    "distance": 0.8571428571428571,
+    "removed": [],
+    "text": "横移第五根长榫，为活榫让路。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      0
+    ],
+    "vector": [
+      0,
+      -1,
+      0
+    ],
+    "distance": 9,
+    "removed": [
+      0
+    ],
+    "text": "取出已经转过的第一根活榫。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      1
+    ],
+    "vector": [
+      0,
+      1,
+      0
+    ],
+    "distance": 9,
+    "removed": [
+      1
+    ],
+    "text": "抽出第二根花瓣。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      3
+    ],
+    "vector": [
+      0,
+      0,
+      1
+    ],
+    "distance": 9,
+    "removed": [
+      3
+    ],
+    "text": "抽出第四根花瓣。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      4
+    ],
+    "vector": [
+      0,
+      0,
+      1
+    ],
+    "distance": 9,
+    "removed": [
+      4
+    ],
+    "text": "取出第五根长榫。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      5
+    ],
+    "vector": [
+      0,
+      1,
+      0
+    ],
+    "distance": 9,
+    "removed": [
+      5
+    ],
+    "text": "取出第六根长榫。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      6
+    ],
+    "vector": [
+      1,
+      0,
+      0
+    ],
+    "distance": 9,
+    "removed": [
+      6
+    ],
+    "text": "取出第七根花瓣。"
+  },
+  {
+    "kind": "slide",
+    "ids": [
+      7
+    ],
+    "vector": [
+      1,
+      0,
+      0
+    ],
+    "distance": 9,
+    "removed": [
+      7
+    ],
+    "text": "取出最后一根长榫，完成拆解。"
+  }
+]

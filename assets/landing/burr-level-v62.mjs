@@ -1,7 +1,7 @@
 import {renderPixelRatio,createFrameGate} from './render-budget.mjs?v=96';
 import {createHandPointer} from '../recognition-v81/hand-pointer.mjs?v=90';
 import {BurrGuide} from './burr-guide-v70.mjs?v=87';
-import {BURR_LEVELS,BURR_ORDER,BURR_CHAPTERS,BURR_GROUPS} from './burr-campaign-v68.mjs?v=87';
+import {BURR_LEVELS,BURR_ORDER,BURR_CHAPTERS,BURR_GROUPS} from './burr-campaign-v68.mjs?v=98';
 import {BurrPhysics,qAxis,qMultiply,rotate} from './burr-physics-v66.mjs?v=87';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {THREE as T} from './three-runtime-v5.mjs?v=96';
