@@ -1,5 +1,5 @@
 import {createFrameGate} from '../landing/render-budget.mjs?v=96';
-import {ShadowCamera} from '../shadow-v86/camera.mjs?v=95';
+import {ShadowCamera} from '../shadow-v86/camera.mjs?v=100';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS} from './levels.mjs?v=94';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=94';
@@ -43,12 +43,12 @@ let cameraPending=false,editMode='roi',editDrag=null;
 function cameraState(info){
  const online=camera.active,calibrating=info.phase==='calibrating';stream=camera.stream;
  $('cameraVideo').hidden=!online;$('cameraOverlay').hidden=!online;$('cameraEmpty').hidden=online;
- $('cameraDot').classList.toggle('connected',online);$('cameraState').textContent=online?(calibrating?'空背景采集中':info.ready?'真实手影 · 已连接':'等待采集空背景'):'摄像头未连接';
+ $('cameraDot').classList.toggle('connected',online);$('cameraState').textContent=online?(calibrating?'空背景采集中':info.guided?'双手已定位':info.backgroundReady?'真实手影 · 已连接':'等待双手定位'):'摄像头未连接';
  $('cameraButton').textContent=online?'断开摄像头':'连接摄像头';$('captureBackground').disabled=$('settingsCapture').disabled=!online||calibrating;
- $('captureBackground').textContent=calibrating?'采集中 · '+Math.ceil((1-info.progress)*3)+' 秒':info.ready?'重新采集空背景':'采集空背景 · 3 秒';$('captureFill').style.width=info.progress*100+'%';
+ $('captureBackground').textContent=calibrating?'采集中 · '+Math.ceil((1-info.progress)*3)+' 秒':info.backgroundReady?'重新采集空背景':'可选：采集空背景';$('captureFill').style.width=info.progress*100+'%';
  $('cameraNote').textContent=$('settingsCaptureStatus').textContent=info.message;
- $('shadowAssistStatus').textContent=camera.modelFailed?'手部辅助不可用 · 仍可使用真实背景差分':info.guided?'双手辅助定位已启用 · 当前 '+info.hands+' 只手':online?'真实差分成影 · 手部辅助仅用于缩小识别区域':'手部辅助暂未连接；不可用时仍可用背景差分成影。';
- if(!demo&&!state.complete){$('projectionStatus').textContent=info.ready?'真实手影 · 调整位置与大小，贴合白色虚线':calibrating?'采集空背景 · 双手移出绿色区域':online?'准备对影 · 先采集空背景':'静候影来 · 连接摄像头后采集空背景';if(!info.ready)note(info.message);}
+ $('shadowAssistStatus').textContent=camera.modelFailed?'双手定位不可用，请重新连接摄像头':info.guided?'当前 '+info.hands+' 只手 · 已排除身体干扰':online?'请把双手放入绿色框，等待定位':'连接后自动定位双手，无需先采集空背景。';
+ if(!demo&&!state.complete){$('projectionStatus').textContent=info.ready?'真实手影 · 调整位置与大小，贴合白色虚线':calibrating?'采集空背景 · 双手移出绿色区域':online?'准备对影 · 双手伸入绿色框':'静候影来 · 连接摄像头后伸出双手';if(!info.ready)note(info.message);}
  if(!online&&!state.complete){state.reset();actual=null;liveProjection=null;updateHUD();draw();}
  document.body.dataset.recognition='shadow-v10-pixels-v86';document.body.dataset.cameraPhase=info.phase;
 }
