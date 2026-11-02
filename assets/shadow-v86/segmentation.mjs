@@ -1,11 +1,12 @@
 // Pixel segmentation adapted from the user-provided Shadow Art V10, Oct 2026.
-// Hand landmarks restrict candidates only. They are never rendered as silhouette.
+// Camera landmarks restrict pixel segmentation to the hands, including over the torso.
+// The target outline never participates in segmentation or mask generation.
 export function createShadowSegmenter({width:W=640,height:H=480}={}){
  const N=W*H,options={threshold:24,cleanup:2,stability:45,minArea:90,repair:50,skinRange:60,autoNoise:true,guided:true};
  const rawMask=new Uint8Array(N),denoiseMask=new Uint8Array(N),scratch=new Uint8Array(N),stable=new Float32Array(N),cleanMask=new Uint8Array(N),visited=new Uint8Array(N),queue=new Int32Array(N),region=new Int32Array(N),handGuide=new Uint8Array(N),exclusionMask=new Uint8Array(N),bgNoise=new Uint8Array(N);
  const guideCanvas=document.createElement('canvas');guideCanvas.width=W;guideCanvas.height=H;const guideCtx=guideCanvas.getContext('2d',{willReadFrequently:true});
  let background=null,lastPixels=null,handColors=[],handGuideCount=0,handStamp=0,hasRoi=true,roi={x:Math.round(W*.1),y:Math.round(H*45/480),w:Math.round(W*.8),h:Math.round(H*354/480)},exclusions=[],bgAcc=null,bgLumSq=null,bgCount=0,calibrateStart=null;
- const guideValid=()=>options.guided&&handGuideCount>0&&performance.now()-handStamp<650;
+ const guideValid=()=>options.guided&&handGuideCount>0&&performance.now()-handStamp<450;
  const roiValid=(x,y)=>!hasRoi||(x>=roi.x&&x<roi.x+roi.w&&y>=roi.y&&y<roi.y+roi.h);
  function resetSeg(){stable.fill(0);cleanMask.fill(0);rawMask.fill(0);denoiseMask.fill(0);scratch.fill(0);}
  function invalidate(){background=null;bgAcc=null;bgLumSq=null;bgCount=0;calibrateStart=null;resetSeg();}
@@ -25,6 +26,7 @@ function handPixelColor(pxArr,x,y){
  return rgbToChroma(pxArr[q],pxArr[q+1],pxArr[q+2]);
 }
 function updateHandGuide(landmarks){
+ landmarks=landmarks.filter(p=>p?.length>=21&&p.every(v=>Number.isFinite(v.x)&&Number.isFinite(v.y)));
  
  guideCtx.clearRect(0,0,W,H);guideCtx.fillStyle='#fff';guideCtx.strokeStyle='#fff';
  guideCtx.lineJoin='round';guideCtx.lineCap='round';
@@ -36,11 +38,11 @@ function updateHandGuide(landmarks){
   guideCtx.beginPath();
   guideCtx.moveTo(p[0].x,p[0].y);
   for(const index of [1,2,5,9,13,17])guideCtx.lineTo(p[index].x,p[index].y);
-  guideCtx.closePath();guideCtx.fill();guideCtx.lineWidth=Math.max(9,span*.20);guideCtx.stroke();
+  guideCtx.closePath();guideCtx.fill();guideCtx.lineWidth=Math.max(2,span*.06);guideCtx.stroke();
   for(const [a,b,c,d] of [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]]){
    guideCtx.beginPath();guideCtx.moveTo(p[a].x,p[a].y);
    guideCtx.lineTo(p[b].x,p[b].y);guideCtx.lineTo(p[c].x,p[c].y);guideCtx.lineTo(p[d].x,p[d].y);
-   guideCtx.lineWidth=span*(a===1?.29:.25)+9;guideCtx.stroke();
+   guideCtx.lineWidth=Math.max(5,span*(a===1?.24:.19)+2);guideCtx.stroke();
   }
   if(pixels){
    let cb=0,cr=0,count=0;
@@ -68,7 +70,7 @@ function difference(framePixels,threshold,useRoi,r){
    if(exclusionMask[pos]&&!(guided&&handGuide[pos]))continue;
    if(guided&&!handGuide[pos])continue;
    const R=framePixels[p],G=framePixels[p+1],B=framePixels[p+2];
-   const dr=Math.abs(R-background[b]),dg=Math.abs(G-background[b+1]),db=Math.abs(B-background[b+2]);
+   const dr=background?Math.abs(R-background[b]):0,dg=background?Math.abs(G-background[b+1]):0,db=background?Math.abs(B-background[b+2]):0;
    const delta=.33*dr+.49*dg+.18*db;
    // Previous v9 6+2.2*sigma often erased large skin regions. Cap the jitter
    // margin and use a lower change threshold when a hand has been localized.
@@ -148,7 +150,8 @@ function connectedComponents(minArea){
 }
 // Pure segmentation entrypoint also supports synthetic validation in tests.
 function segment(framePixels,config){
- if(!background)return {regions:0,pixels:0};
+ // In hand mode a lost hand must not turn the torso into a scoring silhouette.
+ if((options.guided&&!guideValid())||(!background&&!guideValid())){resetSeg();return {regions:0,pixels:0};}
  difference(framePixels,config.threshold,config.useRoi,config.roi);
  despeckle(config.cleanup);repairTinyHoles();temporal(config.stability);
  // Do not allow temporal ghost pixels outside the locked workspace or in any
@@ -162,6 +165,6 @@ function segment(framePixels,config){
 
  function process(pixels){lastPixels=pixels;const result=segment(pixels,{...options,useRoi:hasRoi,roi});return {...result,mask:cleanMask,guided:guideValid()};}
  function project(size=128,zoom=1){const out=new Uint8Array(size*size),side=Math.max(W,H),cx=W/2,cy=H/2;for(let y=0;y<size;y++)for(let x=0;x<size;x++){const sx=Math.floor(cx+(x+.5-size/2)*side/size/zoom),sy=Math.floor(cy+(y+.5-size/2)*side/size/zoom);if(sx>=0&&sy>=0&&sx<W&&sy<H&&roiValid(sx,sy))out[y*size+x]=cleanMask[sy*W+sx];}return out;}
- return {width:W,height:H,options,process,project,beginCalibration,sample,invalidate,setRoi,setExclusions,updateHandGuide,clearGuide(){handGuideCount=0;handGuide.fill(0);},setPixels(pixels){lastPixels=pixels;},reset:resetSeg,snapshot:()=>({ready:!!background,calibrating:calibrateStart!==null,roi:{...roi},exclusions:exclusions.map(r=>({...r})),guided:guideValid(),hands:guideValid()?handGuideCount:0}),
+ return {width:W,height:H,options,process,project,beginCalibration,sample,invalidate,setRoi,setExclusions,updateHandGuide,clearGuide(){handGuideCount=0;handGuide.fill(0);},setPixels(pixels){lastPixels=pixels;},reset:resetSeg,snapshot:()=>({ready:!!background||guideValid(),backgroundReady:!!background,calibrating:calibrateStart!==null,roi:{...roi},exclusions:exclusions.map(r=>({...r})),guided:guideValid(),hands:guideValid()?handGuideCount:0}),
  setBackground(rgb){if(rgb.length!==N*3)throw Error('Invalid background');background=new Uint8Array(rgb);bgNoise.fill(0);calibrateStart=null;resetSeg();},setGuide(mask,colors=[]){if(mask.length!==N)throw Error('Invalid guide');handGuide.set(mask);handColors=colors;handGuideCount=1;handStamp=performance.now();}};
 }

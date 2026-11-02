@@ -1,6 +1,6 @@
-import {createShadowSegmenter} from './segmentation.mjs?v=91';
+import {createShadowSegmenter} from './segmentation.mjs?v=100';
 
-const HANDS='https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/';
+const HANDS=new URL('../../vendor/mediapipe/hands/',import.meta.url).href;
 let scriptPromise;
 function loadHands(){
  if(globalThis.Hands)return Promise.resolve();
@@ -8,7 +8,7 @@ function loadHands(){
   const script=document.createElement('script');let fallback=false;
   const timer=setTimeout(()=>{script.remove();reject(Error('手部辅助加载超时'));},15000);
   script.onload=()=>{clearTimeout(timer);globalThis.Hands?resolve():reject(Error('手部辅助未初始化'));};
-  script.onerror=()=>{if(!fallback){fallback=true;script.src='https://unpkg.com/@mediapipe/hands@0.4.1675469240/hands.js';}else{clearTimeout(timer);script.remove();reject(Error('手部辅助加载失败'));}};
+  script.onerror=()=>{if(!fallback){fallback=true;script.src=HANDS+'hands.js?retry=100';}else{clearTimeout(timer);script.remove();reject(Error('手部辅助加载失败'));}};
   script.src=HANDS+'hands.js';document.head.append(script);
  }).catch(error=>{scriptPromise=null;throw error;});
 }
@@ -16,7 +16,7 @@ function loadHands(){
 export class ShadowCamera{
  constructor({video,preview,settingsPreview,onMask,onState,assist=true}){
   Object.assign(this,{video,preview,settingsPreview,onMask,onState,assist});
-  this.segmenter=createShadowSegmenter();this.zoom=1.25;this.active=false;this.generation=0;
+  this.segmenter=createShadowSegmenter();if(!assist)this.segmenter.options.guided=false;this.zoom=1.25;this.active=false;this.generation=0;
   this.frame=document.createElement('canvas');this.frame.width=640;this.frame.height=480;
   this.ctx=this.frame.getContext('2d',{willReadFrequently:true});
   for(const canvas of [preview,settingsPreview]){canvas.width=640;canvas.height=480;}
@@ -33,9 +33,9 @@ export class ShadowCamera{
   this.stop();const token=this.generation;this.stream=stream;this.video.srcObject=stream;
   try{await this.video.play();}catch(error){this.stop();throw error;}
   if(token!==this.generation)return;
-  this.active=true;this.lastFrame=0;this.lastInference=0;this.modelFailed=false;
+  this.active=true;this.inferenceBusy=false;this.lastFrame=0;this.lastInference=0;this.modelFailed=false;
   for(const track of stream.getVideoTracks())track.addEventListener('ended',()=>{if(this.stream===stream){this.stop();this.report('error','摄像头已断开，请重新连接');}},{once:true});
-  this.report('connected','手移出绿色框，保持身体和摄像头不动，再采集空背景');
+  this.report('connected',this.assist?'正在定位双手，请把双手伸入绿色框':'手动差分模式：先采集空背景');
   this.raf=requestAnimationFrame(t=>this.tick(t));if(this.assist)this.loadModel(token);
  }
  async loadModel(token){
@@ -49,12 +49,14 @@ export class ShadowCamera{
     // Match the supplied HTML: infer from native video, then map its landmarks into the mirrored center crop.
     const vw=this.video.videoWidth,vh=this.video.videoHeight,sw=Math.min(vw,vh*4/3),sh=Math.min(vh,vw*3/4),sx=(vw-sw)/2,sy=(vh-sh)/2;
     const hands=(result.multiHandLandmarks||[]).map(hand=>hand.map(p=>({x:640-(p.x*vw-sx)*640/sw,y:(p.y*vh-sy)*480/sh})));
-    if(hands.length)this.segmenter.updateHandGuide(hands); // Retain the last guide for the V10 650 ms dropout grace.
+    if(hands.length)this.segmenter.updateHandGuide(hands); // Retain the last guide for a short detection dropout; never fall back to the torso.
    });
+   await model.initialize();
+   if(token!==this.generation||!this.active){await model.close();return;}
    this.model=model;
   }catch{
    model?.close?.();this.modelFailed=true;
-   if(token===this.generation&&this.active)this.report(this.segmenter.snapshot().ready?'tracking':'connected','手部辅助不可用，继续使用真实背景差分；可在影像设置中排除身体干扰');
+   if(token===this.generation&&this.active)this.report(this.segmenter.snapshot().ready?'tracking':'connected','双手定位加载失败，请重新连接；也可在影像设置中关闭双手定位，手动采集背景');
   }
  }
  capture(){
@@ -74,7 +76,7 @@ export class ShadowCamera{
    this.pixels=this.ctx.getImageData(0,0,640,480).data;this.segmenter.setPixels(this.pixels);
    const snapshot=this.segmenter.snapshot();
    if(snapshot.calibrating){const result=this.segmenter.sample(this.pixels,now);this.report(result.error?'error':result.ready?'tracking':'calibrating',result.error||(result.ready?'背景已锁定，把单手或双手伸入绿色框':'采集空背景中，请保持不动'),result.progress);}
-   else if(snapshot.ready){const result=this.segmenter.process(this.pixels);this.onMask?.(this.segmenter.project(128,this.zoom),{mask:new Uint8Array(result.mask),width:640,height:480,zoom:this.zoom});this.report('tracking',result.guided?'已定位 '+this.segmenter.snapshot().hands+' 只手 · 真实轮廓成影':'真实差分成影 · 请在绿色框内调整手影');}
+   else if(snapshot.ready||this.segmenter.options.guided){const result=this.segmenter.process(this.pixels);this.onMask?.(this.segmenter.project(128,this.zoom),{mask:new Uint8Array(result.mask),width:640,height:480,zoom:this.zoom});this.report('tracking',result.guided?'已定位 '+this.segmenter.snapshot().hands+' 只手 · 身体区域已排除':this.segmenter.options.guided?'等待双手定位 · 身体不参与匹配':'真实差分成影 · 请在绿色框内调整手影');}
    this.drawPreview();
    if(this.model&&!this.inferenceBusy&&!this.modelFailed&&now-this.lastInference>=110){
     this.inferenceBusy=true;this.lastInference=now;
