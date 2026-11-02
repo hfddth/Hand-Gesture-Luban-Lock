@@ -544,7 +544,7 @@
     }
 
     const { createCoverLock } = await import("./assets/landing/lock-structure-v27.mjs?v=28");
-    const {RecognitionEngine,startRecognitionCamera,drawCameraHand}=await import("./assets/recognition-v33/engine.mjs?v=34");
+    const {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand}=await import("./assets/recognition-v33/engine.mjs?v=99");
     const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
     const sceneRoot = document.getElementById("scene");
     const video = document.getElementById("video");
@@ -1054,13 +1054,14 @@
       }
     });
     document.body.dataset.recognitionEngine='snapshot-v33';
+    function cameraFailed(error){cameraSession?.stop();cameraSession=null;cameraRunning=false;cameraButton.disabled=false;cameraButton.textContent='重新开启摄像头';cameraStatus.textContent='未开启';cameraStatus.classList.remove('live');cameraPlaceholder.style.display='grid';cameraPlaceholder.textContent=cameraErrorMessage(error);showToast(cameraErrorMessage(error));}
     async function startCamera(){
       if(cameraRunning)return;cameraButton.disabled=true;cameraStatus.textContent='连接中';
       try{
-        cameraSession=await startRecognitionCamera(video,onHandResults);recognition.start();cameraRunning=true;
+        cameraSession=await startRecognitionCamera(video,onHandResults,{onProgress:state=>{cameraStatus.textContent=state==='permission'?'请允许摄像头':'正在加载识别';},onError:cameraFailed});recognition.start();cameraRunning=true;
         document.querySelector('.camera-card').classList.add('camera-live');cameraPlaceholder.style.display='none';cameraStatus.textContent='请张掌校准';cameraStatus.classList.add('live');cameraButton.textContent='摄像头已开启';
         showToast('请张开手掌约1秒，自动校准后即可操作');
-      }catch(error){cameraSession?.stop();cameraSession=null;cameraRunning=false;cameraButton.disabled=false;cameraStatus.textContent='开启失败';cameraStatus.classList.remove('live');cameraPlaceholder.style.display='grid';cameraPlaceholder.textContent='摄像头未能开启，可继续使用鼠标';showToast('请检查摄像头权限，或使用鼠标操作');console.error(error);}
+      }catch(error){cameraFailed(error);}
     }
     function onHandResults(results){
       const marks=results.multiHandLandmarks?.[0]||null;handVisible=Boolean(marks);drawCameraHand(video,handCanvas,marks);

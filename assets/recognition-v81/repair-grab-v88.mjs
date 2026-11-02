@@ -1,6 +1,6 @@
-import {RecognitionEngine as ArchiveEngine} from '../recognition-v33/engine.mjs';
+import {RecognitionEngine as ArchiveEngine} from '../recognition-v33/engine.mjs?v=99';
 import {PinchGrabController} from '../recognition-v33/pinch-controller.mjs?v=88';
-export {startRecognitionCamera,drawCameraHand} from '../recognition-v33/engine.mjs';
+export {startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v33/engine.mjs?v=99';
 
 export class RepairGrabController extends PinchGrabController{
  constructor(){super({timings:{releaseMs:320}});this.setThresholds({close:.68,arm:.82,release:1.02});}

@@ -1,6 +1,6 @@
-import {RecognitionEngine as CombinedEngine} from '../recognition-v79/engine.mjs?v=85';
+import {RecognitionEngine as CombinedEngine} from '../recognition-v79/engine.mjs?v=99';
 import {PinchGrabController,analyzeHand} from '../recognition-v33/pinch-controller.mjs?v=85';
-export {startRecognitionCamera,drawCameraHand} from '../recognition-v33/engine.mjs';
+export {startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v33/engine.mjs?v=99';
 
 export class BurrGrabController extends PinchGrabController{
  constructor(){super();this.setThresholds({close:.68,arm:.86,release:1.08});}
