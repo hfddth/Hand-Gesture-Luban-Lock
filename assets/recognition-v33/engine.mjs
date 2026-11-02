@@ -39,16 +39,7 @@ export class RecognitionEngine{
   }
 }
 
-const HANDS_BASE='https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1675469240/';
-let runtimePromise;
-function loadScript(url,fallback){return new Promise((resolve,reject)=>{const s=document.createElement('script');let retried=false;s.src=url;s.onload=resolve;s.onerror=()=>{if(retried){s.remove();reject(new Error('手部模型资源加载失败'));}else{retried=true;s.src=fallback;}};document.head.append(s);});}
-export async function startRecognitionCamera(video,onResults){
-  if(!globalThis.Hands||!globalThis.Camera){runtimePromise??=Promise.all([loadScript(HANDS_BASE+'hands.js','https://unpkg.com/@mediapipe/hands@0.4.1675469240/hands.js'),loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js','https://unpkg.com/@mediapipe/camera_utils@0.3.1675466862/camera_utils.js')]).catch(error=>{runtimePromise=null;throw error;});await runtimePromise;}
-  const hands=new globalThis.Hands({locateFile:file=>HANDS_BASE+file});hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.62,minTrackingConfidence:.68});hands.onResults(onResults);
-  const camera=new globalThis.Camera(video,{onFrame:async()=>hands.send({image:video}),width:640,height:480});
-  try{await camera.start();}catch(error){camera.stop?.();hands.close?.();throw error;}
-  return {hands,camera,stop(){camera.stop?.();hands.close?.();video.srcObject?.getTracks().forEach(track=>track.stop());}};
-}
+export {startRecognitionCamera,cameraErrorMessage} from './camera-v99.mjs';
 
 // Display adapter: fit the complete camera image into its frame without cropping.
 export function fitCameraPreview(sourceWidth,sourceHeight,width,height){
