@@ -1,5 +1,5 @@
 import {createFrameGate} from '../landing/render-budget.mjs?v=96';
-import {ShadowCamera} from '../shadow-v86/camera.mjs?v=100';
+import {ShadowCamera} from '../shadow-v86/camera.mjs?v=101';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS} from './levels.mjs?v=94';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=94';
