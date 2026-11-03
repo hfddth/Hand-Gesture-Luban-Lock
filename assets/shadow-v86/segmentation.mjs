@@ -25,8 +25,23 @@ function handPixelColor(pxArr,x,y){
  const X=Math.max(0,Math.min(W-1,Math.round(x))),Y=Math.max(0,Math.min(H-1,Math.round(y))),q=(Y*W+X)*4;
  return rgbToChroma(pxArr[q],pxArr[q+1],pxArr[q+2]);
 }
+let trackedHands=[];
+const handBounds=p=>({x0:Math.min(...p.map(v=>v.x)),x1:Math.max(...p.map(v=>v.x)),y0:Math.min(...p.map(v=>v.y)),y1:Math.max(...p.map(v=>v.y))});
 function updateHandGuide(landmarks){
  landmarks=landmarks.filter(p=>p?.length>=21&&p.every(v=>Number.isFinite(v.x)&&Number.isFinite(v.y)));
+ const now=performance.now(),used=new Set(),current=landmarks.map(points=>{
+  const center=points[9];let best=-1,distance=85;
+  trackedHands.forEach((t,i)=>{if(used.has(i))return;const d=Math.hypot(t.points[9].x-center.x,t.points[9].y-center.y);if(d<distance){best=i;distance=d;}});
+  if(best>=0)used.add(best);return {points,seen:now};
+ });
+ // Briefly retain only an overlapping missing hand, never an unrelated old hand.
+ for(let i=0;i<trackedHands.length&&current.length<2;i++){
+  const t=trackedHands[i];if(used.has(i)||now-t.seen>400)continue;
+  const a=handBounds(t.points);
+  if(current.some(h=>{const b=handBounds(h.points);return a.x0<b.x1+12&&a.x1>b.x0-12&&a.y0<b.y1+12&&a.y1>b.y0-12;}))current.push(t);
+ }
+ trackedHands=current;landmarks=current.map(t=>t.points);
+
  
  guideCtx.clearRect(0,0,W,H);guideCtx.fillStyle='#fff';guideCtx.strokeStyle='#fff';
  guideCtx.lineJoin='round';guideCtx.lineCap='round';
@@ -173,6 +188,6 @@ function segment(framePixels,config){
 
  function process(pixels){lastPixels=pixels;const result=segment(pixels,{...options,useRoi:hasRoi,roi});return {...result,mask:cleanMask,guided:guideValid()};}
  function project(size=128,zoom=1){const out=new Uint8Array(size*size),side=Math.max(W,H),cx=W/2,cy=H/2;for(let y=0;y<size;y++)for(let x=0;x<size;x++){const sx=Math.floor(cx+(x+.5-size/2)*side/size/zoom),sy=Math.floor(cy+(y+.5-size/2)*side/size/zoom);if(sx>=0&&sy>=0&&sx<W&&sy<H&&roiValid(sx,sy))out[y*size+x]=cleanMask[sy*W+sx];}return out;}
- return {width:W,height:H,options,process,project,beginCalibration,sample,invalidate,setRoi,setExclusions,updateHandGuide,clearGuide(){handGuideCount=0;handGuide.fill(0);},setPixels(pixels){lastPixels=pixels;},reset:resetSeg,snapshot:()=>({ready:!!background||guideValid(),backgroundReady:!!background,calibrating:calibrateStart!==null,roi:{...roi},exclusions:exclusions.map(r=>({...r})),guided:guideValid(),hands:guideValid()?handGuideCount:0}),
+ return {width:W,height:H,options,process,project,beginCalibration,sample,invalidate,setRoi,setExclusions,updateHandGuide,clearGuide(){trackedHands=[];handGuideCount=0;handGuide.fill(0);},setPixels(pixels){lastPixels=pixels;},reset:resetSeg,snapshot:()=>({ready:!!background||guideValid(),backgroundReady:!!background,calibrating:calibrateStart!==null,roi:{...roi},exclusions:exclusions.map(r=>({...r})),guided:guideValid(),hands:guideValid()?handGuideCount:0}),
  setBackground(rgb){if(rgb.length!==N*3)throw Error('Invalid background');background=new Uint8Array(rgb);bgNoise.fill(0);calibrateStart=null;resetSeg();},setGuide(mask,colors=[]){if(mask.length!==N)throw Error('Invalid guide');handGuide.set(mask);handColors=colors;handGuideCount=1;handStamp=performance.now();}};
 }
