@@ -1,4 +1,4 @@
-import {createShadowSegmenter} from './segmentation.mjs?v=100';
+import {createShadowSegmenter} from './segmentation.mjs?v=101';
 
 const HANDS=new URL('../../vendor/mediapipe/hands/',import.meta.url).href;
 let scriptPromise;
@@ -16,7 +16,7 @@ function loadHands(){
 export class ShadowCamera{
  constructor({video,preview,settingsPreview,onMask,onState,assist=true}){
   Object.assign(this,{video,preview,settingsPreview,onMask,onState,assist});
-  this.segmenter=createShadowSegmenter();if(!assist)this.segmenter.options.guided=false;this.zoom=1.25;this.active=false;this.generation=0;
+  this.segmenter=createShadowSegmenter();if(!assist)this.segmenter.options.guided=false;this.zoom=1.35;this.active=false;this.generation=0;
   this.frame=document.createElement('canvas');this.frame.width=640;this.frame.height=480;
   this.ctx=this.frame.getContext('2d',{willReadFrequently:true});
   for(const canvas of [preview,settingsPreview]){canvas.width=640;canvas.height=480;}
@@ -76,7 +76,9 @@ export class ShadowCamera{
    this.pixels=this.ctx.getImageData(0,0,640,480).data;this.segmenter.setPixels(this.pixels);
    const snapshot=this.segmenter.snapshot();
    if(snapshot.calibrating){const result=this.segmenter.sample(this.pixels,now);this.report(result.error?'error':result.ready?'tracking':'calibrating',result.error||(result.ready?'背景已锁定，把单手或双手伸入绿色框':'采集空背景中，请保持不动'),result.progress);}
-   else if(snapshot.ready||this.segmenter.options.guided){const result=this.segmenter.process(this.pixels);this.onMask?.(this.segmenter.project(128,this.zoom),{mask:new Uint8Array(result.mask),width:640,height:480,zoom:this.zoom});this.report('tracking',result.guided?'已定位 '+this.segmenter.snapshot().hands+' 只手 · 身体区域已排除':this.segmenter.options.guided?'等待双手定位 · 身体不参与匹配':'真实差分成影 · 请在绿色框内调整手影');}
+   else if(snapshot.ready||this.segmenter.options.guided){const result=this.segmenter.process(this.pixels);let zoom=this.zoom;
+   if(result.guided&&result.pixels>300){let left=640,right=0,top=480,bottom=0;for(let i=0;i<result.mask.length;i++)if(result.mask[i]){const x=i%640,y=(i/640)|0;left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);}const desired=Math.max(.8,Math.min(2.8,480/Math.max(right-left+1,bottom-top+1)))*this.zoom/1.25;this.autoZoom=this.autoZoom==null?desired:this.autoZoom+(desired-this.autoZoom)*.16;zoom=this.autoZoom;}else this.autoZoom=null;
+   this.onMask?.(this.segmenter.project(128,zoom),{mask:new Uint8Array(result.mask),width:640,height:480,zoom});this.report('tracking',result.guided?'已定位 '+this.segmenter.snapshot().hands+' 只手 · 身体区域已排除':this.segmenter.options.guided?'等待双手定位 · 身体不参与匹配':'真实差分成影 · 请在绿色框内调整手影');}
    this.drawPreview();
    if(this.model&&!this.inferenceBusy&&!this.modelFailed&&now-this.lastInference>=110){
     this.inferenceBusy=true;this.lastInference=now;

@@ -38,11 +38,11 @@ function updateHandGuide(landmarks){
   guideCtx.beginPath();
   guideCtx.moveTo(p[0].x,p[0].y);
   for(const index of [1,2,5,9,13,17])guideCtx.lineTo(p[index].x,p[index].y);
-  guideCtx.closePath();guideCtx.fill();guideCtx.lineWidth=Math.max(2,span*.06);guideCtx.stroke();
+  guideCtx.closePath();guideCtx.fill();guideCtx.lineWidth=Math.max(2,span*.10);guideCtx.stroke();
   for(const [a,b,c,d] of [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16],[17,18,19,20]]){
    guideCtx.beginPath();guideCtx.moveTo(p[a].x,p[a].y);
    guideCtx.lineTo(p[b].x,p[b].y);guideCtx.lineTo(p[c].x,p[c].y);guideCtx.lineTo(p[d].x,p[d].y);
-   guideCtx.lineWidth=Math.max(5,span*(a===1?.24:.19)+2);guideCtx.stroke();
+   guideCtx.lineWidth=Math.max(5,span*(a===1?.28:.23)+2);guideCtx.stroke();
   }
   if(pixels){
    let cb=0,cr=0,count=0;
