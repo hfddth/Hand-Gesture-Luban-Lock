@@ -109,17 +109,25 @@ function despeckle(level){
 const dilated=new Uint8Array(N);
 function repairTinyHoles(){
  if(!guideValid()||options.repair<20)return;
+ // Local closing fills short cracks and palm pinholes; the guide bounds it.
+ // It never uses the target silhouette, so a different gesture stays different.
+ const radius=options.repair>=40?3:1;
  dilated.fill(0);
- for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){
+ for(let y=radius;y<H-radius;y++)for(let x=radius;x<W-radius;x++){
   const i=y*W+x;if(!handGuide[i])continue;
-  const any=denoiseMask[i]||denoiseMask[i-1]||denoiseMask[i+1]||denoiseMask[i-W]||denoiseMask[i+W];
-  dilated[i]=any?1:0;
+  let found=false;
+  for(let dy=-radius;dy<=radius&&!found;dy++)for(let dx=-radius;dx<=radius;dx++){
+   if(dx*dx+dy*dy<=radius*radius&&denoiseMask[i+dy*W+dx]){found=true;break;}
+  }
+  dilated[i]=found?1:0;
  }
- for(let y=1;y<H-1;y++)for(let x=1;x<W-1;x++){
-  const i=y*W+x;
-  if(!handGuide[i]||denoiseMask[i])continue;
-  const n=dilated[i-1]+dilated[i+1]+dilated[i-W]+dilated[i+W];
-  if(n>=3)denoiseMask[i]=1;
+ for(let y=radius;y<H-radius;y++)for(let x=radius;x<W-radius;x++){
+  const i=y*W+x;if(!handGuide[i]||denoiseMask[i])continue;
+  let enclosed=true;
+  for(let dy=-radius;dy<=radius&&enclosed;dy++)for(let dx=-radius;dx<=radius;dx++){
+   if(dx*dx+dy*dy<=radius*radius&&!dilated[i+dy*W+dx]){enclosed=false;break;}
+  }
+  if(enclosed)denoiseMask[i]=1;
  }
 }
 // 3. Temporal alpha filter suppresses 1-frame flicker; faster for additions
