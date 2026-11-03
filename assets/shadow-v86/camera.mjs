@@ -1,4 +1,4 @@
-import {createShadowSegmenter} from './segmentation.mjs?v=101';
+import {createShadowSegmenter} from './segmentation.mjs?v=102';
 
 const HANDS=new URL('../../vendor/mediapipe/hands/',import.meta.url).href;
 let scriptPromise;
