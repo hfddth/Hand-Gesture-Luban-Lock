@@ -1,6 +1,6 @@
-import {RecognitionEngine as ArchiveEngine} from '../recognition-v33/engine.mjs?v=99';
+import {RecognitionEngine as ArchiveEngine} from '../recognition-v33/engine.mjs?v=104';
 import {PinchGrabController} from '../recognition-v33/pinch-controller.mjs?v=88';
-export {startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v33/engine.mjs?v=99';
+export {startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v33/engine.mjs?v=104';
 
 export class RepairGrabController extends PinchGrabController{
  constructor(){super({timings:{releaseMs:320}});this.setThresholds({close:.68,arm:.82,release:1.02});}
@@ -22,8 +22,8 @@ export class RepairGrabController extends PinchGrabController{
 export class RecognitionEngine extends ArchiveEngine{
  constructor(options){super(options);this.controller=new RepairGrabController();}
  start(now=performance.now()){super.start(now);this.controller=new RepairGrabController();}
+ fallbackThresholds(){return {close:.68,arm:.82,release:1.02};}
  process(results,{now=performance.now(),aspect=16/9}={}){
-  if(!this.baseline&&!this.fallback&&now-this.startedAt>4500){this.fallback=true;this.controller.setThresholds({close:.68,arm:.82,release:1.02});}
   return super.process(results,{now,aspect,mode:'grab'});
  }
 }

@@ -1,6 +1,6 @@
-import {RecognitionEngine as CombinedEngine} from '../recognition-v79/engine.mjs?v=99';
+import {RecognitionEngine as CombinedEngine} from '../recognition-v79/engine.mjs?v=104';
 import {PinchGrabController,analyzeHand} from '../recognition-v33/pinch-controller.mjs?v=85';
-export {startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v33/engine.mjs?v=99';
+export {startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v33/engine.mjs?v=104';
 
 export class BurrGrabController extends PinchGrabController{
  constructor(){super();this.setThresholds({close:.68,arm:.86,release:1.08});}
@@ -20,10 +20,8 @@ export class BurrGrabController extends PinchGrabController{
 export class RecognitionEngine extends CombinedEngine{
  constructor(options){super(options);this.controller=new BurrGrabController();}
  start(now=performance.now()){super.start(now);this.controller=new BurrGrabController();}
+ fallbackThresholds(){return {close:.68,arm:.86,release:1.08};}
  process(results,{now=performance.now(),aspect=16/9,mode='interact'}={}){
-  if(!this.baseline&&!this.fallback&&now-this.startedAt>4500){
-   this.fallback=true;this.controller.setThresholds({close:.68,arm:.86,release:1.08});
-  }
   const analysis=analyzeHand(results.multiHandLandmarks?.[0],results.multiHandWorldLandmarks?.[0],aspect);
   if(this.openRotate&&analysis&&analysis.pinchRatio<=this.controller.thresholds.arm)this.resetInteraction();
   const holding=['ARMED','GRABBED','HOLD'].includes(this.controller.state);
