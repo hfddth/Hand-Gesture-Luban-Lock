@@ -16,16 +16,19 @@ const median=values=>{const a=[...values].sort((a,b)=>a-b),m=Math.floor(a.length
 
 /** The archive's grab-lab controller plus gesture-lab open-palm rotation gates. */
 export class RecognitionEngine{
-  constructor({hitTest=()=>null,getRotation=()=>new THREE.Quaternion()}={}){this.hitTest=hitTest;this.getRotation=getRotation;this.controller=new PinchGrabController();this.startedAt=0;this.baseline=null;this.samples=[];this.fallback=false;this.resetInteraction();}
-  start(now=performance.now()){this.startedAt=now;this.baseline=null;this.samples=[];this.fallback=false;this.controller=new PinchGrabController();this.resetInteraction();}
+  constructor({hitTest=()=>null,getRotation=()=>new THREE.Quaternion()}={}){this.hitTest=hitTest;this.getRotation=getRotation;this.controller=new PinchGrabController();this.startedAt=null;this.baseline=null;this.samples=[];this.fallback=false;this.resetInteraction();}
+  // Permission/model loading and waiting for a hand are not calibration time.
+  start(){this.startedAt=null;this.baseline=null;this.samples=[];this.fallback=false;this.controller=new PinchGrabController();this.resetInteraction();}
+  fallbackThresholds(){return {close:.42,arm:.55,release:.65};}
   resetInteraction(){this.controller.reset();this.openRotate=false;this.openSince=null;this.openExitSince=null;this.openHand=null;this.openLock=null;this.rotationTarget=null;this.mode=null;}
   process(results,{now=performance.now(),aspect=16/9,mode='grab'}={}){
     if(this.mode!==mode){this.resetInteraction();this.mode=mode;}
     const marks=results.multiHandLandmarks?.[0]||null,world=results.multiHandWorldLandmarks?.[0]||null;
     const analysis=marks?analyzeHand(marks,world,aspect):null;
+    if(analysis&&this.startedAt===null)this.startedAt=now;
     const handQuaternion=marks?(getHandQuaternion(marks,world,aspect)||getHandQuaternion(marks,null,aspect)):null;
     if(analysis&&!this.baseline&&analysis.extended>=1&&analysis.pinchRatio>.75){this.samples.push(analysis.pinchRatio);if(this.samples.length>30)this.samples.shift();if(this.samples.length>=18){const baseline=median(this.samples);if(this.controller.calibrate(baseline))this.baseline=baseline;}}
-    if(!this.baseline&&!this.fallback&&now-this.startedAt>4500){this.fallback=true;this.controller.setThresholds({close:.42,arm:.55,release:.65});}
+    if(analysis&&this.startedAt!==null&&!this.baseline&&!this.fallback&&now-this.startedAt>4500){this.fallback=true;this.controller.setThresholds(this.fallbackThresholds());}
     const calibrated=Boolean(this.baseline||this.fallback);let hoverId=null;
     if(mode==='rotate'&&calibrated){
       const openGesture=Boolean(analysis&&analysis.extended>=3&&analysis.pinchRatio>.45),stillOpen=Boolean(analysis&&analysis.extended>=2&&analysis.pinchRatio>.3);

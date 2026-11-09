@@ -1,5 +1,5 @@
 import {createFrameGate} from '../landing/render-budget.mjs?v=96';
-import {ShadowCamera} from '../shadow-v86/camera.mjs?v=103';
+import {ShadowCamera} from '../shadow-v86/camera.mjs?v=104';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS} from './levels.mjs?v=94';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=94';
@@ -18,7 +18,7 @@ function note(text){$('liveNote').textContent=text;}
 function updateHUD(){const s=state.snapshot();$('matchScore').innerHTML=Math.floor(s.score)+'<small>%</small>';$('matchFill').style.width=s.score+'%';$('holdFill').style.width=s.heldMs/level.holdMs*100+'%';$('holdText').textContent=(s.score>=level.threshold?'保持稳定':'等待影形')+' · '+(s.heldMs/1000).toFixed(1)+' / '+(level.holdMs/1000)+' 秒';document.body.dataset.score=String(Math.floor(s.score));document.body.dataset.status=s.complete?'complete':s.paused?'paused':'matching';}
 function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);ctx.save();const scale=3.65;ctx.translate((canvas.width-128*scale)/2,(canvas.height-128*scale)/2);ctx.scale(scale,scale);
- if(liveProjection){ctx.save();ctx.translate(64,64);ctx.scale(liveProjection.zoom,liveProjection.zoom);ctx.globalAlpha=.33;ctx.filter="blur(.6px)";ctx.drawImage(liveCanvas,-64,-48,128,96);ctx.filter="none";ctx.globalAlpha=1;ctx.drawImage(liveCanvas,-64,-48,128,96);ctx.restore();}else if(actual){const image=maskCtx.createImageData(128,128);for(let i=0;i<actual.length;i++)if(actual[i]){image.data[i*4]=62;image.data[i*4+1]=35;image.data[i*4+2]=18;image.data[i*4+3]=190;}maskCtx.putImageData(image,0,0);ctx.imageSmoothingEnabled=true;ctx.shadowColor='#52311955';ctx.shadowBlur=1.6;ctx.drawImage(maskCanvas,0,0);ctx.shadowBlur=0;}
+ if(liveProjection){ctx.save();ctx.translate(64+(liveProjection.offsetX||0),64+(liveProjection.offsetY||0));ctx.scale(liveProjection.zoom,liveProjection.zoom);ctx.globalAlpha=.33;ctx.filter="blur(.6px)";ctx.drawImage(liveCanvas,-64,-48,128,96);ctx.filter="none";ctx.globalAlpha=1;ctx.drawImage(liveCanvas,-64,-48,128,96);ctx.restore();}else if(actual){const image=maskCtx.createImageData(128,128);for(let i=0;i<actual.length;i++)if(actual[i]){image.data[i*4]=62;image.data[i*4+1]=35;image.data[i*4+2]=18;image.data[i*4+3]=190;}maskCtx.putImageData(image,0,0);ctx.imageSmoothingEnabled=true;ctx.shadowColor='#52311955';ctx.shadowBlur=1.6;ctx.drawImage(maskCanvas,0,0);ctx.shadowBlur=0;}
  ctx.strokeStyle='#fff9e8';ctx.lineWidth=.72;ctx.lineCap='round';ctx.lineJoin='round';ctx.setLineDash([2.1,1.3]);ctx.shadowColor='#fff8d9';ctx.shadowBlur=1.1;
  if(targetPaths.length){for(const path of targetPaths)ctx.stroke(path);}else for(const loop of loops){ctx.beginPath();for(let i=0;i<loop.length;i++){const [x,y]=loop[i];i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.closePath();ctx.stroke();}
  ctx.restore();
@@ -47,7 +47,7 @@ function cameraState(info){
  $('cameraButton').textContent=online?'断开摄像头':'连接摄像头';$('captureBackground').disabled=$('settingsCapture').disabled=!online||calibrating;
  $('captureBackground').textContent=calibrating?'采集中 · '+Math.ceil((1-info.progress)*3)+' 秒':info.backgroundReady?'重新采集空背景':'可选：采集空背景';$('captureFill').style.width=info.progress*100+'%';
  $('cameraNote').textContent=$('settingsCaptureStatus').textContent=info.message;
- $('shadowAssistStatus').textContent=camera.modelFailed?'双手定位不可用，请重新连接摄像头':info.guided?'当前 '+info.hands+' 只手 · 已排除身体干扰':online?'请把双手放入绿色框，等待定位':'连接后自动定位双手，无需先采集空背景。';
+ $('shadowAssistStatus').textContent=camera.modelFailed?'双手定位不可用，请重新连接摄像头':info.guided?'定位 '+info.observedHands+' 只手'+(info.geometry?.recoveredHands?' · 正在恢复重叠轮廓':' · 已排除身体干扰'):online?'请把双手放入绿色框，等待定位':'连接后自动定位双手，无需先采集空背景。';
  if(!demo&&!state.complete){$('projectionStatus').textContent=info.ready?'真实手影 · 调整位置与大小，贴合白色虚线':calibrating?'采集空背景 · 双手移出绿色区域':online?'准备对影 · 双手伸入绿色框':'静候影来 · 连接摄像头后伸出双手';if(!info.ready)note(info.message);}
  if(!online&&!state.complete){state.reset();actual=null;liveProjection=null;updateHUD();draw();}
  document.body.dataset.recognition='shadow-v10-pixels-v86';document.body.dataset.cameraPhase=info.phase;

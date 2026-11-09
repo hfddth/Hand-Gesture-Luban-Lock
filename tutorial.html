@@ -544,7 +544,7 @@
     }
 
     const { createCoverLock } = await import("./assets/landing/lock-structure-v27.mjs?v=28");
-    const {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand}=await import("./assets/recognition-v33/engine.mjs?v=99");
+    const {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand}=await import("./assets/recognition-v33/engine.mjs?v=104");
     const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
     const sceneRoot = document.getElementById("scene");
     const video = document.getElementById("video");
@@ -1054,7 +1054,7 @@
       }
     });
     document.body.dataset.recognitionEngine='snapshot-v33';
-    function cameraFailed(error){cameraSession?.stop();cameraSession=null;cameraRunning=false;cameraButton.disabled=false;cameraButton.textContent='重新开启摄像头';cameraStatus.textContent='未开启';cameraStatus.classList.remove('live');cameraPlaceholder.style.display='grid';cameraPlaceholder.textContent=cameraErrorMessage(error);showToast(cameraErrorMessage(error));}
+    function cameraFailed(error){cameraSession?.stop();cameraSession=null;cameraRunning=false;handVisible=false;handRotationTarget=null;recognition.resetInteraction();mouseDown=false;grabbed=false;hovered=false;grabCandidate=null;movable.scale.setScalar(1);edges.material.opacity=0;const pose=new THREE.Euler().setFromQuaternion(puzzleGroup.quaternion);targetPuzzleRotationX=pose.x;targetPuzzleRotationY=pose.y;targetPuzzleRotationZ=pose.z;document.querySelector('.camera-card').classList.remove('camera-live');cameraButton.disabled=false;cameraButton.textContent='重新开启摄像头';cameraStatus.textContent='未开启';cameraStatus.classList.remove('live');cameraPlaceholder.style.display='grid';cameraPlaceholder.textContent=cameraErrorMessage(error);showToast(cameraErrorMessage(error));}
     async function startCamera(){
       if(cameraRunning)return;cameraButton.disabled=true;cameraStatus.textContent='连接中';
       try{

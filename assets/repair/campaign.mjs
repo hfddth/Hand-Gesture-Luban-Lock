@@ -3,7 +3,7 @@ import {createHandPointer} from '../recognition-v81/hand-pointer.mjs?v=90';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {THREE as T} from '../landing/three-runtime-v5.mjs?v=96';
 import {createCoverLock} from '../landing/lock-structure-v27.mjs?v=28';
-import {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v81/repair-grab-v88.mjs?v=99';
+import {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v81/repair-grab-v88.mjs?v=104';
 import {REPAIR_LEVELS,CampaignSession,evaluateMechanism} from './campaign-levels.mjs?v=53';
 import {createCampaignModel} from './campaign-models.mjs?v=52';
 import {pickPartNearPoint} from './part-picking-v44.mjs';

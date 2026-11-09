@@ -7,7 +7,7 @@ import {recordCompletion} from '../collection-v63/progress.mjs';
 import {THREE as T} from './three-runtime-v5.mjs?v=96';
 import {createSantong} from './santong-model-v62.mjs?v=87';
 import {createCoverLock} from './lock-structure-v27.mjs?v=28';
-import {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v81/burr-grab-v85.mjs?v=99';
+import {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v81/burr-grab-v85.mjs?v=104';
 const $=id=>document.getElementById(id),view=$('modelView'),note=$('interactionNote'),dialog=$('pauseDialog'),names=BURR_LEVELS.map(l=>l.name),nums=['一','二','三','四','五','六','七'];
 const handCursor=createHandPointer('burrHandPointer');
 const raw=Number(new URLSearchParams(location.search).get('level')??0),level=Number.isInteger(raw)&&raw>=0&&raw<BURR_LEVELS.length?raw:1;let selected=2,paused=false,hinted=false,cameraSession=null,cameraPending=false;
