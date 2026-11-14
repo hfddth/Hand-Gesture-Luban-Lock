@@ -1,5 +1,5 @@
-import {RecognitionEngine as ArchiveEngine} from '../recognition-v33/engine.mjs?v=104';
-export {getHandQuaternion,startRecognitionCamera,cameraErrorMessage,drawCameraHand,fitCameraPreview} from '../recognition-v33/engine.mjs?v=104';
+import {RecognitionEngine as ArchiveEngine} from '../recognition-v33/engine.mjs?v=105';
+export {getHandQuaternion,startRecognitionCamera,cameraErrorMessage,drawCameraHand,fitCameraPreview} from '../recognition-v33/engine.mjs?v=105';
 
 // Combined application adapter for the archive's independent grab/rotation labs.
 export class RecognitionEngine extends ArchiveEngine{

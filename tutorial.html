@@ -544,7 +544,7 @@
     }
 
     const { createCoverLock } = await import("./assets/landing/lock-structure-v27.mjs?v=28");
-    const {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand}=await import("./assets/recognition-v33/engine.mjs?v=104");
+    const {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand}=await import("./assets/recognition-v33/engine.mjs?v=105");
     const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)");
     const sceneRoot = document.getElementById("scene");
     const video = document.getElementById("video");
@@ -1159,7 +1159,7 @@
     const clock = new THREE.Clock(),frameGate=createFrameGate();
     function animate() {
       requestAnimationFrame(animate);
-      if(!frameGate(performance.now(),Boolean(grabbed||mouseDown||cameraSession||graduationMotion)))return;
+      if(!frameGate(performance.now(),Boolean(grabbed||mouseDown||handRotationTarget||graduationMotion)))return;
       const dt = Math.min(clock.getDelta(), .05);
       const t = reduceMotion.matches ? 0 : clock.elapsedTime;
       if(!reduceMotion.matches)motes.rotation.y = t * .015;

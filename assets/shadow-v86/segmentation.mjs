@@ -98,8 +98,8 @@ function updateHandGuide(landmarks,sourcePixels=null){
 function difference(framePixels,threshold,useRoi,r){
  const low=useRoi?Math.max(0,Math.floor(r.y)):0,high=useRoi?Math.min(H,Math.ceil(r.y+r.h)):H;
  const left=useRoi?Math.max(0,Math.floor(r.x)):0,right=useRoi?Math.min(W,Math.ceil(r.x+r.w)):W;
- const guided=guideValid(),repair=options.repair/100,skinTol=options.skinRange/100;
- const skinRange=9+22*skinTol;
+ const guided=guideValid(),skinTol=options.skinRange/100;
+ const skinRange=9+22*skinTol,edgeRange=Math.min(18,skinRange);
  rawMask.fill(0);candidates.fill(0);supportMask.set(handGuide);recoveredPixels=0;
  for(let y=low;y<high;y++){let pos=y*W+left,p=pos*4,b=pos*3;for(let x=left;x<right;x++,pos++,p+=4,b+=3){
    // When AI locates an overlapping hand, allow hand pixels to pass an orange
@@ -113,20 +113,24 @@ function difference(framePixels,threshold,useRoi,r){
    // margin and use a lower change threshold when a hand has been localized.
    const local=options.autoNoise?Math.min(13,2+bgNoise[pos]*.65):0;
    const changed=delta>=Math.max(7,threshold*(guided?.62:1))+local;
-   let skin=false;
-   if(guided&&handColors.length){
+   if(guided){
     const cb=128-.168736*R-.331264*G+.5*B;
     const cr=128+.5*R-.418688*G-.081312*B;
-    for(const [kcb,kcr] of handColors){
-     if(Math.abs(cb-kcb)<skinRange&&Math.abs(cr-kcr)<skinRange){skin=true;break;}
-    }
-   }
-   // The guide only gates candidate pixels; pixels/skin still determine the mask.
-   if(guided){
-    rawMask[pos]=handGuide[pos]&&(changed||skin)?1:0;
     const lum=.299*R+.587*G+.114*B;
-    const wristBarrier=wristCuts.some(w=>{const px=x-w.x,py=y-w.y,along=px*w.dx+py*w.dy,across=Math.abs(px*w.dy-py*w.dx);return along<-w.span*.10&&along>-w.span*.24&&across<w.span*1.6;});
-    candidates[pos]=(!wristBarrier||protectedGuide[pos])&&skin&&handColors.some(([cb,cr,y])=>Math.abs((128-.168736*R-.331264*G+.5*B)-cb)<Math.min(18,skinRange)&&Math.abs((128+.5*R-.418688*G-.081312*B)-cr)<Math.min(18,skinRange)&&(!Number.isFinite(y)||Math.abs(lum-y)<42))?1:0;
+    let skin=false,edge=false;
+    for(const [sampleCb,sampleCr,sampleLum] of handColors){
+     const difference=Math.max(Math.abs(cb-sampleCb),Math.abs(cr-sampleCr));
+     if(difference<skinRange)skin=true;
+     if(difference<edgeRange&&(!Number.isFinite(sampleLum)||Math.abs(lum-sampleLum)<42)){edge=true;break;}
+    }
+    rawMask[pos]=handGuide[pos]&&(changed||skin)?1:0;
+    if(edge){
+     const blocked=!protectedGuide[pos]&&wristCuts.some(w=>{
+      const px=x-w.x,py=y-w.y,along=px*w.dx+py*w.dy;
+      return along<-w.span*.10&&along>-w.span*.24&&Math.abs(px*w.dy-py*w.dx)<w.span*1.6;
+     });
+     if(!blocked)candidates[pos]=1;
+    }
    }else rawMask[pos]=changed?1:0;
  }}
  if(guided)recoverVisiblePixels();
