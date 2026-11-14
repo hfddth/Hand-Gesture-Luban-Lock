@@ -50,12 +50,15 @@ export async function startRecognitionCamera(video, onResults, {onProgress = () 
   const policy = document.permissionsPolicy || document.featurePolicy;
   if (policy?.allowsFeature && !policy.allowsFeature('camera'))
     throw error('CameraPolicyError', '嵌入页面禁止摄像头');
-  let stopped = false, stream, hands, raf, active = false;
+  const frameCallback = typeof video.requestVideoFrameCallback === 'function' && typeof video.cancelVideoFrameCallback === 'function';
+  let stopped = false, stream, hands, frameId, active = false;
   const stopTracks = value => value?.getTracks().forEach(track => track.stop());
   const closeHands = () => { try { Promise.resolve(hands?.close()).catch(() => {}); } catch {} };
   const stop = () => {
     if (stopped) return;
-    stopped = true; active = false; cancelAnimationFrame(raf);
+    stopped = true; active = false;
+    if (frameCallback) video.cancelVideoFrameCallback(frameId);
+    else cancelAnimationFrame(frameId);
     removeEventListener('pagehide', stop);
     stopTracks(stream);
     if (video.srcObject === stream) { video.pause(); video.srcObject = null; }
@@ -87,17 +90,26 @@ export async function startRecognitionCamera(video, onResults, {onProgress = () 
     check();
     const send = () => deadline(hands.send({image: video}), 15000, 'CameraRuntimeError', '识别响应超时');
     await send(); check(); active = true; onProgress('ready');
-    let lastTime = video.currentTime;
-    const frame = async () => {
+    let lastFrame = null;
+    let lastSendAt = -Infinity;
+    const schedule = () => {
+      if (stopped) return;
+      frameId = frameCallback ? video.requestVideoFrameCallback(frame) : requestAnimationFrame(frame);
+    };
+    async function frame(now, metadata) {
       if (!active || stopped) return;
       try {
-        if (!video.paused && video.readyState >= 2 && video.currentTime !== lastTime) {
-          lastTime = video.currentTime; await send();
+        const decoded = video.getVideoPlaybackQuality?.().totalVideoFrames || video.webkitDecodedFrameCount;
+        const frameKey = metadata?.presentedFrames ?? (decoded || video.currentTime);
+        if (!document.hidden && !video.paused && video.readyState >= 2 && frameKey !== lastFrame && (frameCallback || now - lastSendAt >= 32)) {
+          lastFrame = frameKey;
+          lastSendAt = now;
+          await send();
         }
-        if (!stopped) raf = requestAnimationFrame(frame);
+        schedule();
       } catch (e) { fail(e); }
-    };
-    raf = requestAnimationFrame(frame);
+    }
+    schedule();
     return {hands, stop};
   } catch (e) { stop(); throw e; }
 }

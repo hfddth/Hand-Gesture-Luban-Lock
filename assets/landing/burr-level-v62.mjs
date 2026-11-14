@@ -5,9 +5,9 @@ import {BURR_LEVELS,BURR_ORDER,BURR_CHAPTERS,BURR_GROUPS} from './burr-campaign-
 import {BurrPhysics,qAxis,qMultiply,rotate} from './burr-physics-v66.mjs?v=87';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {THREE as T} from './three-runtime-v5.mjs?v=96';
-import {createSantong} from './santong-model-v62.mjs?v=87';
+import {createSantong} from './santong-model-v62.mjs?v=105';
 import {createCoverLock} from './lock-structure-v27.mjs?v=28';
-import {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v81/burr-grab-v85.mjs?v=104';
+import {RecognitionEngine,startRecognitionCamera,cameraErrorMessage,drawCameraHand} from '../recognition-v81/burr-grab-v85.mjs?v=105';
 const $=id=>document.getElementById(id),view=$('modelView'),note=$('interactionNote'),dialog=$('pauseDialog'),names=BURR_LEVELS.map(l=>l.name),nums=['一','二','三','四','五','六','七'];
 const handCursor=createHandPointer('burrHandPointer');
 const raw=Number(new URLSearchParams(location.search).get('level')??0),level=Number.isInteger(raw)&&raw>=0&&raw<BURR_LEVELS.length?raw:1;let selected=2,paused=false,hinted=false,cameraSession=null,cameraPending=false;
@@ -23,7 +23,7 @@ const outline=new T.LineSegments(new T.EdgesGeometry(meshes[selected].geometry,2
 const physics=new BurrPhysics(meshes.map(m=>Array.from(m.geometry.attributes.position.array)),root.userData.collisionFrames||[],root.userData.collisionTolerance||.001,root.userData.collisionParts),extraction=physics;
 const centers=physics.parts.map(p=>new T.Vector3(...p.center));meshes.forEach((m,i)=>{m.geometry.translate(...physics.parts[i].center.map(v=>-v));m.geometry.applyQuaternion(new T.Quaternion(...physics.parts[i].frame).invert());m.position.copy(centers[i]);m.quaternion.fromArray(physics.parts[i].frame);m.geometry.computeBoundingBox();});
 const turnProfile=root.userData.turnProfile;
-let guide=null;if(levelDefinition.solutionFile){const response=await fetch(new URL(levelDefinition.solutionFile,import.meta.url),{cache:'no-store'});if(response.ok)guide=new BurrGuide(physics,await response.json());}
+let guide=null;if(levelDefinition.solutionFile){const response=await fetch(new URL(levelDefinition.solutionFile,import.meta.url));if(response.ok)guide=new BurrGuide(physics,await response.json());}
 
 let drag=null,complete=false,completionPicture=null,lastHandSeen=0,partMode='slide',turnAxis=-1,lastHint=null;
 const controls=document.createElement('div');controls.className='burr-controls';controls.innerHTML='<button id="burrSlide" aria-pressed="true">移动零件</button><button id="burrTurn" aria-pressed="false">旋转零件</button><label>转轴 <select id="burrTurnAxis"><option value="-1">长轴</option><option value="0">X 轴</option><option value="1">Y 轴</option><option value="2">Z 轴</option></select></label>';

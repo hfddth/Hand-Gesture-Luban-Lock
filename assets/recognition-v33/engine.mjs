@@ -42,7 +42,7 @@ export class RecognitionEngine{
   }
 }
 
-export {startRecognitionCamera,cameraErrorMessage} from './camera-v99.mjs';
+export {startRecognitionCamera,cameraErrorMessage} from './camera-v99.mjs?v=105';
 
 // Display adapter: fit the complete camera image into its frame without cropping.
 export function fitCameraPreview(sourceWidth,sourceHeight,width,height){

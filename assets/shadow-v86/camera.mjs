@@ -1,4 +1,4 @@
-import {createShadowSegmenter} from './segmentation.mjs?v=104';
+import {createShadowSegmenter} from './segmentation.mjs?v=105';
 import {createShadowProjection} from './projection-v104.mjs';
 function timed(promise,ms,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),ms);})]).finally(()=>clearTimeout(timer));}
 
@@ -53,7 +53,7 @@ export class ShadowCamera{
     if(token!==this.generation||!this.active||this.modelFailed)return;
     // Infer from the same frozen, mirrored 4:3 pixels used for segmentation.
     const hands=(result.multiHandLandmarks||[]).map(hand=>hand.map(p=>({x:p.x*640,y:p.y*480})));
-    this.segmenter.updateHandGuide(hands,this.inferenceFrame.getContext('2d').getImageData(0,0,640,480).data);
+    this.segmenter.updateHandGuide(hands,this.inferencePixels);
 
    });
    const initialized=model.initialize();Promise.resolve(initialized).then(()=>{if(token!==this.generation||!this.active)Promise.resolve(model.close()).catch(()=>{});},()=>{});
@@ -92,6 +92,7 @@ export class ShadowCamera{
    this.drawPreview();
    if(this.model&&!this.inferenceBusy&&!this.modelFailed&&now-this.lastInference>=110){
     this.inferenceBusy=true;this.lastInference=now;
+    this.inferencePixels=this.pixels;
     this.inferenceFrame.getContext('2d').drawImage(this.frame,0,0);
     timed(this.model.send({image:this.inferenceFrame}),5000,'双手定位响应超时').catch(()=>{if(token===this.generation){this.modelFailed=true;this.segmenter.clearGuide();this.report('error','双手定位中断，请重新连接摄像头');}}).finally(()=>{if(token===this.generation)this.inferenceBusy=false;});
    }
@@ -100,6 +101,7 @@ export class ShadowCamera{
  drawPreview(){
   const {roi,exclusions}=this.segmenter.snapshot();
   for(const canvas of [this.preview,this.settingsPreview]){
+   if(canvas===this.settingsPreview&&canvas.closest('dialog')?.open===false)continue;
    const c=canvas.getContext('2d');c.clearRect(0,0,640,480);c.drawImage(this.frame,0,0);
    c.fillStyle='#07161065';c.beginPath();c.rect(0,0,640,480);c.rect(roi.x,roi.y,roi.w,roi.h);c.fill('evenodd');
    c.strokeStyle='#b4db99';c.lineWidth=1.4;c.strokeRect(roi.x,roi.y,roi.w,roi.h);
@@ -112,7 +114,7 @@ export class ShadowCamera{
   ++this.generation;this.active=false;this.projection.reset();cancelAnimationFrame(this.raf);
   this.stream?.getTracks().forEach(t=>t.stop());this.stream=null;
   const model=this.model;this.model=null;Promise.resolve(model?.close?.()).catch(()=>{});
-  this.video.pause();this.video.srcObject=null;this.pixels=null;this.segmenter.invalidate();this.segmenter.clearGuide();
+  this.video.pause();this.video.srcObject=null;this.pixels=null;this.inferencePixels=null;this.segmenter.invalidate();this.segmenter.clearGuide();
   this.report('disconnected','摄像头未连接');
  }
  suspend(){if(this.segmenter.snapshot().calibrating)this.invalidate('采集已中断，请回到页面重新采集空背景');else this.segmenter.reset();}
