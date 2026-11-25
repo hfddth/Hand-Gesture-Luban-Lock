@@ -1,6 +1,6 @@
 import {BURR_LEVELS,BURR_GROUPS,BURR_CHAPTERS} from './burr-campaign-v68.mjs?v=98';
 import {isComplete} from '../collection-v63/progress.mjs';
-import {SHADOW_LEVELS,SHADOW_CHAPTERS} from '../shadow-v58/levels.mjs?v=94';
+import {SHADOW_LEVELS,SHADOW_CHAPTERS} from '../shadow-v58/levels.mjs?v=106';
 (()=>{
 const profiles={burr:{title:'榫卯解谜',action:'开始解密',chapters:['初识榫卯','巧构进阶','匠心试炼'],names:[['三通初合','六木相制','十字连环','九木巧结','玲珑藏机','匠心初试'],['双榫叠影','错节回环','步步相扣','藏锋入木','八方合契','千机重构'],['无隙之局','连环藏榫','纵横天工','回纹九转','万象归一','匠心终局']],goal:'转动视角，观察构件的咬合与抽离方向，寻找解开榫局的顺序。'},repair:{title:'机关修复',action:'开始修复',chapters:['初入匠坊','传动巧思','天工复鸣'],names:[['水车初转','齿轮归位','玉轴承力','连杆相接','轮系同鸣','匠坊复苏'],['双轮联动','回转之桥','升降巧架','百转流光','引水入渠','机枢归正'],['古钟重鸣','连机入阵','水运天仪','千轮相续','巧构复生','天工复鸣']],goal:'观察机关缺失的构件，找到对应安装位置，让传动重新运转。'},shadow:{title:'榫影成画',action:'点亮画卷',chapters:['灯下初影','影随心生','万象入画'],names:[['月下玉兔','蝶落花间','林间小鹿','飞鸟衔春','灵猫望月','游鱼入梦'],['双兔逐月','蝶舞清风','鹿鸣幽谷','归雁成行','猫影寻踪','鱼跃莲池'],['月宫奇遇','百蝶织梦','山林灵境','千羽归巢','夜游画境','万象成画']],goal:'观察屏风上的目标影形，调整姿态，让灯下的轮廓融入画卷。'}};
 const burrGroups=BURR_GROUPS,burrNames=BURR_LEVELS.map(l=>l.name);profiles.burr.chapters=BURR_CHAPTERS;profiles.burr.names=burrGroups.map(g=>g.map(i=>burrNames[i]));function burrIndex(i){return burrGroups[chapter][i];}
