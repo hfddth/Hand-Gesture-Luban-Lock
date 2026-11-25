@@ -13,6 +13,3 @@ const records=[
 export const SHADOW_LEVELS=records.map(([id,animal,name,hint],index)=>({id,animal,name,hint,index,chapter:index<4?'灯下初影':index<7?'影随心生':'万象入画',threshold:60,holdMs:2000,target:`assets/shadow-v58/targets-v59/${id}.svg`,mask:`assets/shadow-v58/targets-v59/${id}.json`,reference:`assets/shadow-v58/references/${id}.webp`,artwork:`assets/shadow-v58/artwork-v59/${id}.webp`}));
 Object.assign(SHADOW_LEVELS[0],{animal:'鸽子',name:'鸽影展翅',target:'assets/shadow-v92/bird.svg',mask:'assets/shadow-v92/bird.json',preview:'assets/shadow-v92/bird-preview.svg'});
 export const SHADOW_CHAPTERS=['灯下初影','影随心生','万象入画'];
-
-// Reference-refined targets; approved first level remains unchanged.
-for(const level of SHADOW_LEVELS.slice(1)){level.target=`assets/shadow-v58/targets-v106/${level.id}.svg`;level.mask=`assets/shadow-v58/targets-v106/${level.id}.json`;level.preview=`assets/shadow-v58/previews-v106/${level.id}.svg`;}
