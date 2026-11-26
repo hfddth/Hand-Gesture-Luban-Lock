@@ -1,5 +1,5 @@
-import {createShadowSegmenter} from './segmentation.mjs?v=105';
-import {createShadowProjection} from './projection-v104.mjs';
+import {createShadowSegmenter} from './segmentation.mjs?v=106';
+import {createShadowProjection} from './projection-v104.mjs?v=106';
 function timed(promise,ms,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),ms);})]).finally(()=>clearTimeout(timer));}
 
 const HANDS=new URL('../../vendor/mediapipe/hands/',import.meta.url).href;
