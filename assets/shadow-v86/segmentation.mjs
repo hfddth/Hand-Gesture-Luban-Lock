@@ -7,7 +7,7 @@ export function createShadowSegmenter({width:W=640,height:H=480}={}){
  const recoveryMask=new Uint8Array(N),supportMask=new Uint8Array(N),protectedGuide=new Uint8Array(N),candidates=new Uint8Array(N);
  let observedHands=0,geometry=null,recoveredPixels=0,wristCuts=[],observedBounds=[];
  const guideCanvas=document.createElement('canvas');guideCanvas.width=W;guideCanvas.height=H;const guideCtx=guideCanvas.getContext('2d',{willReadFrequently:true});
- let background=null,lastPixels=null,handColors=[],handGuideCount=0,handStamp=0,hasRoi=true,roi={x:Math.round(W*.1),y:Math.round(H*45/480),w:Math.round(W*.8),h:Math.round(H*354/480)},exclusions=[],bgAcc=null,bgLumSq=null,bgCount=0,calibrateStart=null;
+ let background=null,lastPixels=null,handColors=[],handGuideCount=0,handStamp=0,hasRoi=false,roi={x:0,y:0,w:W,h:H},exclusions=[],bgAcc=null,bgLumSq=null,bgCount=0,calibrateStart=null;
  const guideValid=()=>options.guided&&handGuideCount>0&&performance.now()-handStamp<450;
  const roiValid=(x,y)=>!hasRoi||(x>=roi.x&&x<roi.x+roi.w&&y>=roi.y&&y<roi.y+roi.h);
  function resetSeg(){stable.fill(0);cleanMask.fill(0);rawMask.fill(0);denoiseMask.fill(0);scratch.fill(0);}
@@ -251,5 +251,3 @@ function segment(framePixels,config){
  return {width:W,height:H,options,process,project,beginCalibration,sample,invalidate,setRoi,setExclusions,updateHandGuide,clearGuide(){geometry=null;observedHands=0;wristCuts=[];trackedHands=[];handGuideCount=0;handGuide.fill(0);},setPixels(pixels){lastPixels=pixels;},reset:resetSeg,snapshot:()=>({ready:!!background||guideValid(),backgroundReady:!!background,calibrating:calibrateStart!==null,roi:{...roi},exclusions:exclusions.map(r=>({...r})),guided:guideValid(),hands:guideValid()?handGuideCount:0,observedHands:guideValid()?observedHands:0,recoveredPixels:guideValid()?recoveredPixels:0,geometry:guideValid()?geometry:null}),
  setBackground(rgb){if(rgb.length!==N*3)throw Error('Invalid background');background=new Uint8Array(rgb);bgNoise.fill(0);calibrateStart=null;resetSeg();},setGuide(mask,colors=[]){if(mask.length!==N)throw Error('Invalid guide');handGuide.set(mask);handColors=colors;handGuideCount=1;handStamp=performance.now();}};
 }
-
-

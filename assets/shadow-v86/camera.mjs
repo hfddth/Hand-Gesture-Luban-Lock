@@ -1,4 +1,4 @@
-import {createShadowSegmenter} from './segmentation.mjs?v=106';
+import {createShadowSegmenter} from './segmentation.mjs?v=108';
 function timed(promise,ms,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),ms);})]).finally(()=>clearTimeout(timer));}
 
 const HANDS=new URL('../../vendor/mediapipe/hands/',import.meta.url).href;
@@ -39,7 +39,7 @@ export class ShadowCamera{
   if(token!==this.generation)return;
   this.active=true;this.inferenceBusy=false;this.lastFrame=0;this.lastInference=0;this.modelFailed=false;
   for(const track of stream.getVideoTracks())track.addEventListener('ended',()=>{if(this.stream===stream){this.stop();this.report('error','摄像头已断开，请重新连接');}},{once:true});
-  this.report('connected',this.assist?'正在定位双手，请把双手伸入绿色框':'手动差分模式：先采集空背景');
+  this.report('connected',this.assist?'正在定位双手，请把双手伸入摄像头画面':'手动差分模式：先采集空背景');
   this.raf=requestAnimationFrame(t=>this.tick(t));if(this.assist)this.loadModel(token);
  }
  async loadModel(token){
@@ -67,7 +67,7 @@ export class ShadowCamera{
  }
  capture(){
   if(!this.active||!this.pixels)throw Error('请先连接摄像头，等待画面出现');
-  this.segmenter.beginCalibration();this.report('calibrating','正在采集空背景，请把双手移出绿色框',0);
+  this.segmenter.beginCalibration();this.report('calibrating','正在采集空背景，请把双手移出摄像头画面',0);
  }
  invalidate(message='区域已调整，请重新采集空背景'){
   this.segmenter.invalidate();this.onMask?.(new Uint8Array(128*128));this.report('connected',message);
@@ -84,12 +84,12 @@ export class ShadowCamera{
    this.ctx.setTransform(-1,0,0,1,640,0);this.ctx.drawImage(this.video,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,640,480);this.ctx.setTransform(1,0,0,1,0,0);
    this.pixels=this.ctx.getImageData(0,0,640,480).data;this.segmenter.setPixels(this.pixels);
    const snapshot=this.segmenter.snapshot();
-   if(snapshot.calibrating){const result=this.segmenter.sample(this.pixels,now);this.report(result.error?'error':result.ready?'tracking':'calibrating',result.error||(result.ready?'背景已锁定，把单手或双手伸入绿色框':'采集空背景中，请保持不动'),result.progress);}
+   if(snapshot.calibrating){const result=this.segmenter.sample(this.pixels,now);this.report(result.error?'error':result.ready?'tracking':'calibrating',result.error||(result.ready?'背景已锁定，把单手或双手伸入摄像头画面':'采集空背景中，请保持不动'),result.progress);}
    else if(snapshot.ready||this.segmenter.options.guided){
     const result=this.segmenter.process(this.pixels);
     const projected=this.segmenter.project(128);
     this.onMask?.(projected,{mask:new Uint8Array(result.mask),width:640,height:480,zoom:1});
-    this.report('tracking',result.guided?(this.segmenter.snapshot().recoveredPixels>0?'可见轮廓恢复中 · 调整姿态贴合虚线':'双手定位中 · 身体区域已排除'):this.segmenter.options.guided?'等待双手定位 · 身体不参与匹配':'真实差分成影 · 请在绿色框内调整手影');
+    this.report('tracking',result.guided?(this.segmenter.snapshot().recoveredPixels>0?'可见轮廓恢复中 · 调整姿态贴合虚线':'双手定位中 · 身体区域已排除'):this.segmenter.options.guided?'等待双手定位 · 身体不参与匹配':'真实差分成影 · 请在摄像头画面内调整手影');
    }
    this.drawPreview();
    if(this.model&&!this.inferenceBusy&&!this.modelFailed&&now-this.lastInference>=110){
@@ -101,13 +101,10 @@ export class ShadowCamera{
   }catch{this.stop();this.report('error','画面读取中断，请重新连接摄像头');}
  }
  drawPreview(){
-  const {roi,exclusions}=this.segmenter.snapshot();
+  const {exclusions}=this.segmenter.snapshot();
   for(const canvas of [this.preview,this.settingsPreview]){
    if(canvas===this.settingsPreview&&canvas.closest('dialog')?.open===false)continue;
    const c=canvas.getContext('2d');c.clearRect(0,0,640,480);c.drawImage(this.frame,0,0);
-   c.fillStyle='#07161065';c.beginPath();c.rect(0,0,640,480);c.rect(roi.x,roi.y,roi.w,roi.h);c.fill('evenodd');
-   c.strokeStyle='#b4db99';c.lineWidth=1.4;c.strokeRect(roi.x,roi.y,roi.w,roi.h);
-   c.fillStyle='#e6f8c9';c.font='10px sans-serif';c.fillText('手影区域',roi.x+4,roi.y+12);
    c.fillStyle='#eea04a30';c.strokeStyle='#eeb569';
    for(const r of exclusions){c.fillRect(r.x,r.y,r.w,r.h);c.strokeRect(r.x,r.y,r.w,r.h);}
   }

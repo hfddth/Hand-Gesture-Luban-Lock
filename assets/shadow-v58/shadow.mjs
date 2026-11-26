@@ -1,5 +1,5 @@
 import {createFrameGate} from '../landing/render-budget.mjs?v=96';
-import {ShadowCamera} from '../shadow-v86/camera.mjs?v=107';
+import {ShadowCamera} from '../shadow-v86/camera.mjs?v=108';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS} from './levels.mjs?v=106';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=106';
@@ -39,7 +39,7 @@ document.querySelectorAll('[data-close]').forEach(b=>b.onclick=()=>$(b.dataset.c
 $('resetButton').onclick=reset;$('retryButton').onclick=reset;
 $('nextButton').textContent=level.index<SHADOW_LEVELS.length-1?'下一关 →':'返回关卡';$('nextButton').onclick=()=>location.href=level.index<SHADOW_LEVELS.length-1?'shadow-level.html?level='+(level.index+1)+'&v=86':'levels.html?mode=shadow&v=86';
 $('demoButton').onclick=()=>{if(demo){reset();return;}reset();demo=true;document.body.dataset.demo='true';$('demoBadge').hidden=false;$('demoButton').textContent='■ 停止演示';$('projectionStatus').textContent='演示预览 · 观察影子如何贴合轮廓';note('正在演示影形比对；演示不计入通关');};
-let cameraPending=false,editMode='roi',editDrag=null;
+let cameraPending=false,editDrag=null;
 function cameraState(info){
  const online=camera.active,calibrating=info.phase==='calibrating';stream=camera.stream;
  $('cameraVideo').hidden=!online;$('cameraOverlay').hidden=!online;$('cameraEmpty').hidden=online;
@@ -47,8 +47,8 @@ function cameraState(info){
  $('cameraButton').textContent=online?'断开摄像头':'连接摄像头';$('captureBackground').disabled=$('settingsCapture').disabled=!online||calibrating;
  $('captureBackground').textContent=calibrating?'采集中 · '+Math.ceil((1-info.progress)*3)+' 秒':info.backgroundReady?'重新采集空背景':'可选：采集空背景';$('captureFill').style.width=info.progress*100+'%';
  $('cameraNote').textContent=$('settingsCaptureStatus').textContent=info.message;
- $('shadowAssistStatus').textContent=camera.modelFailed?'双手定位不可用，请重新连接摄像头':info.guided?'定位 '+info.observedHands+' 只手'+(info.geometry?.recoveredHands?' · 正在恢复重叠轮廓':' · 已排除身体干扰'):online?'请把双手放入绿色框，等待定位':'连接后自动定位双手，无需先采集空背景。';
- if(!demo&&!state.complete){$('projectionStatus').textContent=info.ready?'真实手影 · 调整位置与大小，贴合白色虚线':calibrating?'采集空背景 · 双手移出绿色区域':online?'准备对影 · 双手伸入绿色框':'静候影来 · 连接摄像头后伸出双手';if(!info.ready)note(info.message);}
+ $('shadowAssistStatus').textContent=camera.modelFailed?'双手定位不可用，请重新连接摄像头':info.guided?'定位 '+info.observedHands+' 只手'+(info.geometry?.recoveredHands?' · 正在恢复重叠轮廓':' · 已排除身体干扰'):online?'请把双手放入摄像头画面，等待定位':'连接后自动定位双手，无需先采集空背景。';
+ if(!demo&&!state.complete){$('projectionStatus').textContent=info.ready?'真实手影 · 调整位置与大小，贴合白色虚线':calibrating?'采集空背景 · 双手移出摄像头画面':online?'准备对影 · 双手伸入摄像头画面':'静候影来 · 连接摄像头后伸出双手';if(!info.ready)note(info.message);}
  if(!online&&!state.complete){state.reset();actual=null;liveProjection=null;updateHUD();draw();}
  document.body.dataset.recognition='shadow-v10-pixels-v86';document.body.dataset.cameraPhase=info.phase;
 }
@@ -63,12 +63,11 @@ function captureBackground(){try{stopDemo();state.reset();actual=null;liveProjec
 $('captureBackground').onclick=$('settingsCapture').onclick=captureBackground;$('shadowSettings').onclick=()=>showDialog('shadowSettingsDialog');
 for(const [id,key,unit]of [['shadowThreshold','threshold',''],['shadowRepair','repair','%'],['shadowSkin','skinRange','%']])$(id).oninput=()=>{const value=Number($(id).value);$(id+'Value').textContent=value+unit;camera.segmenter.options[key]=value;camera.segmenter.reset();};
 $('shadowGuided').onchange=()=>{camera.segmenter.options.guided=$('shadowGuided').checked;camera.segmenter.reset();};
-function setEditMode(mode){editMode=mode;$('editShadowRoi').setAttribute('aria-pressed',String(mode==='roi'));$('editShadowExclude').setAttribute('aria-pressed',String(mode==='exclude'));}
-$('editShadowRoi').onclick=()=>setEditMode('roi');$('editShadowExclude').onclick=()=>setEditMode('exclude');$('clearShadowExclusions').onclick=()=>{camera.segmenter.setExclusions([]);camera.drawPreview();};
+$('clearShadowExclusions').onclick=()=>{camera.segmenter.setExclusions([]);camera.drawPreview();};
 const editCanvas=$('shadowSettingsPreview'),editPoint=e=>{const box=editCanvas.getBoundingClientRect();return {x:Math.max(0,Math.min(640,(e.clientX-box.left)*640/box.width)),y:Math.max(0,Math.min(480,(e.clientY-box.top)*480/box.height))};};
 editCanvas.onpointerdown=e=>{if(!camera.active)return;editDrag={start:editPoint(e),end:editPoint(e)};editCanvas.setPointerCapture(e.pointerId);};
-editCanvas.onpointermove=e=>{if(!editDrag)return;editDrag.end=editPoint(e);camera.drawPreview();const c=editCanvas.getContext('2d'),a=editDrag.start,b=editDrag.end;c.strokeStyle=editMode==='roi'?'#dcf8b0':'#ffbb61';c.lineWidth=2;c.setLineDash([4,3]);c.strokeRect(Math.min(a.x,b.x),Math.min(a.y,b.y),Math.abs(a.x-b.x),Math.abs(a.y-b.y));c.setLineDash([]);};
-editCanvas.onpointerup=e=>{if(!editDrag)return;editDrag.end=editPoint(e);const a=editDrag.start,b=editDrag.end,r={x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)};editDrag=null;if(r.w<10||r.h<10)return;if(editMode==='roi'){camera.segmenter.setRoi(r);camera.invalidate();}else camera.segmenter.setExclusions([...camera.segmenter.snapshot().exclusions,r]);camera.drawPreview();};editCanvas.onpointercancel=()=>editDrag=null;
+editCanvas.onpointermove=e=>{if(!editDrag)return;editDrag.end=editPoint(e);camera.drawPreview();const c=editCanvas.getContext('2d'),a=editDrag.start,b=editDrag.end;c.strokeStyle='#ffbb61';c.lineWidth=2;c.setLineDash([4,3]);c.strokeRect(Math.min(a.x,b.x),Math.min(a.y,b.y),Math.abs(a.x-b.x),Math.abs(a.y-b.y));c.setLineDash([]);};
+editCanvas.onpointerup=e=>{if(!editDrag)return;editDrag.end=editPoint(e);const a=editDrag.start,b=editDrag.end,r={x:Math.min(a.x,b.x),y:Math.min(a.y,b.y),w:Math.abs(a.x-b.x),h:Math.abs(a.y-b.y)};editDrag=null;if(r.w<10||r.h<10)return;camera.segmenter.setExclusions([...camera.segmenter.snapshot().exclusions,r]);camera.drawPreview();};editCanvas.onpointercancel=()=>editDrag=null;
 function setArtwork(url){if(typeof url!=='string'||!url.trim())throw Error('Artwork URL required');artwork=url;paintArtwork();}
 window.sunjuShadow={version:2,level:{id:level.id,index:level.index,threshold:level.threshold,holdMs:level.holdMs,maskSize:128},submitMask,submitResult,attachStream,disconnect,reset,setArtwork,snapshot:()=>({...state.snapshot(),demo,levelId:level.id})};
 window.dispatchEvent(new CustomEvent('sunju:shadow-ready',{detail:window.sunjuShadow}));
