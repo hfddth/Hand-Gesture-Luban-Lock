@@ -2,7 +2,7 @@
 // Camera landmarks restrict pixel segmentation to the hands, including over the torso.
 // The target outline never participates in segmentation or mask generation.
 export function createShadowSegmenter({width:W=640,height:H=480}={}){
- const N=W*H,options={threshold:24,cleanup:2,stability:45,minArea:90,repair:50,skinRange:60,autoNoise:true,guided:true};
+ const N=W*H,options={threshold:24,cleanup:2,stability:70,minArea:90,repair:65,skinRange:60,autoNoise:true,guided:true};
  const rawMask=new Uint8Array(N),denoiseMask=new Uint8Array(N),scratch=new Uint8Array(N),stable=new Float32Array(N),cleanMask=new Uint8Array(N),visited=new Uint8Array(N),queue=new Int32Array(N),region=new Int32Array(N),handGuide=new Uint8Array(N),exclusionMask=new Uint8Array(N),bgNoise=new Uint8Array(N);
  const recoveryMask=new Uint8Array(N),supportMask=new Uint8Array(N),protectedGuide=new Uint8Array(N),candidates=new Uint8Array(N);
  let observedHands=0,geometry=null,recoveredPixels=0,wristCuts=[],observedBounds=[];
@@ -247,7 +247,7 @@ function segment(framePixels,config){
 }
 
  function process(pixels){lastPixels=pixels;const result=segment(pixels,{...options,useRoi:hasRoi,roi});return {...result,mask:cleanMask,guided:guideValid()};}
- function project(size=128,zoom=1,offset={}){const out=new Uint8Array(size*size),side=Math.max(W,H),cx=W/2,cy=H/2;for(let y=0;y<size;y++)for(let x=0;x<size;x++){const sx=Math.floor(cx+(x+.5-size/2-(offset.offsetX||0))*side/size/zoom),sy=Math.floor(cy+(y+.5-size/2-(offset.offsetY||0))*side/size/zoom);if(sx>=0&&sy>=0&&sx<W&&sy<H&&roiValid(sx,sy))out[y*size+x]=cleanMask[sy*W+sx];}return out;}
+ function project(size=128,zoom=1,offset={}){const out=new Uint8Array(size*size),side=Math.max(W,H),cx=W/2,cy=H/2;for(let y=0;y<size;y++)for(let x=0;x<size;x++){const sx=Math.floor(cx+(x+.5-size/2-(offset.offsetX||0))*side/size/zoom),sy=Math.floor(cy+(y+.5-size/2-(offset.offsetY||0))*side/size/zoom);if(sx>=0&&sy>=0&&sx<W&&sy<H&&roiValid(sx,sy))out[y*size+x]=cleanMask[sy*W+sx]||cleanMask[sy*W+Math.max(0,sx-2)]||cleanMask[sy*W+Math.min(W-1,sx+2)]||cleanMask[Math.max(0,sy-2)*W+sx]||cleanMask[Math.min(H-1,sy+2)*W+sx];}return out;}
  return {width:W,height:H,options,process,project,beginCalibration,sample,invalidate,setRoi,setExclusions,updateHandGuide,clearGuide(){geometry=null;observedHands=0;wristCuts=[];trackedHands=[];handGuideCount=0;handGuide.fill(0);},setPixels(pixels){lastPixels=pixels;},reset:resetSeg,snapshot:()=>({ready:!!background||guideValid(),backgroundReady:!!background,calibrating:calibrateStart!==null,roi:{...roi},exclusions:exclusions.map(r=>({...r})),guided:guideValid(),hands:guideValid()?handGuideCount:0,observedHands:guideValid()?observedHands:0,recoveredPixels:guideValid()?recoveredPixels:0,geometry:guideValid()?geometry:null}),
  setBackground(rgb){if(rgb.length!==N*3)throw Error('Invalid background');background=new Uint8Array(rgb);bgNoise.fill(0);calibrateStart=null;resetSeg();},setGuide(mask,colors=[]){if(mask.length!==N)throw Error('Invalid guide');handGuide.set(mask);handColors=colors;handGuideCount=1;handStamp=performance.now();}};
 }
