@@ -10,7 +10,7 @@ const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
  */
 export function createShadowProjection({
   width = 640, height = 480, outputSize = 128, referenceSpan = 78,
-  minZoom = .65, maxZoom = 3, smoothingMs = 180, freezeMs = 700,
+  minZoom = .65, maxZoom = 3, smoothingMs = 280, freezeMs = 700,
   maxObservationAgeMs = 500,
 } = {}) {
   let factor = null, anchor = null, lastAt = null, trustedHands = 0, missingSince = null;
@@ -54,7 +54,7 @@ export function createShadowProjection({
       factor = factor === null ? desired : factor + (desired - factor) * alpha;
       if (anchor === null) anchor = {x: geometry.cx, y: geometry.cy};
       else {
-        const a = 1 - Math.exp(-dt / 100);
+        const a = 1 - Math.exp(-dt / 180);
         anchor.x += (geometry.cx - anchor.x) * a;
         anchor.y += (geometry.cy - anchor.y) * a;
       }
