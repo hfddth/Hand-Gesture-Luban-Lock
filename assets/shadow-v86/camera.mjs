@@ -1,5 +1,4 @@
 import {createShadowSegmenter} from './segmentation.mjs?v=106';
-import {createShadowProjection} from './projection-v104.mjs?v=106';
 function timed(promise,ms,message){let timer;return Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error(message)),ms);})]).finally(()=>clearTimeout(timer));}
 
 const HANDS=new URL('../../vendor/mediapipe/hands/',import.meta.url).href;
@@ -18,7 +17,7 @@ function loadHands(){
 export class ShadowCamera{
  constructor({video,preview,settingsPreview,onMask,onState,assist=true}){
   Object.assign(this,{video,preview,settingsPreview,onMask,onState,assist});
-  this.projection=createShadowProjection();this.segmenter=createShadowSegmenter();if(!assist)this.segmenter.options.guided=false;this.zoom=1.35;this.active=false;this.generation=0;
+  this.segmenter=createShadowSegmenter();if(!assist)this.segmenter.options.guided=false;this.active=false;this.generation=0;
   this.frame=document.createElement('canvas');this.frame.width=640;this.frame.height=480;
   this.inferenceFrame=document.createElement('canvas');this.inferenceFrame.width=640;this.inferenceFrame.height=480;
   this.ctx=this.frame.getContext('2d',{willReadFrequently:true});
@@ -78,15 +77,18 @@ export class ShadowCamera{
   if(document.hidden||now-this.lastFrame<50||this.video.readyState<2)return;this.lastFrame=now;
   const token=this.generation;
   try{
-   const vw=this.video.videoWidth,vh=this.video.videoHeight,sw=Math.min(vw,vh*4/3),sh=Math.min(vh,vw*3/4);
+   const vw=this.video.videoWidth,vh=this.video.videoHeight;
+   if(!vw||!vh)return;
+   this.crop??={width:Math.min(1,vh*4/3/vw),height:Math.min(1,vw*3/4/vh)};
+   const sw=vw*this.crop.width,sh=vh*this.crop.height;
    this.ctx.setTransform(-1,0,0,1,640,0);this.ctx.drawImage(this.video,(vw-sw)/2,(vh-sh)/2,sw,sh,0,0,640,480);this.ctx.setTransform(1,0,0,1,0,0);
    this.pixels=this.ctx.getImageData(0,0,640,480).data;this.segmenter.setPixels(this.pixels);
    const snapshot=this.segmenter.snapshot();
    if(snapshot.calibrating){const result=this.segmenter.sample(this.pixels,now);this.report(result.error?'error':result.ready?'tracking':'calibrating',result.error||(result.ready?'背景已锁定，把单手或双手伸入绿色框':'采集空背景中，请保持不动'),result.progress);}
    else if(snapshot.ready||this.segmenter.options.guided){
-    const result=this.segmenter.process(this.pixels),transform=this.projection.update(this.segmenter.snapshot().geometry,{baseZoom:this.zoom,now});
-    const projected=this.segmenter.project(128,transform.zoom,transform);
-    this.onMask?.(projected,{mask:new Uint8Array(result.mask),width:640,height:480,...transform});
+    const result=this.segmenter.process(this.pixels);
+    const projected=this.segmenter.project(128);
+    this.onMask?.(projected,{mask:new Uint8Array(result.mask),width:640,height:480,zoom:1});
     this.report('tracking',result.guided?(this.segmenter.snapshot().recoveredPixels>0?'可见轮廓恢复中 · 调整姿态贴合虚线':'双手定位中 · 身体区域已排除'):this.segmenter.options.guided?'等待双手定位 · 身体不参与匹配':'真实差分成影 · 请在绿色框内调整手影');
    }
    this.drawPreview();
@@ -111,7 +113,7 @@ export class ShadowCamera{
   }
  }
  stop(){
-  ++this.generation;this.active=false;this.projection.reset();cancelAnimationFrame(this.raf);
+  ++this.generation;this.active=false;this.crop=null;cancelAnimationFrame(this.raf);
   this.stream?.getTracks().forEach(t=>t.stop());this.stream=null;
   const model=this.model;this.model=null;Promise.resolve(model?.close?.()).catch(()=>{});
   this.video.pause();this.video.srcObject=null;this.pixels=null;this.inferencePixels=null;this.segmenter.invalidate();this.segmenter.clearGuide();

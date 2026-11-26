@@ -1,5 +1,5 @@
 import {createFrameGate} from '../landing/render-budget.mjs?v=96';
-import {ShadowCamera} from '../shadow-v86/camera.mjs?v=106';
+import {ShadowCamera} from '../shadow-v86/camera.mjs?v=107';
 import {recordCompletion} from '../collection-v63/progress.mjs';
 import {SHADOW_LEVELS} from './levels.mjs?v=106';
 import {ShadowSession,overlapScore,normalizeMask,contourLoops,simplifyLoop} from './matching.mjs?v=106';
@@ -61,7 +61,7 @@ $('cameraButton').onclick=async()=>{
 };
 function captureBackground(){try{stopDemo();state.reset();actual=null;liveProjection=null;shown=false;if($('successDialog').open)$('successDialog').close();state.pause($('shadowSettingsDialog').open||$('pauseDialog').open||$('hintDialog').open);updateHUD();draw();camera.capture();}catch(error){note(error.message);$('cameraNote').textContent=error.message;}}
 $('captureBackground').onclick=$('settingsCapture').onclick=captureBackground;$('shadowSettings').onclick=()=>showDialog('shadowSettingsDialog');
-for(const [id,key,unit]of [['shadowThreshold','threshold',''],['shadowRepair','repair','%'],['shadowSkin','skinRange','%'],['shadowZoom','zoom','%']])$(id).oninput=()=>{const value=Number($(id).value);$(id+'Value').textContent=value+unit;if(key==='zoom')camera.zoom=value/100;else camera.segmenter.options[key]=value;camera.segmenter.reset();};
+for(const [id,key,unit]of [['shadowThreshold','threshold',''],['shadowRepair','repair','%'],['shadowSkin','skinRange','%']])$(id).oninput=()=>{const value=Number($(id).value);$(id+'Value').textContent=value+unit;camera.segmenter.options[key]=value;camera.segmenter.reset();};
 $('shadowGuided').onchange=()=>{camera.segmenter.options.guided=$('shadowGuided').checked;camera.segmenter.reset();};
 function setEditMode(mode){editMode=mode;$('editShadowRoi').setAttribute('aria-pressed',String(mode==='roi'));$('editShadowExclude').setAttribute('aria-pressed',String(mode==='exclude'));}
 $('editShadowRoi').onclick=()=>setEditMode('roi');$('editShadowExclude').onclick=()=>setEditMode('exclude');$('clearShadowExclusions').onclick=()=>{camera.segmenter.setExclusions([]);camera.drawPreview();};
